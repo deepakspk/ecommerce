@@ -1,0 +1,41 @@
+import api from "./client";
+
+export const pingAdmin = () => api.get("/admin/ping").then(r => r.data);
+
+// Categories
+export const getCategories = () => api.get("/admin/categories").then(r => r.data);
+export const createCategory = (data) => api.post("/admin/categories", data).then(r => r.data);
+export const updateCategory = (id, data) => api.put(`/admin/categories/${id}`, data).then(r => r.data);
+export const deleteCategory = (id) => api.delete(`/admin/categories/${id}`).then(r => r.data);
+
+// Products
+export const getProducts = () => api.get("/admin/products").then(r => r.data);
+export const getProduct = (id) => api.get(`/admin/products/${id}`).then(r => r.data);
+export const createProduct = (formData) => api.post("/admin/products", formData).then(r => r.data);
+export const updateProduct = (id, formData) => api.put(`/admin/products/${id}`, formData).then(r => r.data);
+export const deleteProduct = (id) => api.delete(`/admin/products/${id}`).then(r => r.data);
+
+// Variants
+export const addVariant = (productId, data) =>
+  api.post(`/admin/products/${productId}/variants`, data).then(r => r.data);
+export const updateVariant = (productId, variantId, data) =>
+  api.put(`/admin/products/${productId}/variants/${variantId}`, data).then(r => r.data);
+export const deleteVariant = (productId, variantId) =>
+  api.delete(`/admin/products/${productId}/variants/${variantId}`).then(r => r.data);
+
+// Dashboard
+export const getDashboardStats = () => api.get("/admin/stats").then(r => r.data);
+
+// Orders
+export const listAdminOrders = (params) => api.get("/admin/orders", { params }).then(r => r.data);
+export const getAdminOrder = (id) => api.get(`/admin/orders/${id}`).then(r => r.data);
+export const updateOrderStatus = (id, status) =>
+  api.patch(`/admin/orders/${id}/status`, { status }).then(r => r.data);
+export const markOrderPaid = (id) => api.patch(`/admin/orders/${id}/paid`).then(r => r.data);
+
+// Inventory
+export const getInventory = () => api.get("/admin/inventory").then(r => r.data);
+export const adjustStock = (variantId, data) =>
+  api.post(`/admin/inventory/${variantId}/adjust`, data).then(r => r.data);
+export const getLogs = (variantId) =>
+  api.get(`/admin/inventory/${variantId}/logs`).then(r => r.data);

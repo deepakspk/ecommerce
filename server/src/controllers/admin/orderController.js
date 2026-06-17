@@ -1,0 +1,85 @@
+import Order from "../../models/Order.js";
+import ProductVariant from "../../models/ProductVariant.js";
+
+const STATUS_TRANSITIONS = {
+  PENDING:   ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["PACKED",    "CANCELLED"],
+  PACKED:    ["SHIPPED",   "CANCELLED"],
+  SHIPPED:   ["DELIVERED"],
+  DELIVERED: [],
+  CANCELLED: [],
+};
+
+export async function getDashboardStats(req, res) {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const [salesAgg, todayOrders, pendingOrders, lowStockCount] = await Promise.all([
+    Order.aggregate([
+      { $match: { status: { $ne: "CANCELLED" } } },
+      { $group: { _id: null, total: { $sum: "$total" } } },
+    ]),
+    Order.countDocuments({ createdAt: { $gte: startOfToday } }),
+    Order.countDocuments({ status: "PENDING" }),
+    ProductVariant.countDocuments({ stockQuantity: { $lt: 5 } }),
+  ]);
+
+  res.json({
+    totalSales: salesAgg[0]?.total ?? 0,
+    todayOrders,
+    pendingOrders,
+    lowStockCount,
+  });
+}
+
+export async function listOrders(req, res) {
+  const { status, page = 1, limit = 30 } = req.query;
+  const filter = {};
+  if (status) filter.status = status;
+
+  const skip = (Number(page) - 1) * Number(limit);
+  const [orders, total] = await Promise.all([
+    Order.find(filter)
+      .populate("userId", "name email")
+      .sort("-createdAt")
+      .skip(skip)
+      .limit(Number(limit)),
+    Order.countDocuments(filter),
+  ]);
+
+  res.json({ orders, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+}
+
+export async function getOrder(req, res) {
+  const order = await Order.findById(req.params.id).populate("userId", "name email phone");
+  if (!order) return res.status(404).json({ message: "Order not found" });
+  res.json({ order });
+}
+
+export async function updateStatus(req, res) {
+  const { status } = req.body;
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: "Order not found" });
+
+  const allowed = STATUS_TRANSITIONS[order.status] ?? [];
+  if (!allowed.includes(status)) {
+    return res.status(400).json({
+      message: `Cannot move from ${order.status} to ${status}. Allowed next: ${allowed.join(", ") || "none"}`,
+    });
+  }
+
+  order.status = status;
+  await order.save();
+  res.json({ order });
+}
+
+export async function markPaid(req, res) {
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: "Order not found" });
+  if (order.paymentStatus === "PAID") {
+    return res.status(400).json({ message: "Order is already marked as paid" });
+  }
+  order.paymentStatus = "PAID";
+  await order.save();
+  res.json({ order });
+}
