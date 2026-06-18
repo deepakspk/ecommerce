@@ -5,6 +5,7 @@ import { getErrorMessage } from "../utils/errorHelpers";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import Seo from "../components/Seo";
 import WishlistButton from "../components/WishlistButton";
+import StarRating from "../components/StarRating";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
@@ -325,6 +326,12 @@ function ProductCard({ product }) {
       <div className="p-3">
         <p className="text-xs text-blue-600 mb-0.5">{product.categoryId?.name}</p>
         <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">{product.name}</h3>
+        {product.reviewCount > 0 && (
+          <div className="flex items-center gap-1 mb-1">
+            <StarRating rating={product.averageRating} />
+            <span className="text-xs text-gray-400">({product.reviewCount})</span>
+          </div>
+        )}
         <p className="text-sm font-semibold text-gray-900">{formatPrice(product.basePrice)}</p>
       </div>
     </Link>

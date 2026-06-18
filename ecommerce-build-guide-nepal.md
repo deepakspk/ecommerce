@@ -261,3 +261,7 @@ Requirements for this code:
 `Scaffold + schema → Auth → Catalog → Cart → Addresses/Checkout → Payments → Admin products/inventory → Admin orders → Hardening`
 
 Test after each step. Commit to git after each working phase so you can roll back safely.
+
+> **Phase 2:** once Prompt 8 is done, see `ecommerce-build-guide-nepal-phase2.md`
+> for the next round — reviews/ratings, coupons, order cancellation/returns,
+> transactional emails, admin user management, recommendations, and reporting.

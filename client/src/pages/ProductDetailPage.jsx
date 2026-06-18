@@ -7,6 +7,8 @@ import { useWishlist } from "../hooks/useWishlist";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import Seo from "../components/Seo";
 import WishlistButton from "../components/WishlistButton";
+import StarRating from "../components/StarRating";
+import ProductReviews from "../components/ProductReviews";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
@@ -206,7 +208,15 @@ export default function ProductDetailPage() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm text-blue-600 mb-1">{product.categoryId?.name}</p>
-              <h1 className="text-2xl font-bold text-gray-900 mb-3">{product.name}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">{product.name}</h1>
+              {product.reviewCount > 0 && (
+                <div className="flex items-center gap-1.5 mb-2">
+                  <StarRating rating={product.averageRating} />
+                  <span className="text-sm text-gray-500">
+                    {product.averageRating} ({product.reviewCount} review{product.reviewCount !== 1 ? "s" : ""})
+                  </span>
+                </div>
+              )}
             </div>
             <WishlistButton
               product={product}
@@ -338,6 +348,8 @@ export default function ProductDetailPage() {
           )}
         </div>
       </div>
+
+      <ProductReviews productId={product._id} />
     </div>
   );
 }

@@ -1,6 +1,25 @@
 import Category from "../models/Category.js";
 import Product from "../models/Product.js";
 import ProductVariant from "../models/ProductVariant.js";
+import Review from "../models/Review.js";
+
+async function attachRatings(products) {
+  const ids = products.map((p) => p._id);
+  const agg = await Review.aggregate([
+    { $match: { productId: { $in: ids } } },
+    { $group: { _id: "$productId", avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+  ]);
+  const byId = new Map(agg.map((r) => [String(r._id), r]));
+
+  return products.map((p) => {
+    const stats = byId.get(String(p._id));
+    return {
+      ...p.toObject(),
+      averageRating: stats ? Math.round(stats.avg * 10) / 10 : 0,
+      reviewCount: stats ? stats.count : 0,
+    };
+  });
+}
 
 export async function listCategories(req, res) {
   const categories = await Category.find().sort({ name: 1 });
@@ -70,7 +89,7 @@ export async function listProducts(req, res) {
     Product.countDocuments(filter),
   ]);
 
-  res.json({ products, total, page: pageNum, pages: Math.ceil(total / limitNum) });
+  res.json({ products: await attachRatings(products), total, page: pageNum, pages: Math.ceil(total / limitNum) });
 }
 
 export async function getProduct(req, res) {
@@ -81,7 +100,8 @@ export async function getProduct(req, res) {
   if (!product) return res.status(404).json({ message: "Product not found" });
 
   const variants = await ProductVariant.find({ productId: product._id }).sort({ size: 1, color: 1 });
-  res.json({ product, variants });
+  const [withRating] = await attachRatings([product]);
+  res.json({ product: withRating, variants });
 }
 
 function escapeRegex(str) {

@@ -2,11 +2,14 @@ import { Router } from "express";
 import { query, param } from "express-validator";
 import { validate } from "../middleware/validate.js";
 import { getAvailableFilters, listProducts, getProduct } from "../controllers/productController.js";
+import reviewRoutes from "./reviewRoutes.js";
 
 const router = Router();
 
 // must be registered before /:slug to avoid "available-filters" being caught as a slug
 router.get("/available-filters", getAvailableFilters);
+
+router.use("/:productId/reviews", reviewRoutes);
 
 router.get(
   "/",
