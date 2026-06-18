@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
+import { useWishlist } from "../hooks/useWishlist";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { itemCount } = useCart();
+  const { itemCount: wishlistCount } = useWishlist();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -24,6 +26,20 @@ export default function Navbar() {
       {itemCount > 0 && (
         <span className="absolute -top-1.5 -right-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
           {itemCount > 9 ? "9+" : itemCount}
+        </span>
+      )}
+    </Link>
+  );
+
+  const WishlistLink = (
+    <Link to="/wishlist" className="relative text-gray-600 hover:text-gray-900" aria-label="Wishlist" onClick={() => setMenuOpen(false)}>
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round"
+          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+      </svg>
+      {wishlistCount > 0 && (
+        <span className="absolute -top-1.5 -right-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
+          {wishlistCount > 9 ? "9+" : wishlistCount}
         </span>
       )}
     </Link>
@@ -57,6 +73,7 @@ export default function Navbar() {
             Ecommerce Nepal
           </Link>
           <div className="flex items-center gap-4">
+            {WishlistLink}
             {CartLink}
             <button
               onClick={() => setMenuOpen(o => !o)}
@@ -75,6 +92,7 @@ export default function Navbar() {
         </div>
 
         <div className="hidden sm:flex items-center gap-4 text-sm">
+          {WishlistLink}
           {CartLink}
 
           {user ? (

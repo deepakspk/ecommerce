@@ -3,8 +3,10 @@ import { useParams, Link } from "react-router-dom";
 import * as productsApi from "../api/products";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { useCart } from "../hooks/useCart";
+import { useWishlist } from "../hooks/useWishlist";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import Seo from "../components/Seo";
+import WishlistButton from "../components/WishlistButton";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
@@ -16,6 +18,7 @@ export default function ProductDetailPage() {
   const [error, setError] = useState("");
 
   const { addItem } = useCart();
+  const { isWishlisted, removeItem: removeFromWishlist } = useWishlist();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
@@ -116,6 +119,7 @@ export default function ProductDetailPage() {
     setCartError("");
     try {
       await addItem(selectedVariant._id, 1, selectedVariant, product);
+      if (isWishlisted(product._id)) await removeFromWishlist(product._id);
       setCartFeedback(true);
       setTimeout(() => setCartFeedback(false), 3000);
     } catch (e) {
@@ -199,8 +203,17 @@ export default function ProductDetailPage() {
 
         {/* ── Details ───────────────────────────────────────────── */}
         <div>
-          <p className="text-sm text-blue-600 mb-1">{product.categoryId?.name}</p>
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">{product.name}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm text-blue-600 mb-1">{product.categoryId?.name}</p>
+              <h1 className="text-2xl font-bold text-gray-900 mb-3">{product.name}</h1>
+            </div>
+            <WishlistButton
+              product={product}
+              className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200"
+              iconClassName="w-5 h-5"
+            />
+          </div>
 
           {/* Price */}
           <p className="text-2xl font-semibold text-gray-900 mb-4">

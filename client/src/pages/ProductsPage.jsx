@@ -4,6 +4,7 @@ import * as productsApi from "../api/products";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import Seo from "../components/Seo";
+import WishlistButton from "../components/WishlistButton";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
@@ -301,7 +302,12 @@ function ProductCard({ product }) {
       to={`/products/${product.slug}`}
       className="group block bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
     >
-      <div className="aspect-[4/5] bg-gray-100 overflow-hidden">
+      <div className="relative aspect-[4/5] bg-gray-100 overflow-hidden">
+        <WishlistButton
+          product={product}
+          className="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 text-gray-500 hover:text-red-500 shadow-sm"
+          iconClassName="w-4 h-4"
+        />
         {image && !imageFailed ? (
           <img
             src={cloudinaryUrl(image.url, 400)}
