@@ -55,7 +55,7 @@ export default function InventoryPage() {
   const lowCount = variants.filter(v => v.stockQuantity < LOW_STOCK).length;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-xl font-bold text-gray-900 mb-1">Inventory</h1>
       <p className="text-sm text-gray-500 mb-6">
         {lowCount > 0
@@ -70,6 +70,7 @@ export default function InventoryPage() {
         <p className="text-gray-400 text-sm">No variants found. Create products and add variants first.</p>
       ) : (
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
@@ -118,6 +119,7 @@ export default function InventoryPage() {
               })}
             </tbody>
           </table>
+        </div>
         </div>
       )}
 

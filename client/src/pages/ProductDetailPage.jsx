@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import * as productsApi from "../api/products";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { useCart } from "../hooks/useCart";
+import { cloudinaryUrl } from "../utils/cloudinaryUrl";
+import Seo from "../components/Seo";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
@@ -19,6 +21,8 @@ export default function ProductDetailPage() {
   const [selectedColor, setSelectedColor] = useState("");
   const [cartFeedback, setCartFeedback] = useState(false);
   const [cartError, setCartError] = useState("");
+  const [mainImageFailed, setMainImageFailed] = useState(false);
+  const [failedThumbs, setFailedThumbs] = useState(() => new Set());
 
   useEffect(() => {
     let ignore = false;
@@ -32,6 +36,8 @@ export default function ProductDetailPage() {
           setSelectedImage(0);
           setSelectedSize("");
           setSelectedColor("");
+          setMainImageFailed(false);
+          setFailedThumbs(new Set());
           setError("");
         }
       } catch (err) {
@@ -120,7 +126,12 @@ export default function ProductDetailPage() {
   const canAddToCart = hasVariants && selectedSize && selectedColor && !isOutOfStock;
 
   return (
-    <div className="w-full px-8 py-6">
+    <div className="w-full px-4 sm:px-8 py-6">
+      <Seo
+        title={product.name}
+        description={product.description?.slice(0, 160) || undefined}
+        image={product.images?.[0]?.url}
+      />
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-6 flex items-center gap-1.5 flex-wrap">
         <Link to="/products" className="hover:text-gray-900">Products</Link>
@@ -139,10 +150,12 @@ export default function ProductDetailPage() {
         {/* ── Images ────────────────────────────────────────────── */}
         <div>
           <div className="aspect-[4/5] bg-gray-100 rounded-xl overflow-hidden mb-3">
-            {product.images.length > 0 ? (
+            {product.images.length > 0 && !mainImageFailed ? (
               <img
-                src={product.images[selectedImage].url}
+                src={cloudinaryUrl(product.images[selectedImage].url, 800)}
                 alt={product.images[selectedImage].altText || product.name}
+                loading="eager"
+                onError={() => setMainImageFailed(true)}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -157,12 +170,27 @@ export default function ProductDetailPage() {
               {product.images.map((img, i) => (
                 <button
                   key={i}
-                  onClick={() => setSelectedImage(i)}
+                  onClick={() => {
+                    setSelectedImage(i);
+                    setMainImageFailed(false);
+                  }}
                   className={`flex-shrink-0 w-16 h-20 rounded-lg border overflow-hidden transition-colors ${
                     i === selectedImage ? "border-blue-500" : "border-gray-200 hover:border-gray-400"
                   }`}
                 >
-                  <img src={img.url} alt={img.altText || ""} className="w-full h-full object-cover" />
+                  {failedThumbs.has(i) ? (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">
+                      No image
+                    </div>
+                  ) : (
+                    <img
+                      src={cloudinaryUrl(img.url, 150)}
+                      alt={img.altText || ""}
+                      loading="lazy"
+                      onError={() => setFailedThumbs((prev) => new Set(prev).add(i))}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </button>
               ))}
             </div>

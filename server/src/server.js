@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { connectDB } from "./config/db.js";
 import passport from "./config/passport.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -14,9 +16,18 @@ import { protect, requireRole } from "./middleware/auth.js";
 
 const app = express();
 
-app.use(cors());
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(helmet());
+app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(express.json());
 app.use(passport.initialize());
+app.use("/api", apiLimiter);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
@@ -37,7 +48,12 @@ app.get("/api/admin/ping", protect, requireRole("ADMIN"), (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(err.status || 500).json({ message: err.message || "Internal server error" });
+  const status = err.status || 500;
+  const message =
+    status === 500 && process.env.NODE_ENV === "production"
+      ? "Internal server error"
+      : err.message || "Internal server error";
+  res.status(status).json({ message });
 });
 
 const PORT = process.env.PORT || 5000;

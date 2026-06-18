@@ -5,6 +5,7 @@ import * as addressApi from "../api/addresses";
 import * as ordersApi from "../api/orders";
 import { getErrorMessage } from "../utils/errorHelpers";
 import NEPAL_GEO from "../data/nepalGeoData";
+import ItemThumb from "../components/ItemThumb";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -127,9 +128,7 @@ export default function CheckoutPage() {
                 return (
                   <div key={item.variantId} className="flex gap-3 items-start">
                     <div className="flex-shrink-0 w-12 h-14 rounded-lg overflow-hidden bg-gray-100">
-                      {item.imageUrl
-                        ? <img src={item.imageUrl} alt={item.productName} className="w-full h-full object-cover" />
-                        : <div className="w-full h-full bg-gray-200" />}
+                      <ItemThumb src={item.imageUrl} alt={item.productName} width={100} className="w-full h-full" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 line-clamp-1">{item.productName}</p>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
+import { cloudinaryUrl } from "../../utils/cloudinaryUrl";
 
 const EMPTY_VARIANT = { size: "", color: "", sku: "", price: "", stockQuantity: "" };
 
@@ -20,6 +21,7 @@ export default function ProductFormPage() {
   // Images
   const [existingImages, setExistingImages] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
+  const [failedExisting, setFailedExisting] = useState(() => new Set());
   const fileInputRef = useRef();
 
   // Variants (edit mode: live from DB; create mode: staged for submission)
@@ -148,7 +150,20 @@ export default function ProductFormPage() {
   }
 
   if (loading) {
-    return <div className="p-8 text-gray-400 text-sm">Loading…</div>;
+    return (
+      <div className="p-8 max-w-3xl animate-pulse">
+        <div className="h-5 bg-gray-200 rounded w-48 mb-6" />
+        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-24" />
+          <div className="h-9 bg-gray-200 rounded" />
+          <div className="h-20 bg-gray-200 rounded" />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="h-9 bg-gray-200 rounded" />
+            <div className="h-9 bg-gray-200 rounded" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const displayVariants = isEdit ? variants : stagedVariants;
@@ -238,7 +253,19 @@ export default function ProductFormPage() {
             <div className="flex flex-wrap gap-3 mb-3">
               {existingImages.map(img => (
                 <div key={img.url} className="relative group">
-                  <img src={img.url} alt="" className="w-20 h-20 object-cover rounded-lg border border-gray-200" />
+                  {failedExisting.has(img.url) ? (
+                    <div className="w-20 h-20 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">
+                      No image
+                    </div>
+                  ) : (
+                    <img
+                      src={cloudinaryUrl(img.url, 150)}
+                      alt=""
+                      loading="lazy"
+                      onError={() => setFailedExisting(prev => new Set(prev).add(img.url))}
+                      className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                    />
+                  )}
                   <button
                     type="button"
                     onClick={() => setExistingImages(imgs => imgs.filter(i => i.url !== img.url))}

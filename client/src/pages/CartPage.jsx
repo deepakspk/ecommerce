@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
 import { getErrorMessage } from "../utils/errorHelpers";
+import ItemThumb from "../components/ItemThumb";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -103,9 +104,7 @@ function CartItem({ item, onQtyChange, onRemove }) {
     <div className="flex gap-4 bg-white border border-gray-200 rounded-xl p-4 items-start">
       {/* Image */}
       <Link to={`/products/${item.productSlug}`} className="flex-shrink-0 w-20 h-24 rounded-lg overflow-hidden bg-gray-100">
-        {item.imageUrl
-          ? <img src={item.imageUrl} alt={item.productName} className="w-full h-full object-cover" />
-          : <div className="w-full h-full bg-gray-200" />}
+        <ItemThumb src={item.imageUrl} alt={item.productName} width={150} className="w-full h-full" />
       </Link>
 
       {/* Info */}

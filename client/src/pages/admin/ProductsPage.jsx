@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
+import ItemThumb from "../../components/ItemThumb";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   async function load() {
     try {
@@ -21,16 +23,17 @@ export default function ProductsPage() {
 
   async function handleDelete(id, name) {
     if (!confirm(`Delete "${name}"? This also removes all its variants.`)) return;
+    setError("");
     try {
       await adminApi.deleteProduct(id);
       setProducts(ps => ps.filter(p => p._id !== id));
     } catch (e) {
-      alert(e.response?.data?.message || "Error deleting product");
+      setError(e.response?.data?.message || "Error deleting product");
     }
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-gray-900">Products</h1>
         <Link
@@ -40,6 +43,10 @@ export default function ProductsPage() {
           + New Product
         </Link>
       </div>
+
+      {error && (
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-4">{error}</p>
+      )}
 
       {loading ? (
         <p className="text-gray-400 text-sm">Loading…</p>
@@ -52,6 +59,7 @@ export default function ProductsPage() {
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
@@ -67,15 +75,12 @@ export default function ProductsPage() {
                 <tr key={p._id} className="hover:bg-gray-50">
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
-                      {p.images?.[0] ? (
-                        <img
-                          src={p.images[0].url}
-                          alt={p.name}
-                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-gray-100"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-lg bg-gray-200 flex-shrink-0" />
-                      )}
+                      <ItemThumb
+                        src={p.images?.[0]?.url}
+                        alt={p.name}
+                        width={100}
+                        className="w-10 h-10 rounded-lg flex-shrink-0"
+                      />
                       <div>
                         <p className="font-medium text-gray-900">{p.name}</p>
                         <p className="text-xs text-gray-400">{p.slug}</p>
@@ -109,6 +114,7 @@ export default function ProductsPage() {
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       )}
     </div>

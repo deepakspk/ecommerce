@@ -1,6 +1,6 @@
 import Address from "../models/Address.js";
 
-const VALID_PROVINCES = ["koshi", "madhesh", "bagmati", "gandaki", "lumbini", "karnali", "sudurpashchim"];
+export const VALID_PROVINCES = ["koshi", "madhesh", "bagmati", "gandaki", "lumbini", "karnali", "sudurpashchim"];
 
 function validateBody(body) {
   const { recipientName, phone, province, district, city } = body;

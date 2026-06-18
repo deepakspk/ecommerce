@@ -59,7 +59,7 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Orders</h1>
@@ -84,6 +84,7 @@ export default function AdminOrdersPage() {
       ) : (
         <>
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -129,6 +130,7 @@ export default function AdminOrdersPage() {
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
 
           {/* Pagination */}

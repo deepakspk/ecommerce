@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import * as productsApi from "../api/products";
 import { getErrorMessage } from "../utils/errorHelpers";
+import { cloudinaryUrl } from "../utils/cloudinaryUrl";
+import Seo from "../components/Seo";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
@@ -98,7 +100,8 @@ export default function ProductsPage() {
   const hasActiveFilters = selectedCategory || search || selectedSize || selectedColor || minPrice || maxPrice;
 
   return (
-    <div className="w-full px-8 py-6">
+    <div className="w-full px-4 sm:px-8 py-6">
+      <Seo title="Shop Products" description="Browse shirts, pants, and shoes available for delivery across Nepal." />
       <h1 className="text-2xl font-bold text-gray-900 mb-5">Products</h1>
 
       {/* Category pills */}
@@ -121,25 +124,25 @@ export default function ProductsPage() {
       )}
 
       {/* Search + attribute filters */}
-      <div className="flex flex-wrap gap-3 mb-5 items-end">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mb-5 sm:items-end">
+        <div className="w-full sm:w-auto">
           <label className="block text-xs font-medium text-gray-500 mb-1">Search</label>
           <input
             type="text"
             placeholder="Search products…"
             value={search}
             onChange={(e) => changeFilter(setSearch, e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52"
+            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-52"
           />
         </div>
 
         {availableFilters.sizes.length > 0 && (
-          <div>
+          <div className="w-full sm:w-auto">
             <label className="block text-xs font-medium text-gray-500 mb-1">Size</label>
             <select
               value={selectedSize}
               onChange={(e) => changeFilter(setSelectedSize, e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
             >
               <option value="">All sizes</option>
               {availableFilters.sizes.map((s) => (
@@ -150,12 +153,12 @@ export default function ProductsPage() {
         )}
 
         {availableFilters.colors.length > 0 && (
-          <div>
+          <div className="w-full sm:w-auto">
             <label className="block text-xs font-medium text-gray-500 mb-1">Color</label>
             <select
               value={selectedColor}
               onChange={(e) => changeFilter(setSelectedColor, e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
             >
               <option value="">All colors</option>
               {availableFilters.colors.map((c) => (
@@ -165,7 +168,7 @@ export default function ProductsPage() {
           </div>
         )}
 
-        <div>
+        <div className="w-full sm:w-auto">
           <label className="block text-xs font-medium text-gray-500 mb-1">Price (Rs.)</label>
           <div className="flex items-center gap-1">
             <input
@@ -174,7 +177,7 @@ export default function ProductsPage() {
               value={minPrice}
               onChange={(e) => changeFilter(setMinPrice, e.target.value)}
               min={0}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-24"
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-24"
             />
             <span className="text-gray-400 text-sm">–</span>
             <input
@@ -183,7 +186,7 @@ export default function ProductsPage() {
               value={maxPrice}
               onChange={(e) => changeFilter(setMaxPrice, e.target.value)}
               min={0}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-24"
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-24"
             />
           </div>
         </div>
@@ -191,7 +194,7 @@ export default function ProductsPage() {
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-sm text-red-600 hover:text-red-700 font-medium pb-0.5"
+            className="text-sm text-red-600 hover:text-red-700 font-medium pb-0.5 self-start sm:self-auto"
           >
             Clear filters
           </button>
@@ -292,16 +295,19 @@ function CategoryPill({ label, active, onClick }) {
 
 function ProductCard({ product }) {
   const image = product.images?.[0];
+  const [imageFailed, setImageFailed] = useState(false);
   return (
     <Link
       to={`/products/${product.slug}`}
       className="group block bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
     >
       <div className="aspect-[4/5] bg-gray-100 overflow-hidden">
-        {image ? (
+        {image && !imageFailed ? (
           <img
-            src={image.url}
+            src={cloudinaryUrl(image.url, 400)}
             alt={image.altText || product.name}
+            loading="lazy"
+            onError={() => setImageFailed(true)}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (

@@ -63,7 +63,7 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-xl font-bold text-gray-900 mb-6">Categories</h1>
 
       <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6 max-w-md">
@@ -103,6 +103,7 @@ export default function CategoriesPage() {
         <p className="text-gray-400 text-sm">No categories yet.</p>
       ) : (
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
@@ -128,6 +129,7 @@ export default function CategoriesPage() {
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       )}
     </div>
