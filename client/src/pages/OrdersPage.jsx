@@ -15,6 +15,8 @@ const STATUS_COLORS = {
   CANCELLED: "bg-red-100 text-red-700",
 };
 
+const PAYMENT_METHOD_LABELS = { COD: "Cash on Delivery", KHALTI: "Khalti" };
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,9 @@ export default function OrdersPage() {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="text-base font-semibold text-gray-900">{fmt(order.total)}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Cash on Delivery</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod}
+                  </p>
                 </div>
               </div>
             </Link>

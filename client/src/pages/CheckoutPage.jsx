@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import * as addressApi from "../api/addresses";
 import * as ordersApi from "../api/orders";
+import * as paymentsApi from "../api/payments";
 import { getErrorMessage } from "../utils/errorHelpers";
 import NEPAL_GEO from "../data/nepalGeoData";
 import ItemThumb from "../components/ItemThumb";
@@ -46,6 +47,7 @@ export default function CheckoutPage() {
   const [addresses, setAddresses] = useState([]);
   const [addrLoading, setAddrLoading] = useState(true);
   const [selectedAddrId, setSelectedAddrId] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("COD");
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
 
@@ -75,8 +77,15 @@ export default function CheckoutPage() {
     setError("");
     setPlacing(true);
     try {
-      const { order } = await ordersApi.createOrder({ addressId: selectedAddrId });
+      const { order } = await ordersApi.createOrder({ addressId: selectedAddrId, paymentMethod });
       await clearCart();
+
+      if (paymentMethod === "KHALTI") {
+        const { paymentUrl } = await paymentsApi.initiateKhalti(order._id);
+        window.location.href = paymentUrl;
+        return;
+      }
+
       navigate(`/orders/${order._id}`);
     } catch (e) {
       setError(e.response ? getErrorMessage(e) : e.message);
@@ -160,6 +169,24 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            <div className="border-t border-gray-100 pt-4 mt-4 space-y-2">
+              <p className="text-sm font-semibold text-gray-800 mb-1">Payment Method</p>
+              <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
+                paymentMethod === "COD" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-400"
+              }`}>
+                <input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === "COD"}
+                  onChange={() => setPaymentMethod("COD")} />
+                <span className="text-sm text-gray-800">Cash on Delivery</span>
+              </label>
+              <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
+                paymentMethod === "KHALTI" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-400"
+              }`}>
+                <input type="radio" name="paymentMethod" value="KHALTI" checked={paymentMethod === "KHALTI"}
+                  onChange={() => setPaymentMethod("KHALTI")} />
+                <span className="text-sm text-gray-800">Pay with Khalti</span>
+              </label>
+            </div>
+
             {error && (
               <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mt-4">{error}</p>
             )}
@@ -169,10 +196,14 @@ export default function CheckoutPage() {
               disabled={placing || !selectedAddrId || addresses.length === 0}
               className="w-full mt-5 bg-blue-600 text-white py-3 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {placing ? "Placing order…" : "Place Order — Cash on Delivery"}
+              {placing
+                ? "Placing order…"
+                : paymentMethod === "KHALTI" ? "Place Order — Pay with Khalti" : "Place Order — Cash on Delivery"}
             </button>
 
-            <p className="text-xs text-center text-gray-400 mt-2">Pay when your order arrives</p>
+            <p className="text-xs text-center text-gray-400 mt-2">
+              {paymentMethod === "KHALTI" ? "You'll be redirected to Khalti to complete payment" : "Pay when your order arrives"}
+            </p>
           </div>
         </section>
       </div>

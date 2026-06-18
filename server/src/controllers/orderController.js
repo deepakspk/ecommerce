@@ -10,8 +10,11 @@ function calcDeliveryFee(province) {
 }
 
 export async function createOrder(req, res) {
-  const { addressId } = req.body;
+  const { addressId, paymentMethod = "COD" } = req.body;
   if (!addressId) return res.status(400).json({ message: "addressId is required" });
+  if (!["COD", "KHALTI"].includes(paymentMethod)) {
+    return res.status(400).json({ message: "Invalid paymentMethod" });
+  }
 
   const cart = await Cart.findOne({ userId: req.user._id }).populate({
     path: "items.variantId",
@@ -80,7 +83,7 @@ export async function createOrder(req, res) {
         subtotal,
         deliveryFee,
         total,
-        paymentMethod: "COD",
+        paymentMethod,
         paymentStatus: "PENDING",
         status: "PENDING",
       }],

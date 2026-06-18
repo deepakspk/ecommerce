@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as ordersApi from "../api/orders";
+import * as paymentsApi from "../api/payments";
 import { getErrorMessage } from "../utils/errorHelpers";
+
+const PAYMENT_METHOD_LABELS = { COD: "Cash on Delivery", KHALTI: "Khalti" };
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -19,6 +22,7 @@ export default function OrderSuccessPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     ordersApi.getOrder(id)
@@ -26,6 +30,17 @@ export default function OrderSuccessPage() {
       .catch(e => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, [id]);
+
+  async function handleRetryPayment() {
+    setRetrying(true);
+    try {
+      const { paymentUrl } = await paymentsApi.initiateKhalti(order._id);
+      window.location.href = paymentUrl;
+    } catch (e) {
+      setError(getErrorMessage(e));
+      setRetrying(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -103,7 +118,7 @@ export default function OrderSuccessPage() {
         <div className="px-5 py-4 border-b border-gray-100 grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-xs text-gray-400 mb-0.5">Payment</p>
-            <p className="font-medium text-gray-800">Cash on Delivery</p>
+            <p className="font-medium text-gray-800">{PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod}</p>
             <p className="text-xs text-gray-500">{order.paymentStatus}</p>
           </div>
           <div>
@@ -114,6 +129,19 @@ export default function OrderSuccessPage() {
             {a.landmark && <p className="text-xs text-gray-400">Near: {a.landmark}</p>}
           </div>
         </div>
+
+        {order.paymentMethod === "KHALTI" && ["PENDING", "FAILED"].includes(order.paymentStatus) && (
+          <div className="px-5 py-4 border-b border-gray-100">
+            {error && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">{error}</p>}
+            <button
+              onClick={handleRetryPayment}
+              disabled={retrying}
+              className="w-full py-2.5 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50"
+            >
+              {retrying ? "Redirecting…" : "Pay with Khalti"}
+            </button>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="px-5 py-4 flex gap-3">
