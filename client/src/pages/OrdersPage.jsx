@@ -15,7 +15,7 @@ const STATUS_COLORS = {
   CANCELLED: "bg-red-100 text-red-700",
 };
 
-const PAYMENT_METHOD_LABELS = { COD: "Cash on Delivery", KHALTI: "Khalti" };
+const PAYMENT_METHOD_LABELS = { COD: "Cash on Delivery", KHALTI: "Khalti", ESEWA: "eSewa" };
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);

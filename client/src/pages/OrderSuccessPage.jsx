@@ -3,8 +3,9 @@ import { useParams, Link } from "react-router-dom";
 import * as ordersApi from "../api/orders";
 import * as paymentsApi from "../api/payments";
 import { getErrorMessage } from "../utils/errorHelpers";
+import { submitEsewaForm } from "../utils/esewaForm";
 
-const PAYMENT_METHOD_LABELS = { COD: "Cash on Delivery", KHALTI: "Khalti" };
+const PAYMENT_METHOD_LABELS = { COD: "Cash on Delivery", KHALTI: "Khalti", ESEWA: "eSewa" };
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -34,6 +35,11 @@ export default function OrderSuccessPage() {
   async function handleRetryPayment() {
     setRetrying(true);
     try {
+      if (order.paymentMethod === "ESEWA") {
+        const { formUrl, fields } = await paymentsApi.initiateEsewa(order._id);
+        submitEsewaForm({ formUrl, fields });
+        return;
+      }
       const { paymentUrl } = await paymentsApi.initiateKhalti(order._id);
       window.location.href = paymentUrl;
     } catch (e) {
@@ -130,7 +136,7 @@ export default function OrderSuccessPage() {
           </div>
         </div>
 
-        {order.paymentMethod === "KHALTI" && ["PENDING", "FAILED"].includes(order.paymentStatus) && (
+        {["KHALTI", "ESEWA"].includes(order.paymentMethod) && ["PENDING", "FAILED"].includes(order.paymentStatus) && (
           <div className="px-5 py-4 border-b border-gray-100">
             {error && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-3">{error}</p>}
             <button
@@ -138,7 +144,7 @@ export default function OrderSuccessPage() {
               disabled={retrying}
               className="w-full py-2.5 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50"
             >
-              {retrying ? "Redirecting…" : "Pay with Khalti"}
+              {retrying ? "Redirecting…" : `Pay with ${PAYMENT_METHOD_LABELS[order.paymentMethod]}`}
             </button>
           </div>
         )}

@@ -1,8 +1,11 @@
 import Order from "../models/Order.js";
 import Payment from "../models/Payment.js";
 import * as khalti from "../config/khalti.js";
+import * as esewa from "../config/esewa.js";
 
 const FAILED_STATUSES = ["Expired", "User canceled"];
+const ESEWA_FAILED_STATUSES = ["CANCELED", "NOT_FOUND"];
+const ESEWA_REFUND_STATUSES = ["FULL_REFUND", "PARTIAL_REFUND"];
 
 export async function initiateKhalti(req, res) {
   const { orderId } = req.body;
@@ -64,6 +67,69 @@ export async function verifyKhalti(req, res) {
     order.paymentStatus = "FAILED";
   }
   // "Pending" / "Initiated" — leave both as PENDING, caller can poll again later
+
+  await payment.save();
+  await order.save();
+
+  res.json({ status: result.status, order });
+}
+
+export async function initiateEsewa(req, res) {
+  const { orderId } = req.body;
+
+  const order = await Order.findOne({ _id: orderId, userId: req.user._id });
+  if (!order) return res.status(404).json({ message: "Order not found" });
+  if (order.paymentMethod !== "ESEWA") {
+    return res.status(400).json({ message: "This order is not set up for eSewa payment" });
+  }
+  if (order.paymentStatus === "PAID") {
+    return res.status(400).json({ message: "Order is already paid" });
+  }
+
+  const transactionUuid = `${order._id}-${Date.now()}`;
+  const { formUrl, fields } = esewa.buildPaymentForm({
+    amount: order.total,
+    transactionUuid,
+    successUrl: `${process.env.CLIENT_URL}/payment/esewa/callback`,
+    failureUrl: `${process.env.CLIENT_URL}/payment/esewa/callback?status=failure&transaction_uuid=${transactionUuid}`,
+  });
+
+  await Payment.create({
+    orderId: order._id,
+    gateway: "ESEWA",
+    amount: order.total,
+    gatewayRef: transactionUuid,
+    status: "PENDING",
+    rawResponse: fields,
+  });
+
+  res.json({ formUrl, fields });
+}
+
+export async function verifyEsewa(req, res) {
+  const { transactionUuid } = req.body;
+
+  const payment = await Payment.findOne({ gatewayRef: transactionUuid, gateway: "ESEWA" });
+  if (!payment) return res.status(404).json({ message: "Payment not found" });
+
+  const order = await Order.findOne({ _id: payment.orderId, userId: req.user._id });
+  if (!order) return res.status(404).json({ message: "Order not found" });
+
+  const result = await esewa.checkStatus({ transactionUuid, totalAmount: payment.amount });
+  payment.rawResponse = result;
+
+  if (result.status === "COMPLETE") {
+    payment.status = "PAID";
+    payment.transactionId = result.ref_id;
+    order.paymentStatus = "PAID";
+  } else if (ESEWA_REFUND_STATUSES.includes(result.status)) {
+    payment.status = "REFUNDED";
+    order.paymentStatus = "REFUNDED";
+  } else if (ESEWA_FAILED_STATUSES.includes(result.status)) {
+    payment.status = "FAILED";
+    order.paymentStatus = "FAILED";
+  }
+  // "PENDING" / "AMBIGUOUS" — leave both as PENDING, caller can poll again later
 
   await payment.save();
   await order.save();

@@ -5,10 +5,22 @@ import * as addressApi from "../api/addresses";
 import * as ordersApi from "../api/orders";
 import * as paymentsApi from "../api/payments";
 import { getErrorMessage } from "../utils/errorHelpers";
-import NEPAL_GEO from "../data/nepalGeoData";
+import { submitEsewaForm } from "../utils/esewaForm";
 import ItemThumb from "../components/ItemThumb";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
+
+const PLACE_ORDER_LABELS = {
+  COD: "Place Order — Cash on Delivery",
+  KHALTI: "Place Order — Pay with Khalti",
+  ESEWA: "Place Order — Pay with eSewa",
+};
+
+const PAYMENT_FOOTNOTES = {
+  COD: "Pay when your order arrives",
+  KHALTI: "You'll be redirected to Khalti to complete payment",
+  ESEWA: "You'll be redirected to eSewa to complete payment",
+};
 
 function calcDeliveryFee(province) {
   return province?.toLowerCase().trim() === "bagmati" ? 100 : 200;
@@ -83,6 +95,12 @@ export default function CheckoutPage() {
       if (paymentMethod === "KHALTI") {
         const { paymentUrl } = await paymentsApi.initiateKhalti(order._id);
         window.location.href = paymentUrl;
+        return;
+      }
+
+      if (paymentMethod === "ESEWA") {
+        const { formUrl, fields } = await paymentsApi.initiateEsewa(order._id);
+        submitEsewaForm({ formUrl, fields });
         return;
       }
 
@@ -185,6 +203,13 @@ export default function CheckoutPage() {
                   onChange={() => setPaymentMethod("KHALTI")} />
                 <span className="text-sm text-gray-800">Pay with Khalti</span>
               </label>
+              <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
+                paymentMethod === "ESEWA" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-400"
+              }`}>
+                <input type="radio" name="paymentMethod" value="ESEWA" checked={paymentMethod === "ESEWA"}
+                  onChange={() => setPaymentMethod("ESEWA")} />
+                <span className="text-sm text-gray-800">Pay with eSewa</span>
+              </label>
             </div>
 
             {error && (
@@ -196,14 +221,10 @@ export default function CheckoutPage() {
               disabled={placing || !selectedAddrId || addresses.length === 0}
               className="w-full mt-5 bg-blue-600 text-white py-3 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {placing
-                ? "Placing order…"
-                : paymentMethod === "KHALTI" ? "Place Order — Pay with Khalti" : "Place Order — Cash on Delivery"}
+              {placing ? "Placing order…" : PLACE_ORDER_LABELS[paymentMethod]}
             </button>
 
-            <p className="text-xs text-center text-gray-400 mt-2">
-              {paymentMethod === "KHALTI" ? "You'll be redirected to Khalti to complete payment" : "Pay when your order arrives"}
-            </p>
+            <p className="text-xs text-center text-gray-400 mt-2">{PAYMENT_FOOTNOTES[paymentMethod]}</p>
           </div>
         </section>
       </div>

@@ -18,6 +18,7 @@ import CartPage from "./pages/CartPage";
 import AddressesPage from "./pages/AddressesPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import KhaltiCallbackPage from "./pages/KhaltiCallbackPage";
+import EsewaCallbackPage from "./pages/EsewaCallbackPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import OrdersPage from "./pages/OrdersPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -66,6 +67,10 @@ export default function App() {
               <Route
                 path="/payment/khalti/callback"
                 element={<ProtectedRoute><KhaltiCallbackPage /></ProtectedRoute>}
+              />
+              <Route
+                path="/payment/esewa/callback"
+                element={<ProtectedRoute><EsewaCallbackPage /></ProtectedRoute>}
               />
               <Route
                 path="/orders"
