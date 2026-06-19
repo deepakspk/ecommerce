@@ -4,6 +4,7 @@ import { useCart } from "../hooks/useCart";
 import * as addressApi from "../api/addresses";
 import * as ordersApi from "../api/orders";
 import * as paymentsApi from "../api/payments";
+import * as cartApi from "../api/cart";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { submitEsewaForm } from "../utils/esewaForm";
 import ItemThumb from "../components/ItemThumb";
@@ -63,6 +64,11 @@ export default function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
 
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
+
   useEffect(() => {
     addressApi.getAddresses().then(data => {
       setAddresses(data.addresses);
@@ -82,14 +88,41 @@ export default function CheckoutPage() {
 
   const selectedAddress = addresses.find(a => a._id === selectedAddrId);
   const deliveryFee = selectedAddress ? calcDeliveryFee(selectedAddress.province) : 0;
-  const total = subtotal + deliveryFee;
+  const couponStale = appliedCoupon && appliedCoupon.subtotal !== subtotal;
+  const discountAmount = appliedCoupon && !couponStale ? appliedCoupon.discountAmount : 0;
+  const total = subtotal - discountAmount + deliveryFee;
+
+  async function handleApplyCoupon() {
+    if (!couponInput.trim()) { setCouponError("Enter a coupon code"); return; }
+    setCouponLoading(true);
+    setCouponError("");
+    try {
+      const data = await cartApi.applyCoupon(couponInput.trim());
+      setAppliedCoupon(data);
+    } catch (e) {
+      setAppliedCoupon(null);
+      setCouponError(e.response ? getErrorMessage(e) : e.message);
+    } finally {
+      setCouponLoading(false);
+    }
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError("");
+  }
 
   async function handlePlaceOrder() {
     if (!selectedAddrId) { setError("Please select a delivery address."); return; }
     setError("");
     setPlacing(true);
     try {
-      const { order } = await ordersApi.createOrder({ addressId: selectedAddrId, paymentMethod });
+      const { order } = await ordersApi.createOrder({
+        addressId: selectedAddrId,
+        paymentMethod,
+        ...(appliedCoupon && !couponStale ? { couponCode: appliedCoupon.code } : {}),
+      });
       await clearCart();
 
       if (paymentMethod === "KHALTI") {
@@ -169,11 +202,53 @@ export default function CheckoutPage() {
               })}
             </div>
 
-            <div className="border-t border-gray-100 pt-4 space-y-2 text-sm">
+            <div className="border-t border-gray-100 pt-4">
+              {appliedCoupon && !couponStale ? (
+                <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                  <div>
+                    <span className="text-sm font-mono font-semibold text-green-800">{appliedCoupon.code}</span>
+                    <span className="text-xs text-green-600 ml-2">−{fmt(appliedCoupon.discountAmount)} applied</span>
+                  </div>
+                  <button type="button" onClick={handleRemoveCoupon} className="text-xs text-green-700 hover:underline">
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                    placeholder="Coupon code"
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading}
+                    className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                  >
+                    {couponLoading ? "…" : "Apply"}
+                  </button>
+                </div>
+              )}
+              {couponStale && (
+                <p className="text-xs text-amber-600 mt-1.5">Your cart changed — please re-apply your coupon.</p>
+              )}
+              {couponError && <p className="text-xs text-red-600 mt-1.5">{couponError}</p>}
+            </div>
+
+            <div className="border-t border-gray-100 pt-4 mt-4 space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
                 <span>{fmt(subtotal)}</span>
               </div>
+              {appliedCoupon && !couponStale && (
+                <div className="flex justify-between text-green-700">
+                  <span>Discount ({appliedCoupon.code})</span>
+                  <span>−{fmt(appliedCoupon.discountAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-gray-600">
                 <span>Delivery fee</span>
                 <span>{selectedAddress ? fmt(deliveryFee) : "—"}</span>

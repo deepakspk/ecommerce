@@ -1,5 +1,6 @@
 import Cart from "../models/Cart.js";
 import ProductVariant from "../models/ProductVariant.js";
+import { validateCoupon } from "../services/couponService.js";
 
 async function getOrCreate(userId) {
   let cart = await Cart.findOne({ userId });
@@ -88,6 +89,35 @@ export async function removeItem(req, res) {
 export async function clearCart(req, res) {
   await Cart.findOneAndUpdate({ userId: req.user._id }, { items: [] });
   res.json({ message: "Cart cleared" });
+}
+
+// Preview only — does not persist anything. The coupon is re-validated for real
+// inside the order-creation transaction, since it could expire between now and checkout.
+export async function applyCoupon(req, res) {
+  const { code } = req.body;
+
+  const cart = await Cart.findOne({ userId: req.user._id });
+  if (!cart || cart.items.length === 0) {
+    return res.status(400).json({ message: "Your cart is empty" });
+  }
+  await populateCart(cart);
+
+  let subtotal = 0;
+  for (const item of cart.items) {
+    const v = item.variantId;
+    const p = v.productId;
+    const unitPrice = v.price ?? p.basePrice;
+    subtotal += unitPrice * item.quantity;
+  }
+
+  const { coupon, discountAmount } = await validateCoupon({ code, subtotal, userId: req.user._id });
+
+  res.json({
+    code: coupon.code,
+    subtotal,
+    discountAmount,
+    total: subtotal - discountAmount,
+  });
 }
 
 // Called on login to merge a guest cart stored in localStorage

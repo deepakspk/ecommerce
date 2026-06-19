@@ -10,3 +10,5 @@ export const removeItem = (variantId) =>
 export const clearCart = () => api.delete("/cart").then((r) => r.data);
 export const mergeCart = (items) =>
   api.post("/cart/merge", { items }).then((r) => r.data);
+export const applyCoupon = (code) =>
+  api.post("/cart/apply-coupon", { code }).then((r) => r.data);

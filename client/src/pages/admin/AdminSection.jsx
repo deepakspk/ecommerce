@@ -6,6 +6,7 @@ import CategoriesPage from "./CategoriesPage";
 import ProductsPage from "./ProductsPage";
 import ProductFormPage from "./ProductFormPage";
 import InventoryPage from "./InventoryPage";
+import CouponsPage from "./CouponsPage";
 import AdminOrdersPage from "./AdminOrdersPage";
 import AdminOrderDetailPage from "./AdminOrderDetailPage";
 
@@ -23,6 +24,7 @@ export default function AdminSection() {
           <Route path="products/new" element={<ProductFormPage />} />
           <Route path="products/:id/edit" element={<ProductFormPage />} />
           <Route path="inventory" element={<InventoryPage />} />
+          <Route path="coupons" element={<CouponsPage />} />
         </Route>
       </Routes>
     </AdminRoute>

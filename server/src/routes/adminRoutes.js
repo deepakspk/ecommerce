@@ -36,6 +36,13 @@ import {
   updateStatus,
   markPaid,
 } from "../controllers/admin/orderController.js";
+import {
+  listCoupons,
+  getCoupon,
+  createCoupon,
+  updateCoupon,
+  deleteCoupon,
+} from "../controllers/admin/couponController.js";
 
 const router = Router();
 router.use(protect, requireRole("ADMIN"));
@@ -66,6 +73,50 @@ const reorderBodyValidators = [
   body("items").isArray({ min: 1 }).withMessage("items must be a non-empty array"),
   body("items.*.id").isMongoId().withMessage("each item needs a valid id"),
   body("items.*.sortOrder").isInt().withMessage("each item needs an integer sortOrder"),
+];
+
+const couponBodyValidators = [
+  body("code").trim().notEmpty().withMessage("code is required"),
+  body("type").isIn(["PERCENTAGE", "FIXED"]).withMessage("type must be PERCENTAGE or FIXED"),
+  body("value").isFloat({ min: 0 }).withMessage("value must be a non-negative number"),
+  body("minOrderValue").optional().isFloat({ min: 0 }).withMessage("minOrderValue must be a non-negative number"),
+  body("maxDiscountAmount")
+    .optional({ values: "falsy" })
+    .isFloat({ min: 0 })
+    .withMessage("maxDiscountAmount must be a non-negative number"),
+  body("usageLimit")
+    .optional({ values: "falsy" })
+    .isInt({ min: 0 })
+    .withMessage("usageLimit must be a non-negative integer"),
+  body("perUserLimit")
+    .optional({ values: "falsy" })
+    .isInt({ min: 0 })
+    .withMessage("perUserLimit must be a non-negative integer"),
+  body("startsAt").optional({ values: "falsy" }).isISO8601().withMessage("startsAt must be a valid date"),
+  body("expiresAt").optional({ values: "falsy" }).isISO8601().withMessage("expiresAt must be a valid date"),
+  body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
+];
+
+const couponUpdateBodyValidators = [
+  body("code").optional().trim().notEmpty().withMessage("code cannot be empty"),
+  body("type").optional().isIn(["PERCENTAGE", "FIXED"]).withMessage("type must be PERCENTAGE or FIXED"),
+  body("value").optional().isFloat({ min: 0 }).withMessage("value must be a non-negative number"),
+  body("minOrderValue").optional().isFloat({ min: 0 }).withMessage("minOrderValue must be a non-negative number"),
+  body("maxDiscountAmount")
+    .optional({ values: "falsy" })
+    .isFloat({ min: 0 })
+    .withMessage("maxDiscountAmount must be a non-negative number"),
+  body("usageLimit")
+    .optional({ values: "falsy" })
+    .isInt({ min: 0 })
+    .withMessage("usageLimit must be a non-negative integer"),
+  body("perUserLimit")
+    .optional({ values: "falsy" })
+    .isInt({ min: 0 })
+    .withMessage("perUserLimit must be a non-negative integer"),
+  body("startsAt").optional({ values: "falsy" }).isISO8601().withMessage("startsAt must be a valid date"),
+  body("expiresAt").optional({ values: "falsy" }).isISO8601().withMessage("expiresAt must be a valid date"),
+  body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
 ];
 
 const productBodyValidators = [
@@ -194,5 +245,12 @@ router.post(
   adjustStock
 );
 router.get("/inventory/:variantId/logs", [mongoIdParam("variantId")], validate, listLogs);
+
+// Coupons
+router.get("/coupons", listCoupons);
+router.post("/coupons", couponBodyValidators, validate, createCoupon);
+router.get("/coupons/:id", [mongoIdParam("id")], validate, getCoupon);
+router.put("/coupons/:id", [mongoIdParam("id"), ...couponUpdateBodyValidators], validate, updateCoupon);
+router.delete("/coupons/:id", [mongoIdParam("id")], validate, deleteCoupon);
 
 export default router;

@@ -4,13 +4,14 @@ import Order from "../models/Order.js";
 import Address from "../models/Address.js";
 import ProductVariant from "../models/ProductVariant.js";
 import InventoryLog from "../models/InventoryLog.js";
+import { validateCoupon, redeemCoupon } from "../services/couponService.js";
 
 function calcDeliveryFee(province) {
   return province.toLowerCase().trim() === "bagmati" ? 100 : 200;
 }
 
 export async function createOrder(req, res) {
-  const { addressId, paymentMethod = "COD" } = req.body;
+  const { addressId, paymentMethod = "COD", couponCode } = req.body;
   if (!addressId) return res.status(400).json({ message: "addressId is required" });
   if (!["COD", "KHALTI", "ESEWA"].includes(paymentMethod)) {
     return res.status(400).json({ message: "Invalid paymentMethod" });
@@ -47,7 +48,6 @@ export async function createOrder(req, res) {
   }
 
   const deliveryFee = calcDeliveryFee(address.province);
-  const total = subtotal + deliveryFee;
 
   const addressSnapshot = {
     recipientName: address.recipientName,
@@ -75,12 +75,25 @@ export async function createOrder(req, res) {
       }
     }
 
+    // Re-validate the coupon here (not just at preview time) — it could have expired
+    // or hit its usage limit between the cart preview and this checkout request.
+    let discountAmount = 0;
+    let appliedCoupon = null;
+    if (couponCode) {
+      const result = await validateCoupon({ code: couponCode, subtotal, userId: req.user._id, session });
+      appliedCoupon = result.coupon;
+      discountAmount = result.discountAmount;
+    }
+    const total = subtotal - discountAmount + deliveryFee;
+
     [order] = await Order.create(
       [{
         userId: req.user._id,
         address: addressSnapshot,
         items: orderItems,
         subtotal,
+        discountAmount,
+        couponCode: appliedCoupon?.code || null,
         deliveryFee,
         total,
         paymentMethod,
@@ -100,6 +113,10 @@ export async function createOrder(req, res) {
         [{ variantId: item.variantId, change: -item.quantity, reason: `Order ${order._id}` }],
         { session }
       );
+    }
+
+    if (appliedCoupon) {
+      await redeemCoupon(appliedCoupon, session);
     }
 
     await session.commitTransaction();

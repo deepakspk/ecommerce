@@ -12,6 +12,7 @@ router.post(
   [
     body("addressId").isMongoId().withMessage("addressId must be a valid id"),
     body("paymentMethod").optional().isIn(["COD", "KHALTI", "ESEWA"]).withMessage("Invalid paymentMethod"),
+    body("couponCode").optional().trim(),
   ],
   validate,
   createOrder

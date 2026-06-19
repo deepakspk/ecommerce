@@ -36,6 +36,8 @@ const orderSchema = new mongoose.Schema(
       default: "PENDING",
     },
     subtotal: { type: Number, required: true, min: 0 },
+    discountAmount: { type: Number, default: 0, min: 0 },
+    couponCode: { type: String, default: null },
     deliveryFee: { type: Number, required: true, min: 0, default: 0 },
     total: { type: Number, required: true, min: 0 },
     paymentMethod: { type: String, enum: ["ESEWA", "KHALTI", "COD"], required: true },

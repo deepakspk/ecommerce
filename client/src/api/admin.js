@@ -39,6 +39,13 @@ export const updateOrderStatus = (id, status) =>
   api.patch(`/admin/orders/${id}/status`, { status }).then(r => r.data);
 export const markOrderPaid = (id) => api.patch(`/admin/orders/${id}/paid`).then(r => r.data);
 
+// Coupons
+export const getCoupons = () => api.get("/admin/coupons").then(r => r.data);
+export const getCoupon = (id) => api.get(`/admin/coupons/${id}`).then(r => r.data);
+export const createCoupon = (data) => api.post("/admin/coupons", data).then(r => r.data);
+export const updateCoupon = (id, data) => api.put(`/admin/coupons/${id}`, data).then(r => r.data);
+export const deleteCoupon = (id) => api.delete(`/admin/coupons/${id}`).then(r => r.data);
+
 // Inventory
 export const getInventory = () => api.get("/admin/inventory").then(r => r.data);
 export const adjustStock = (variantId, data) =>

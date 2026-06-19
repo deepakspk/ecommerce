@@ -9,6 +9,7 @@ import {
   removeItem,
   clearCart,
   mergeCart,
+  applyCoupon,
 } from "../controllers/cartController.js";
 
 const router = Router();
@@ -50,6 +51,13 @@ router.post(
   [body("items").isArray().withMessage("items must be an array")],
   validate,
   mergeCart
+);
+
+router.post(
+  "/apply-coupon",
+  [body("code").trim().notEmpty().withMessage("code is required")],
+  validate,
+  applyCoupon
 );
 
 export default router;
