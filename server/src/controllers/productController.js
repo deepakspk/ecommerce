@@ -2,6 +2,7 @@ import Category from "../models/Category.js";
 import Product from "../models/Product.js";
 import ProductVariant from "../models/ProductVariant.js";
 import Review from "../models/Review.js";
+import { getDescendantIds } from "../services/categoryService.js";
 
 async function attachRatings(products) {
   const ids = products.map((p) => p._id);
@@ -19,11 +20,6 @@ async function attachRatings(products) {
       reviewCount: stats ? stats.count : 0,
     };
   });
-}
-
-export async function listCategories(req, res) {
-  const categories = await Category.find().sort({ name: 1 });
-  res.json({ categories });
 }
 
 export async function getAvailableFilters(req, res) {
@@ -53,7 +49,8 @@ export async function listProducts(req, res) {
   if (category) {
     const cat = await Category.findOne({ slug: category.toLowerCase() });
     if (!cat) return res.json({ products: [], total: 0, page: 1, pages: 0 });
-    filter.categoryId = cat._id;
+    const descendantIds = await getDescendantIds(cat._id);
+    filter.categories = { $in: [cat._id, ...descendantIds] };
   }
 
   if (search) {
@@ -82,7 +79,7 @@ export async function listProducts(req, res) {
 
   const [products, total] = await Promise.all([
     Product.find(filter)
-      .populate("categoryId", "name slug")
+      .populate("categories", "name slug")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum),
@@ -94,7 +91,7 @@ export async function listProducts(req, res) {
 
 export async function getProduct(req, res) {
   const product = await Product.findOne({ slug: req.params.slug, isActive: true }).populate(
-    "categoryId",
+    "categories",
     "name slug"
   );
   if (!product) return res.status(404).json({ message: "Product not found" });

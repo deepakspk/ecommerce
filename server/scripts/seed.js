@@ -26,12 +26,18 @@ async function seed() {
     { name: "Shoes", slug: "shoes" },
   ]);
 
+  // Demonstrates unlimited nesting: Shoes > Sneakers / Formal Shoes
+  const [sneakers, formalShoes] = await Category.insertMany([
+    { name: "Sneakers", slug: "sneakers", parent: shoes._id, level: 1, path: [shoes._id] },
+    { name: "Formal Shoes", slug: "formal-shoes", parent: shoes._id, level: 1, path: [shoes._id] },
+  ]);
+
   // ── Products + variants ──────────────────────────────────────────────────────
   const p1 = await Product.create({
     name: "Classic Cotton Shirt",
     slug: "classic-cotton-shirt",
     description: "A timeless cotton shirt for everyday wear. Comfortable, breathable, and easy to style.",
-    categoryId: shirts._id,
+    categories: [shirts._id],
     basePrice: 1200,
     images: [
       { url: UNS("1598300042247-d088f8ab3a91"), altText: "Classic Cotton Shirt – front", sortOrder: 0 },
@@ -52,7 +58,7 @@ async function seed() {
     name: "Linen Summer Shirt",
     slug: "linen-summer-shirt",
     description: "Breathable linen shirt, perfect for Nepal's warm summers. Relaxed fit.",
-    categoryId: shirts._id,
+    categories: [shirts._id],
     basePrice: 1800,
     images: [
       { url: UNS("1602810318383-e386cc2a3ccf"), altText: "Linen Summer Shirt – front", sortOrder: 0 },
@@ -70,7 +76,7 @@ async function seed() {
     name: "Slim Fit Chinos",
     slug: "slim-fit-chinos",
     description: "Modern slim-fit chinos for a sharp, clean look. Suitable for office or casual wear.",
-    categoryId: pants._id,
+    categories: [pants._id],
     basePrice: 2500,
     images: [
       { url: UNS("1624378439575-d8705ad7ae80"), altText: "Slim Fit Chinos – front", sortOrder: 0 },
@@ -89,7 +95,7 @@ async function seed() {
     name: "Cargo Joggers",
     slug: "cargo-joggers",
     description: "Street-style cargo joggers with side pockets. Elastic waistband for a flexible fit.",
-    categoryId: pants._id,
+    categories: [pants._id],
     basePrice: 1950,
     images: [
       { url: UNS("1552902865-b72c031ac5ea"), altText: "Cargo Joggers – front", sortOrder: 0 },
@@ -107,7 +113,7 @@ async function seed() {
     name: "Running Sneakers",
     slug: "running-sneakers",
     description: "Lightweight, cushioned sneakers built for daily runs and casual everyday wear.",
-    categoryId: shoes._id,
+    categories: [sneakers._id],
     basePrice: 4500,
     images: [
       { url: UNS("1542291026-7eec264c27ff"), altText: "Running Sneakers – side", sortOrder: 0 },
@@ -127,7 +133,7 @@ async function seed() {
     name: "Leather Loafers",
     slug: "leather-loafers",
     description: "Classic leather loafers for formal or smart-casual occasions. Premium quality.",
-    categoryId: shoes._id,
+    categories: [formalShoes._id],
     basePrice: 6500,
     images: [
       { url: UNS("1449505278894-297fdb3edbc1"), altText: "Leather Loafers – side", sortOrder: 0 },
@@ -141,7 +147,7 @@ async function seed() {
     { productId: p6._id, size: "42", color: "Black", sku: "LOAF-42-BLK", stockQuantity: 5 },
   ]);
 
-  console.log("Seeded: 3 categories, 6 products, 29 variants");
+  console.log("Seeded: 5 categories (incl. 2 nested under Shoes), 6 products, 29 variants");
   await mongoose.disconnect();
 }
 

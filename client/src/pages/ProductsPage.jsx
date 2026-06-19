@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import * as productsApi from "../api/products";
+import * as categoriesApi from "../api/categories";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import Seo from "../components/Seo";
@@ -8,6 +9,11 @@ import WishlistButton from "../components/WishlistButton";
 import StarRating from "../components/StarRating";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
+
+function nodeContainsSlug(node, slug) {
+  if (node.slug === slug) return true;
+  return node.children.some((child) => nodeContainsSlug(child, slug));
+}
 
 export default function ProductsPage() {
   const [searchParams] = useSearchParams();
@@ -36,11 +42,11 @@ export default function ProductsPage() {
     async function loadMeta() {
       try {
         const [catsData, filtersData] = await Promise.all([
-          productsApi.getCategories(),
+          categoriesApi.getCategoryTree(),
           productsApi.getAvailableFilters(),
         ]);
         if (!ignore) {
-          setCategories(catsData.categories);
+          setCategories(catsData.tree);
           setAvailableFilters(filtersData);
         }
       } catch (err) {
@@ -101,6 +107,10 @@ export default function ProductsPage() {
 
   const hasActiveFilters = selectedCategory || search || selectedSize || selectedColor || minPrice || maxPrice;
 
+  const activeRoot = selectedCategory
+    ? categories.find((root) => nodeContainsSlug(root, selectedCategory))
+    : null;
+
   return (
     <div className="w-full px-4 sm:px-8 py-6">
       <Seo title="Shop Products" description="Browse shirts, pants, and shoes available for delivery across Nepal." />
@@ -116,10 +126,24 @@ export default function ProductsPage() {
           />
           {categories.map((cat) => (
             <CategoryPill
-              key={cat._id}
+              key={cat.id}
               label={cat.name}
               active={selectedCategory === cat.slug}
               onClick={() => changeFilter(setSelectedCategory, cat.slug)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Subcategory pills — shown once a top-level category (or one of its subcategories) is selected */}
+      {activeRoot && activeRoot.children.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4 pl-2">
+          {activeRoot.children.map((child) => (
+            <CategoryPill
+              key={child.id}
+              label={child.name}
+              active={selectedCategory === child.slug}
+              onClick={() => changeFilter(setSelectedCategory, child.slug)}
             />
           ))}
         </div>
@@ -324,7 +348,7 @@ function ProductCard({ product }) {
         )}
       </div>
       <div className="p-3">
-        <p className="text-xs text-blue-600 mb-0.5">{product.categoryId?.name}</p>
+        <p className="text-xs text-blue-600 mb-0.5">{product.categories?.map((c) => c.name).join(", ")}</p>
         <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">{product.name}</h3>
         {product.reviewCount > 0 && (
           <div className="flex items-center gap-1 mb-1">

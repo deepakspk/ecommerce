@@ -11,7 +11,7 @@ export default function ProductFormPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: "", description: "", categoryId: "", basePrice: "", isActive: true,
+    name: "", description: "", categories: [], basePrice: "", isActive: true,
   });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
@@ -40,7 +40,7 @@ export default function ProductFormPage() {
           setForm({
             name: product.name,
             description: product.description || "",
-            categoryId: product.categoryId?._id || String(product.categoryId),
+            categories: (product.categories || []).map((c) => c._id || String(c)),
             basePrice: String(product.basePrice),
             isActive: product.isActive,
           });
@@ -55,7 +55,7 @@ export default function ProductFormPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.name.trim()) { setError("Name is required"); return; }
-    if (!form.categoryId) { setError("Category is required"); return; }
+    if (!form.categories.length) { setError("At least one category is required"); return; }
     if (!form.basePrice) { setError("Base price is required"); return; }
     setError("");
     setSaving(true);
@@ -63,7 +63,7 @@ export default function ProductFormPage() {
       const fd = new FormData();
       fd.append("name", form.name.trim());
       fd.append("description", form.description.trim());
-      fd.append("categoryId", form.categoryId);
+      fd.append("categories", JSON.stringify(form.categories));
       fd.append("basePrice", form.basePrice);
       fd.append("isActive", String(form.isActive));
       if (isEdit) {
@@ -203,34 +203,44 @@ export default function ProductFormPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-              <select
-                value={form.categoryId}
-                onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Select category</option>
-                {categories.map(c => (
-                  <option key={c._id} value={c._id}>{c.name}</option>
-                ))}
-              </select>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
+            <div className="border border-gray-300 rounded-lg px-3 py-2 max-h-40 overflow-y-auto space-y-1">
+              {categories.length === 0 ? (
+                <p className="text-xs text-gray-400">No categories yet — create one first.</p>
+              ) : (
+                categories.map(c => (
+                  <label key={c._id} className="flex items-center gap-2 text-sm" style={{ paddingLeft: (c.level || 0) * 16 }}>
+                    <input
+                      type="checkbox"
+                      checked={form.categories.includes(c._id)}
+                      onChange={e => setForm(f => ({
+                        ...f,
+                        categories: e.target.checked
+                          ? [...f.categories, c._id]
+                          : f.categories.filter(id => id !== c._id),
+                      }))}
+                      className="rounded"
+                    />
+                    {c.name}
+                  </label>
+                ))
+              )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Base Price (Rs.)</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.basePrice}
-                onChange={e => setForm(f => ({ ...f, basePrice: e.target.value }))}
-                placeholder="0"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Base Price (Rs.)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.basePrice}
+              onChange={e => setForm(f => ({ ...f, basePrice: e.target.value }))}
+              placeholder="0"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
           </div>
 
           <div className="flex items-center gap-2">

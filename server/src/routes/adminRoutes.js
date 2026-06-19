@@ -5,9 +5,14 @@ import { upload } from "../middleware/upload.js";
 import { validate } from "../middleware/validate.js";
 import {
   listCategories,
+  getCategoryTree,
+  getCategory,
+  getCategoryStats,
+  getCategoryBreadcrumbs,
   createCategory,
   updateCategory,
   deleteCategory,
+  reorderCategories,
 } from "../controllers/admin/categoryController.js";
 import {
   listProducts,
@@ -39,23 +44,50 @@ const mongoIdParam = (name) => param(name).isMongoId().withMessage(`Invalid ${na
 
 const categoryBodyValidators = [
   body("name").trim().notEmpty().withMessage("name is required"),
-  body("parentId").optional({ values: "falsy" }).isMongoId().withMessage("parentId must be a valid id"),
+  body("parent").optional({ values: "falsy" }).isMongoId().withMessage("parent must be a valid id"),
+  body("description").optional().trim(),
+  body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
+  body("sortOrder").optional().isInt().withMessage("sortOrder must be an integer"),
+  body("seoTitle").optional().trim(),
+  body("seoDescription").optional().trim(),
 ];
 
 const categoryUpdateBodyValidators = [
   body("name").optional().trim().notEmpty().withMessage("name cannot be empty"),
-  body("parentId").optional({ values: "falsy" }).isMongoId().withMessage("parentId must be a valid id"),
+  body("parent").optional({ values: "falsy" }).isMongoId().withMessage("parent must be a valid id"),
+  body("description").optional().trim(),
+  body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
+  body("sortOrder").optional().isInt().withMessage("sortOrder must be an integer"),
+  body("seoTitle").optional().trim(),
+  body("seoDescription").optional().trim(),
+];
+
+const reorderBodyValidators = [
+  body("items").isArray({ min: 1 }).withMessage("items must be a non-empty array"),
+  body("items.*.id").isMongoId().withMessage("each item needs a valid id"),
+  body("items.*.sortOrder").isInt().withMessage("each item needs an integer sortOrder"),
 ];
 
 const productBodyValidators = [
   body("name").trim().notEmpty().withMessage("name is required"),
-  body("categoryId").isMongoId().withMessage("categoryId must be a valid id"),
+  body("categories")
+    .custom((value) => {
+      const list = typeof value === "string" ? JSON.parse(value) : value;
+      return Array.isArray(list) && list.length > 0;
+    })
+    .withMessage("categories must be a non-empty array of category ids"),
   body("basePrice").isFloat({ min: 0 }).withMessage("basePrice must be a non-negative number"),
 ];
 
 const productUpdateBodyValidators = [
   body("name").optional().trim().notEmpty().withMessage("name cannot be empty"),
-  body("categoryId").optional().isMongoId().withMessage("categoryId must be a valid id"),
+  body("categories")
+    .optional()
+    .custom((value) => {
+      const list = typeof value === "string" ? JSON.parse(value) : value;
+      return Array.isArray(list) && list.length > 0;
+    })
+    .withMessage("categories must be a non-empty array of category ids"),
   body("basePrice").optional().isFloat({ min: 0 }).withMessage("basePrice must be a non-negative number"),
 ];
 
@@ -77,9 +109,15 @@ const variantUpdateBodyValidators = [
 
 // Categories
 router.get("/categories", listCategories);
-router.post("/categories", categoryBodyValidators, validate, createCategory);
+router.get("/categories/tree", getCategoryTree);
+router.post("/categories", upload.single("image"), categoryBodyValidators, validate, createCategory);
+router.patch("/categories/reorder", reorderBodyValidators, validate, reorderCategories);
+router.get("/categories/:id", [mongoIdParam("id")], validate, getCategory);
+router.get("/categories/:id/stats", [mongoIdParam("id")], validate, getCategoryStats);
+router.get("/categories/:id/breadcrumbs", [mongoIdParam("id")], validate, getCategoryBreadcrumbs);
 router.put(
   "/categories/:id",
+  upload.single("image"),
   [mongoIdParam("id"), ...categoryUpdateBodyValidators],
   validate,
   updateCategory

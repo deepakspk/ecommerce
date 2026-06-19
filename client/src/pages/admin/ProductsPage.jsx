@@ -87,7 +87,9 @@ export default function ProductsPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-5 py-3 text-gray-600">{p.categoryId?.name || "—"}</td>
+                  <td className="px-5 py-3 text-gray-600">
+                    {p.categories?.length ? p.categories.map((c) => c.name).join(", ") : "—"}
+                  </td>
                   <td className="px-5 py-3 text-gray-700 font-medium">{fmt(p.basePrice)}</td>
                   <td className="px-5 py-3">
                     <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${

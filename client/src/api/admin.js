@@ -4,9 +4,15 @@ export const pingAdmin = () => api.get("/admin/ping").then(r => r.data);
 
 // Categories
 export const getCategories = () => api.get("/admin/categories").then(r => r.data);
-export const createCategory = (data) => api.post("/admin/categories", data).then(r => r.data);
-export const updateCategory = (id, data) => api.put(`/admin/categories/${id}`, data).then(r => r.data);
-export const deleteCategory = (id) => api.delete(`/admin/categories/${id}`).then(r => r.data);
+export const getCategoryTree = () => api.get("/admin/categories/tree").then(r => r.data);
+export const getCategory = (id) => api.get(`/admin/categories/${id}`).then(r => r.data);
+export const getCategoryStats = (id) => api.get(`/admin/categories/${id}/stats`).then(r => r.data);
+export const getCategoryBreadcrumbs = (id) => api.get(`/admin/categories/${id}/breadcrumbs`).then(r => r.data);
+export const createCategory = (formData) => api.post("/admin/categories", formData).then(r => r.data);
+export const updateCategory = (id, formData) => api.put(`/admin/categories/${id}`, formData).then(r => r.data);
+export const deleteCategory = (id, force = false) =>
+  api.delete(`/admin/categories/${id}`, { params: force ? { force: "true" } : {} }).then(r => r.data);
+export const reorderCategories = (items) => api.patch("/admin/categories/reorder", { items }).then(r => r.data);
 
 // Products
 export const getProducts = () => api.get("/admin/products").then(r => r.data);

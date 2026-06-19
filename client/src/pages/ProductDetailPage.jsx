@@ -141,13 +141,14 @@ export default function ProductDetailPage() {
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-6 flex items-center gap-1.5 flex-wrap">
         <Link to="/products" className="hover:text-gray-900">Products</Link>
-        <span>/</span>
-        <Link
-          to={`/products?category=${product.categoryId?.slug}`}
-          className="hover:text-gray-900"
-        >
-          {product.categoryId?.name}
-        </Link>
+        {product.categories?.map((cat) => (
+          <span key={cat._id} className="flex items-center gap-1.5">
+            <span>/</span>
+            <Link to={`/products?category=${cat.slug}`} className="hover:text-gray-900">
+              {cat.name}
+            </Link>
+          </span>
+        ))}
         <span>/</span>
         <span className="text-gray-800">{product.name}</span>
       </nav>
@@ -207,7 +208,7 @@ export default function ProductDetailPage() {
         <div>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm text-blue-600 mb-1">{product.categoryId?.name}</p>
+              <p className="text-sm text-blue-600 mb-1">{product.categories?.map((c) => c.name).join(", ")}</p>
               <h1 className="text-2xl font-bold text-gray-900 mb-1">{product.name}</h1>
               {product.reviewCount > 0 && (
                 <div className="flex items-center gap-1.5 mb-2">

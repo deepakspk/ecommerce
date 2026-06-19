@@ -8,23 +8,29 @@ function slugify(name) {
 
 export async function listProducts(req, res) {
   const products = await Product.find()
-    .populate("categoryId", "name")
+    .populate("categories", "name")
     .sort("-createdAt");
   res.json({ products });
 }
 
 export async function getProduct(req, res) {
-  const product = await Product.findById(req.params.id).populate("categoryId", "name");
+  const product = await Product.findById(req.params.id).populate("categories", "name");
   if (!product) return res.status(404).json({ message: "Product not found" });
   const variants = await ProductVariant.find({ productId: product._id });
   res.json({ product, variants });
 }
 
+function parseCategories(value) {
+  const list = typeof value === "string" ? JSON.parse(value) : value;
+  return Array.isArray(list) ? list : [];
+}
+
 export async function createProduct(req, res) {
-  const { name, description, categoryId, basePrice, isActive, variants } = req.body;
+  const { name, description, categories, basePrice, isActive, variants } = req.body;
 
   if (!name?.trim()) return res.status(400).json({ message: "Name is required" });
-  if (!categoryId) return res.status(400).json({ message: "Category is required" });
+  const categoryIds = parseCategories(categories);
+  if (!categoryIds.length) return res.status(400).json({ message: "At least one category is required" });
   if (basePrice === undefined || basePrice === "") return res.status(400).json({ message: "Base price is required" });
 
   const slug = slugify(name);
@@ -43,7 +49,7 @@ export async function createProduct(req, res) {
     name: name.trim(),
     slug,
     description: description?.trim() || "",
-    categoryId,
+    categories: categoryIds,
     basePrice: Number(basePrice),
     isActive: isActive !== "false" && isActive !== false,
     images,
@@ -66,14 +72,18 @@ export async function updateProduct(req, res) {
   const product = await Product.findById(req.params.id);
   if (!product) return res.status(404).json({ message: "Product not found" });
 
-  const { name, description, categoryId, basePrice, isActive, keepImages } = req.body;
+  const { name, description, categories, basePrice, isActive, keepImages } = req.body;
 
   if (name?.trim()) {
     product.name = name.trim();
     product.slug = slugify(name);
   }
   if (description !== undefined) product.description = description.trim();
-  if (categoryId) product.categoryId = categoryId;
+  if (categories !== undefined) {
+    const categoryIds = parseCategories(categories);
+    if (!categoryIds.length) return res.status(400).json({ message: "At least one category is required" });
+    product.categories = categoryIds;
+  }
   if (basePrice !== undefined) product.basePrice = Number(basePrice);
   if (isActive !== undefined) product.isActive = isActive !== "false" && isActive !== false;
 
