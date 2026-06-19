@@ -176,6 +176,7 @@ notifiedAt (nullable).
 Keep all email sending fire-and-forget (don't block the API response on
 SMTP latency) but log failures. Do not build SMS notifications yet.
 ```
+completteddddddd 
 
 ### Prompt 13 — Admin: user management & audit log
 ```

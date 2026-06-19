@@ -48,6 +48,15 @@ import {
   getReturn,
   updateReturnStatus,
 } from "../controllers/admin/returnController.js";
+import {
+  getProviders,
+  getProviderBranches,
+  getRatePreview,
+  createShipment,
+  getShipmentForOrder,
+  refreshShipment,
+  returnShipment,
+} from "../controllers/admin/logisticsController.js";
 
 const router = Router();
 router.use(protect, requireRole("ADMIN"));
@@ -270,6 +279,29 @@ router.patch(
   ],
   validate,
   updateReturnStatus
+);
+
+// Logistics
+router.get("/logistics/providers", getProviders);
+router.get("/logistics/providers/:code/branches", getProviderBranches);
+router.post("/logistics/providers/:code/rate", getRatePreview);
+router.get("/orders/:id/shipment", [mongoIdParam("id")], validate, getShipmentForOrder);
+router.post(
+  "/orders/:id/shipment",
+  [
+    mongoIdParam("id"),
+    body("provider").trim().notEmpty().withMessage("provider is required"),
+    body("toBranch").trim().notEmpty().withMessage("toBranch is required"),
+  ],
+  validate,
+  createShipment
+);
+router.post("/shipments/:id/refresh", [mongoIdParam("id")], validate, refreshShipment);
+router.post(
+  "/shipments/:id/return",
+  [mongoIdParam("id"), body("reason").optional().trim()],
+  validate,
+  returnShipment
 );
 
 export default router;

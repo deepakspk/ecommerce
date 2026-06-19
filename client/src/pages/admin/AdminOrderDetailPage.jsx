@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
+import ShipmentPanel from "../../components/ShipmentPanel";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -233,6 +234,9 @@ export default function AdminOrderDetailPage() {
               <p className="text-xs text-red-600 mt-2">{statusError}</p>
             )}
           </div>
+
+          {/* Shipment */}
+          <ShipmentPanel orderId={order._id} order={order} />
 
           {/* Mark as paid */}
           <div className="bg-white border border-gray-200 rounded-xl p-5">

@@ -57,3 +57,17 @@ export const getLogs = (variantId) =>
 export const listAdminReturns = (params) => api.get("/admin/returns", { params }).then(r => r.data);
 export const getAdminReturn = (id) => api.get(`/admin/returns/${id}`).then(r => r.data);
 export const updateReturnStatus = (id, data) => api.patch(`/admin/returns/${id}/status`, data).then(r => r.data);
+
+// Logistics
+export const listLogisticsProviders = () => api.get("/admin/logistics/providers").then(r => r.data);
+export const getProviderBranches = (code) =>
+  api.get(`/admin/logistics/providers/${code}/branches`).then(r => r.data);
+export const getShippingRatePreview = (code, params) =>
+  api.post(`/admin/logistics/providers/${code}/rate`, params).then(r => r.data);
+export const createShipment = (orderId, data) =>
+  api.post(`/admin/orders/${orderId}/shipment`, data).then(r => r.data);
+export const getShipment = (orderId) => api.get(`/admin/orders/${orderId}/shipment`).then(r => r.data);
+export const refreshShipmentTracking = (shipmentId) =>
+  api.post(`/admin/shipments/${shipmentId}/refresh`).then(r => r.data);
+export const markShipmentReturn = (shipmentId, reason) =>
+  api.post(`/admin/shipments/${shipmentId}/return`, { reason }).then(r => r.data);
