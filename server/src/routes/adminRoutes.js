@@ -43,6 +43,11 @@ import {
   updateCoupon,
   deleteCoupon,
 } from "../controllers/admin/couponController.js";
+import {
+  listReturns,
+  getReturn,
+  updateReturnStatus,
+} from "../controllers/admin/returnController.js";
 
 const router = Router();
 router.use(protect, requireRole("ADMIN"));
@@ -252,5 +257,19 @@ router.post("/coupons", couponBodyValidators, validate, createCoupon);
 router.get("/coupons/:id", [mongoIdParam("id")], validate, getCoupon);
 router.put("/coupons/:id", [mongoIdParam("id"), ...couponUpdateBodyValidators], validate, updateCoupon);
 router.delete("/coupons/:id", [mongoIdParam("id")], validate, deleteCoupon);
+
+// Returns
+router.get("/returns", listReturns);
+router.get("/returns/:id", [mongoIdParam("id")], validate, getReturn);
+router.patch(
+  "/returns/:id/status",
+  [
+    mongoIdParam("id"),
+    body("status").isIn(["APPROVED", "REJECTED", "PICKED_UP", "REFUNDED"]).withMessage("Invalid status"),
+    body("adminNote").optional().trim(),
+  ],
+  validate,
+  updateReturnStatus
+);
 
 export default router;

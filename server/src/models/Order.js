@@ -43,6 +43,7 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: { type: String, enum: ["ESEWA", "KHALTI", "COD"], required: true },
     paymentStatus: { type: String, enum: ["PENDING", "PAID", "FAILED", "REFUNDED"], default: "PENDING" },
     items: { type: [orderItemSchema], required: true },
+    deliveredAt: { type: Date, default: null },
   },
   { timestamps: { createdAt: "createdAt", updatedAt: false } }
 );

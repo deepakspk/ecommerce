@@ -69,6 +69,7 @@ export async function updateStatus(req, res) {
   }
 
   order.status = status;
+  if (status === "DELIVERED" && !order.deliveredAt) order.deliveredAt = new Date();
   await order.save();
   res.json({ order });
 }

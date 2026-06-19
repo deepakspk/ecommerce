@@ -10,3 +10,4 @@ export { default as Order } from "./Order.js";
 export { default as Coupon } from "./Coupon.js";
 export { default as Payment } from "./Payment.js";
 export { default as InventoryLog } from "./InventoryLog.js";
+export { default as ReturnRequest } from "./ReturnRequest.js";

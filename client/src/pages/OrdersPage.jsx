@@ -21,6 +21,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     ordersApi.getOrders()
@@ -28,6 +29,22 @@ export default function OrdersPage() {
       .catch(e => setError(getErrorMessage(e)))
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleCancel(e, orderId) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm("Cancel this order? This cannot be undone.")) return;
+    setCancellingId(orderId);
+    setError("");
+    try {
+      const { order: updated } = await ordersApi.cancelOrder(orderId);
+      setOrders(prev => prev.map(o => (o._id === orderId ? updated : o)));
+    } catch (e) {
+      setError(getErrorMessage(e));
+    } finally {
+      setCancellingId(null);
+    }
+  }
 
   if (loading) {
     return (
@@ -76,6 +93,15 @@ export default function OrdersPage() {
                   <p className="text-xs text-gray-400 mt-0.5">
                     {PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod}
                   </p>
+                  {["PENDING", "CONFIRMED"].includes(order.status) && (
+                    <button
+                      onClick={(e) => handleCancel(e, order._id)}
+                      disabled={cancellingId === order._id}
+                      className="mt-2 text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+                    >
+                      {cancellingId === order._id ? "Cancelling…" : "Cancel order"}
+                    </button>
+                  )}
                 </div>
               </div>
             </Link>

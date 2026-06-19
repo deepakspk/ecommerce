@@ -9,6 +9,8 @@ import InventoryPage from "./InventoryPage";
 import CouponsPage from "./CouponsPage";
 import AdminOrdersPage from "./AdminOrdersPage";
 import AdminOrderDetailPage from "./AdminOrderDetailPage";
+import AdminReturnsPage from "./AdminReturnsPage";
+import AdminReturnDetailPage from "./AdminReturnDetailPage";
 
 export default function AdminSection() {
   return (
@@ -19,6 +21,8 @@ export default function AdminSection() {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="orders" element={<AdminOrdersPage />} />
           <Route path="orders/:id" element={<AdminOrderDetailPage />} />
+          <Route path="returns" element={<AdminReturnsPage />} />
+          <Route path="returns/:id" element={<AdminReturnDetailPage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/new" element={<ProductFormPage />} />

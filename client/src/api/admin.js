@@ -52,3 +52,8 @@ export const adjustStock = (variantId, data) =>
   api.post(`/admin/inventory/${variantId}/adjust`, data).then(r => r.data);
 export const getLogs = (variantId) =>
   api.get(`/admin/inventory/${variantId}/logs`).then(r => r.data);
+
+// Returns
+export const listAdminReturns = (params) => api.get("/admin/returns", { params }).then(r => r.data);
+export const getAdminReturn = (id) => api.get(`/admin/returns/${id}`).then(r => r.data);
+export const updateReturnStatus = (id, data) => api.patch(`/admin/returns/${id}/status`, data).then(r => r.data);

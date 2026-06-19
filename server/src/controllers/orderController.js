@@ -142,3 +142,40 @@ export async function getOrder(req, res) {
   if (!order) return res.status(404).json({ message: "Order not found" });
   res.json({ order });
 }
+
+export async function cancelOrder(req, res) {
+  const order = await Order.findOne({ _id: req.params.id, userId: req.user._id });
+  if (!order) return res.status(404).json({ message: "Order not found" });
+  if (!["PENDING", "CONFIRMED"].includes(order.status)) {
+    return res.status(400).json({ message: `Order cannot be cancelled once it is ${order.status.toLowerCase()}` });
+  }
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    for (const item of order.items) {
+      await ProductVariant.findByIdAndUpdate(
+        item.variantId,
+        { $inc: { stockQuantity: item.quantity } },
+        { session }
+      );
+      await InventoryLog.create(
+        [{ variantId: item.variantId, change: item.quantity, reason: `Cancelled order ${order._id}` }],
+        { session }
+      );
+    }
+
+    order.status = "CANCELLED";
+    await order.save({ session });
+
+    await session.commitTransaction();
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    await session.endSession();
+  }
+
+  res.json({ order });
+}
