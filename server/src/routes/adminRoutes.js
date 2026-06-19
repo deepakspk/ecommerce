@@ -55,6 +55,7 @@ import {
   getRatePreview,
   createShipment,
   getShipmentForOrder,
+  getShipmentLabel,
   refreshShipment,
   returnShipment,
 } from "../controllers/admin/logisticsController.js";
@@ -325,6 +326,7 @@ router.post(
   createShipment
 );
 router.post("/shipments/:id/refresh", [mongoIdParam("id")], validate, refreshShipment);
+router.get("/shipments/:id/label", [mongoIdParam("id")], validate, getShipmentLabel);
 router.post(
   "/shipments/:id/return",
   [mongoIdParam("id"), body("reason").optional().trim()],

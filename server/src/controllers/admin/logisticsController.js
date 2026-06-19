@@ -96,6 +96,17 @@ export async function refreshShipment(req, res) {
   res.json({ shipment });
 }
 
+export async function getShipmentLabel(req, res) {
+  const shipment = await Shipment.findById(req.params.id);
+  if (!shipment) return res.status(404).json({ message: "Shipment not found" });
+
+  const provider = getProvider(shipment.provider);
+  requireCapability(provider, "labelPrinting");
+
+  const label = await provider.getLabel(shipment.providerShipmentId);
+  res.json({ label });
+}
+
 export async function returnShipment(req, res) {
   const { reason } = req.body;
   const shipment = await Shipment.findById(req.params.id);

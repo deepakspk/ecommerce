@@ -44,3 +44,6 @@ export const createComment = (orderid, comments) =>
 
 export const markVendorReturn = (pk, comment) =>
   ncmRequest("/vendor/order/return", { method: "POST", body: { pk, comment }, version: "v2" });
+
+export const getOrderLabel = (ids) =>
+  ncmRequest("/vendor/order/label/", { method: "POST", body: { ids }, version: "v2" });

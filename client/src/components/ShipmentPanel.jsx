@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import * as adminApi from "../api/admin";
 import { getErrorMessage } from "../utils/errorHelpers";
+import { printShippingLabel } from "../utils/shippingLabel";
 
 const SHIPMENT_STATUS_COLORS = {
   BOOKED: "bg-yellow-100 text-yellow-700 border-yellow-200",
@@ -48,6 +49,8 @@ export default function ShipmentPanel({ orderId, order }) {
   const [returnReason, setReturnReason] = useState("");
   const [returning, setReturning] = useState(false);
   const [returnError, setReturnError] = useState("");
+  const [printingLabel, setPrintingLabel] = useState(false);
+  const [labelError, setLabelError] = useState("");
 
   useEffect(() => {
     let ignore = false;
@@ -116,6 +119,20 @@ export default function ShipmentPanel({ orderId, order }) {
       setRefreshError(getErrorMessage(e));
     } finally {
       setRefreshing(false);
+    }
+  }
+
+  async function handlePrintLabel() {
+    setLabelError("");
+    setPrintingLabel(true);
+    try {
+      const { label } = await adminApi.getShipmentLabel(shipment._id);
+      const opened = await printShippingLabel(label);
+      if (!opened) setLabelError("Allow popups to open and print the label.");
+    } catch (e) {
+      setLabelError(getErrorMessage(e));
+    } finally {
+      setPrintingLabel(false);
     }
   }
 
@@ -271,6 +288,19 @@ export default function ShipmentPanel({ orderId, order }) {
       >
         {refreshing ? "Refreshing…" : "Refresh tracking"}
       </button>
+
+      {shipmentProvider?.capabilities.labelPrinting && (
+        <div className="mt-2">
+          {labelError && <p className="text-xs text-red-600 mb-2">{labelError}</p>}
+          <button
+            onClick={handlePrintLabel}
+            disabled={printingLabel}
+            className="w-full bg-gray-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-colors"
+          >
+            {printingLabel ? "Preparing…" : "Print Label (4×6 in)"}
+          </button>
+        </div>
+      )}
 
       {shipmentProvider?.capabilities.returnShipment && shipment.status !== "RETURNED" && (
         <div className="mt-3 pt-3 border-t border-gray-100">

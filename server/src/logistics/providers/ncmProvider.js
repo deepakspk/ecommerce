@@ -75,6 +75,23 @@ async function returnShipment(providerShipmentId, reason) {
   return ncm.markVendorReturn(Number(providerShipmentId), reason);
 }
 
+async function getLabel(providerShipmentId) {
+  const { labels = [], not_found = [] } = await ncm.getOrderLabel([Number(providerShipmentId)]);
+  const label = labels.find((item) => String(item.orderid) === String(providerShipmentId)) || labels[0];
+
+  if (!label) {
+    const err = new Error(
+      not_found.includes(Number(providerShipmentId))
+        ? "NCM has not generated a label for this order yet — try again shortly"
+        : "Label not found for this shipment"
+    );
+    err.status = 404;
+    throw err;
+  }
+
+  return label;
+}
+
 async function calculateRate({ fromBranch, toBranch, deliveryType }) {
   return ncm.getShippingRate({
     creation: fromBranch,
@@ -105,6 +122,7 @@ export default {
     rateCalculation: true,
     branchResolution: true,
     comments: true,
+    labelPrinting: true,
   },
   isConfigured,
   createShipment,
@@ -114,5 +132,6 @@ export default {
   calculateRate,
   listBranches,
   addComment,
+  getLabel,
   normalizeStatus,
 };

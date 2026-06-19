@@ -72,3 +72,5 @@ export const refreshShipmentTracking = (shipmentId) =>
   api.post(`/admin/shipments/${shipmentId}/refresh`).then(r => r.data);
 export const markShipmentReturn = (shipmentId, reason) =>
   api.post(`/admin/shipments/${shipmentId}/return`, { reason }).then(r => r.data);
+export const getShipmentLabel = (shipmentId) =>
+  api.get(`/admin/shipments/${shipmentId}/label`).then(r => r.data);
