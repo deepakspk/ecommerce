@@ -11,3 +11,4 @@ export { default as Coupon } from "./Coupon.js";
 export { default as Payment } from "./Payment.js";
 export { default as InventoryLog } from "./InventoryLog.js";
 export { default as ReturnRequest } from "./ReturnRequest.js";
+export { default as StockAlert } from "./StockAlert.js";

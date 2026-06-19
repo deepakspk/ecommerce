@@ -2,6 +2,7 @@ import Order from "../models/Order.js";
 import Payment from "../models/Payment.js";
 import * as khalti from "../config/khalti.js";
 import * as esewa from "../config/esewa.js";
+import { sendPaymentFailedEmail } from "../utils/orderEmails.js";
 
 const FAILED_STATUSES = ["Expired", "User canceled"];
 const ESEWA_FAILED_STATUSES = ["CANCELED", "NOT_FOUND"];
@@ -71,6 +72,8 @@ export async function verifyKhalti(req, res) {
   await payment.save();
   await order.save();
 
+  if (order.paymentStatus === "FAILED") sendPaymentFailedEmail(order, req.user.email);
+
   res.json({ status: result.status, order });
 }
 
@@ -133,6 +136,8 @@ export async function verifyEsewa(req, res) {
 
   await payment.save();
   await order.save();
+
+  if (order.paymentStatus === "FAILED") sendPaymentFailedEmail(order, req.user.email);
 
   res.json({ status: result.status, order });
 }

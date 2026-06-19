@@ -1,5 +1,6 @@
 import Order from "../../models/Order.js";
 import ProductVariant from "../../models/ProductVariant.js";
+import { sendOrderStatusEmail } from "../../utils/orderEmails.js";
 
 const STATUS_TRANSITIONS = {
   PENDING:   ["CONFIRMED", "CANCELLED"],
@@ -58,7 +59,7 @@ export async function getOrder(req, res) {
 
 export async function updateStatus(req, res) {
   const { status } = req.body;
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate("userId", "name email phone");
   if (!order) return res.status(404).json({ message: "Order not found" });
 
   const allowed = STATUS_TRANSITIONS[order.status] ?? [];
@@ -71,6 +72,9 @@ export async function updateStatus(req, res) {
   order.status = status;
   if (status === "DELIVERED" && !order.deliveredAt) order.deliveredAt = new Date();
   await order.save();
+
+  sendOrderStatusEmail(order, order.userId?.email, status);
+
   res.json({ order });
 }
 

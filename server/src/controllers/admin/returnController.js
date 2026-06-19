@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import ReturnRequest from "../../models/ReturnRequest.js";
 import Order from "../../models/Order.js";
 import Payment from "../../models/Payment.js";
+import { sendReturnStatusEmail } from "../../utils/orderEmails.js";
 
 const STATUS_TRANSITIONS = {
   REQUESTED: ["APPROVED", "REJECTED"],
@@ -40,7 +41,7 @@ export async function getReturn(req, res) {
 
 export async function updateReturnStatus(req, res) {
   const { status, adminNote } = req.body;
-  const returnRequest = await ReturnRequest.findById(req.params.id);
+  const returnRequest = await ReturnRequest.findById(req.params.id).populate("userId", "name email phone");
   if (!returnRequest) return res.status(404).json({ message: "Return request not found" });
 
   const allowed = STATUS_TRANSITIONS[returnRequest.status] ?? [];
@@ -54,6 +55,7 @@ export async function updateReturnStatus(req, res) {
     returnRequest.status = status;
     if (adminNote !== undefined) returnRequest.adminNote = adminNote;
     await returnRequest.save();
+    sendReturnStatusEmail(returnRequest, returnRequest.userId?.email, status);
     return res.json({ returnRequest });
   }
 

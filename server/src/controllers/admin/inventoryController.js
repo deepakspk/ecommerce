@@ -1,5 +1,22 @@
 import ProductVariant from "../../models/ProductVariant.js";
 import InventoryLog from "../../models/InventoryLog.js";
+import StockAlert from "../../models/StockAlert.js";
+import Product from "../../models/Product.js";
+import { sendBackInStockEmail } from "../../utils/orderEmails.js";
+
+async function notifyStockAlerts(variant) {
+  const alerts = await StockAlert.find({ variantId: variant._id, notifiedAt: null }).populate("userId", "email");
+  if (alerts.length === 0) return;
+
+  const product = await Product.findById(variant.productId).select("name");
+  const productName = product?.name || "Item";
+
+  for (const alert of alerts) {
+    sendBackInStockEmail(variant, productName, alert.userId?.email);
+    alert.notifiedAt = new Date();
+    await alert.save();
+  }
+}
 
 export async function listInventory(req, res) {
   const variants = await ProductVariant.find()
@@ -21,12 +38,15 @@ export async function adjustStock(req, res) {
   const delta = Number(change);
   if (isNaN(delta) || delta === 0) return res.status(400).json({ message: "change must be a non-zero number" });
 
-  const newStock = variant.stockQuantity + delta;
+  const previousStock = variant.stockQuantity;
+  const newStock = previousStock + delta;
   if (newStock < 0) return res.status(400).json({ message: "Stock cannot go negative" });
 
   variant.stockQuantity = newStock;
   await variant.save();
   await InventoryLog.create({ variantId: variant._id, change: delta, reason: reason.trim() });
+
+  if (previousStock === 0 && newStock > 0) await notifyStockAlerts(variant);
 
   res.json({ variant });
 }

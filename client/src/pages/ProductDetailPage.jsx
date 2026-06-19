@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as productsApi from "../api/products";
+import * as stockAlertsApi from "../api/stockAlerts";
 import { getErrorMessage } from "../utils/errorHelpers";
+import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
@@ -19,6 +21,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { user } = useAuth();
   const { addItem } = useCart();
   const { isWishlisted, removeItem: removeFromWishlist } = useWishlist();
   const [selectedImage, setSelectedImage] = useState(0);
@@ -28,6 +31,8 @@ export default function ProductDetailPage() {
   const [cartError, setCartError] = useState("");
   const [mainImageFailed, setMainImageFailed] = useState(false);
   const [failedThumbs, setFailedThumbs] = useState(() => new Set());
+  const [notifyState, setNotifyState] = useState("idle"); // idle | pending | done | error
+  const [notifyMessage, setNotifyMessage] = useState("");
 
   useEffect(() => {
     let ignore = false;
@@ -108,12 +113,27 @@ export default function ProductDetailPage() {
     setSelectedColor("");
     setCartFeedback(false);
     setCartError("");
+    setNotifyState("idle");
   }
 
   function handleColorClick(color) {
     setSelectedColor(color);
     setCartFeedback(false);
     setCartError("");
+    setNotifyState("idle");
+  }
+
+  async function handleNotifyMe() {
+    if (!selectedVariant) return;
+    setNotifyState("pending");
+    try {
+      const data = await stockAlertsApi.createStockAlert(selectedVariant._id);
+      setNotifyMessage(data.message);
+      setNotifyState("done");
+    } catch (e) {
+      setNotifyMessage(getErrorMessage(e));
+      setNotifyState("error");
+    }
   }
 
   async function handleAddToCart() {
@@ -299,6 +319,32 @@ export default function ProductDetailPage() {
                 <p className="text-sm text-amber-600">Only {stockQty} left in stock — order soon</p>
               ) : (
                 <p className="text-sm text-green-600">In stock</p>
+              )}
+
+              {isOutOfStock && (
+                <div className="mt-2">
+                  {!user ? (
+                    <Link to="/login" className="text-sm text-blue-600 hover:underline">
+                      Log in to get notified when this is back in stock
+                    </Link>
+                  ) : notifyState === "done" ? (
+                    <p className="text-sm text-green-600">{notifyMessage}</p>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleNotifyMe}
+                        disabled={notifyState === "pending"}
+                        className="text-sm font-medium text-blue-600 hover:underline disabled:opacity-50"
+                      >
+                        {notifyState === "pending" ? "Submitting…" : "Notify me when back in stock"}
+                      </button>
+                      {notifyState === "error" && (
+                        <p className="text-sm text-red-600 mt-1">{notifyMessage}</p>
+                      )}
+                    </>
+                  )}
+                </div>
               )}
             </div>
           )}

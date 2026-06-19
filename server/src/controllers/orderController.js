@@ -5,6 +5,7 @@ import Address from "../models/Address.js";
 import ProductVariant from "../models/ProductVariant.js";
 import InventoryLog from "../models/InventoryLog.js";
 import { validateCoupon, redeemCoupon } from "../services/couponService.js";
+import { sendOrderConfirmedEmail } from "../utils/orderEmails.js";
 
 function calcDeliveryFee(province) {
   return province.toLowerCase().trim() === "bagmati" ? 100 : 200;
@@ -128,6 +129,8 @@ export async function createOrder(req, res) {
   }
 
   await Cart.findOneAndUpdate({ userId: req.user._id }, { items: [] });
+
+  sendOrderConfirmedEmail(order, req.user.email);
 
   res.status(201).json({ order });
 }
