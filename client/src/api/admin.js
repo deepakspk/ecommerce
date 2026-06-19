@@ -35,6 +35,7 @@ export const getDashboardStats = () => api.get("/admin/stats").then(r => r.data)
 // Orders
 export const listAdminOrders = (params) => api.get("/admin/orders", { params }).then(r => r.data);
 export const getAdminOrder = (id) => api.get(`/admin/orders/${id}`).then(r => r.data);
+export const updateOrder = (id, data) => api.put(`/admin/orders/${id}`, data).then(r => r.data);
 export const updateOrderStatus = (id, status) =>
   api.patch(`/admin/orders/${id}/status`, { status }).then(r => r.data);
 export const markOrderPaid = (id) => api.patch(`/admin/orders/${id}/paid`).then(r => r.data);

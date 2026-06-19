@@ -33,6 +33,7 @@ import {
   getDashboardStats,
   listOrders,
   getOrder,
+  updateOrder,
   updateStatus,
   markPaid,
 } from "../controllers/admin/orderController.js";
@@ -172,6 +173,27 @@ const variantUpdateBodyValidators = [
   body("stockQuantity").optional().isInt({ min: 0 }).withMessage("stockQuantity must be a non-negative integer"),
 ];
 
+const orderUpdateBodyValidators = [
+  body("items").optional().isArray({ min: 1 }).withMessage("items must be a non-empty array"),
+  body("items.*.variantId").optional().isMongoId().withMessage("each item needs a valid variantId"),
+  body("items.*.productName").optional().trim().notEmpty().withMessage("each item needs a productName"),
+  body("items.*.size").optional().trim().notEmpty().withMessage("each item needs a size"),
+  body("items.*.color").optional().trim().notEmpty().withMessage("each item needs a color"),
+  body("items.*.unitPrice").optional().isFloat({ min: 0 }).withMessage("each item needs a non-negative unitPrice"),
+  body("items.*.quantity").optional().isInt({ min: 1 }).withMessage("each item needs a quantity of at least 1"),
+  body("address.recipientName").optional().trim().notEmpty().withMessage("recipientName cannot be empty"),
+  body("address.phone").optional().trim().notEmpty().withMessage("address phone cannot be empty"),
+  body("address.province").optional().trim().notEmpty().withMessage("province cannot be empty"),
+  body("address.district").optional().trim().notEmpty().withMessage("district cannot be empty"),
+  body("address.city").optional().trim().notEmpty().withMessage("city cannot be empty"),
+  body("address.area").optional().trim(),
+  body("address.street").optional().trim(),
+  body("address.landmark").optional().trim(),
+  body("customer.name").optional().trim().notEmpty().withMessage("customer name cannot be empty"),
+  body("customer.email").optional().trim().isEmail().withMessage("customer email must be valid"),
+  body("customer.phone").optional().trim().notEmpty().withMessage("customer phone cannot be empty"),
+];
+
 // Categories
 router.get("/categories", listCategories);
 router.get("/categories/tree", getCategoryTree);
@@ -228,6 +250,12 @@ router.get("/stats", getDashboardStats);
 // Orders
 router.get("/orders", listOrders);
 router.get("/orders/:id", [mongoIdParam("id")], validate, getOrder);
+router.put(
+  "/orders/:id",
+  [mongoIdParam("id"), ...orderUpdateBodyValidators],
+  validate,
+  updateOrder
+);
 router.patch(
   "/orders/:id/status",
   [

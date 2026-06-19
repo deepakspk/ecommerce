@@ -40,7 +40,7 @@ export async function createShipment(req, res) {
 
   const provider = getProvider(providerCode);
 
-  const { providerShipmentId, raw } = await provider.createShipment({
+  const shipmentRequest = {
     recipient: {
       name: order.address.recipientName,
       phone: order.address.phone,
@@ -56,7 +56,18 @@ export async function createShipment(req, res) {
     instruction,
     deliveryType: deliveryType || "DOOR_TO_DOOR",
     weight,
-  });
+  };
+
+  let providerShipmentId, raw, sentPayload;
+  try {
+    ({ providerShipmentId, raw, sentPayload } = await provider.createShipment(shipmentRequest));
+  } catch (err) {
+    console.error("Shipment creation failed:", err.message, err.sentPayload || shipmentRequest);
+    return res.status(err.status || 502).json({
+      message: err.message,
+      debugParams: err.sentPayload || shipmentRequest,
+    });
+  }
 
   const shipment = await Shipment.create({
     orderId: order._id,
@@ -68,7 +79,7 @@ export async function createShipment(req, res) {
     meta: raw,
   });
 
-  res.status(201).json({ shipment });
+  res.status(201).json({ shipment, debugParams: sentPayload || shipmentRequest });
 }
 
 export async function getShipmentForOrder(req, res) {

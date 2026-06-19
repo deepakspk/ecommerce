@@ -107,6 +107,7 @@ export default function AdminOrdersPage() {
                     <td className="px-5 py-3">
                       <p className="font-medium text-gray-900">{o.userId?.name || "—"}</p>
                       <p className="text-xs text-gray-400">{o.userId?.email}</p>
+                      {o.userId?.phone && <p className="text-xs text-gray-400">{o.userId.phone}</p>}
                     </td>
                     <td className="px-5 py-3 text-gray-500 text-xs whitespace-nowrap">{fmtDate(o.createdAt)}</td>
                     <td className="px-5 py-3 text-gray-600">{o.items.length}</td>

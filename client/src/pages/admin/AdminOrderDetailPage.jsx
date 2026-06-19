@@ -32,6 +32,10 @@ function fmtDate(d) {
   });
 }
 
+const emptyItem = () => ({
+  variantId: "", productName: "", size: "", color: "", unitPrice: 0, quantity: 1,
+});
+
 export default function AdminOrderDetailPage() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
@@ -40,12 +44,95 @@ export default function AdminOrderDetailPage() {
   const [updating, setUpdating] = useState(false);
   const [markingPaid, setMarkingPaid] = useState(false);
 
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [editItems, setEditItems] = useState([]);
+  const [editAddress, setEditAddress] = useState(null);
+  const [editCustomer, setEditCustomer] = useState(null);
+
   useEffect(() => {
     adminApi.getAdminOrder(id)
       .then(d => setOrder(d.order))
       .catch(() => setOrder(null))
       .finally(() => setLoading(false));
   }, [id]);
+
+  function startEditing() {
+    setSaveError("");
+    setEditItems(order.items.map(i => ({ ...i })));
+    setEditAddress({ ...order.address });
+    setEditCustomer({
+      name: order.userId?.name || "",
+      email: order.userId?.email || "",
+      phone: order.userId?.phone || "",
+    });
+    setEditing(true);
+  }
+
+  function cancelEditing() {
+    setEditing(false);
+    setSaveError("");
+  }
+
+  function updateEditItem(index, field, value) {
+    setEditItems(items => items.map((it, i) => i === index ? { ...it, [field]: value } : it));
+  }
+
+  function removeEditItem(index) {
+    setEditItems(items => items.filter((_, i) => i !== index));
+  }
+
+  function addEditItem() {
+    setEditItems(items => [...items, emptyItem()]);
+  }
+
+  async function handleSave() {
+    setSaveError("");
+
+    if (editItems.length === 0) {
+      setSaveError("Order must have at least one item.");
+      return;
+    }
+    for (const it of editItems) {
+      if (!it.variantId.trim() || !it.productName.trim() || !it.size.trim() || !it.color.trim()) {
+        setSaveError("Every item needs variant ID, product name, size, and color.");
+        return;
+      }
+      if (!(Number(it.unitPrice) >= 0) || !(Number(it.quantity) >= 1)) {
+        setSaveError("Item prices must be ≥ 0 and quantities must be at least 1.");
+        return;
+      }
+    }
+    if (!editAddress.recipientName.trim() || !editAddress.phone.trim() ||
+        !editAddress.province.trim() || !editAddress.district.trim() || !editAddress.city.trim()) {
+      setSaveError("Recipient name, phone, province, district, and city are required.");
+      return;
+    }
+    if (!editCustomer.name.trim() || !editCustomer.phone.trim()) {
+      setSaveError("Customer name and phone are required.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { order: updated } = await adminApi.updateOrder(id, {
+        items: editItems.map(it => ({
+          ...it,
+          unitPrice: Number(it.unitPrice),
+          quantity: Number(it.quantity),
+        })),
+        address: editAddress,
+        customer: editCustomer,
+      });
+      setOrder(updated);
+      setEditing(false);
+    } catch (e) {
+      setSaveError(e.response?.data?.message || "Error saving order");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function handleStatusChange(newStatus) {
     setStatusError("");
@@ -105,8 +192,39 @@ export default function AdminOrderDetailPage() {
           }`}>
             {order.paymentStatus}
           </span>
+          {!editing && !isCancelled && !isDelivered && (
+            <button
+              onClick={startEditing}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              Edit Order
+            </button>
+          )}
         </div>
       </div>
+
+      {editing && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-3 mb-5 flex items-center justify-between">
+          <p className="text-sm text-blue-700 font-medium">Editing order — items, delivery address, and customer details</p>
+          <div className="flex items-center gap-2">
+            {saveError && <p className="text-xs text-red-600">{saveError}</p>}
+            <button
+              onClick={cancelEditing}
+              disabled={saving}
+              className="text-sm font-semibold px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-white disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              {saving ? "Saving…" : "Save Changes"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Status timeline */}
       {!isCancelled && (
@@ -144,58 +262,209 @@ export default function AdminOrderDetailPage() {
         <div className="space-y-5">
           {/* Items */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100">
-              <h2 className="text-sm font-semibold text-gray-800">Items ({order.items.length})</h2>
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-800">
+                Items ({editing ? editItems.length : order.items.length})
+              </h2>
+              {editing && (
+                <button
+                  onClick={addEditItem}
+                  className="text-xs font-semibold text-blue-600 hover:underline"
+                >
+                  + Add item
+                </button>
+              )}
             </div>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-gray-100">
-                {order.items.map((item, i) => (
-                  <tr key={i} className="px-5">
-                    <td className="px-5 py-3">
-                      <p className="font-medium text-gray-900">{item.productName}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{item.size} · {item.color}</p>
-                    </td>
-                    <td className="px-5 py-3 text-gray-500 text-xs text-center">× {item.quantity}</td>
-                    <td className="px-5 py-3 text-right font-medium text-gray-800">
-                      {fmt(item.unitPrice * item.quantity)}
-                    </td>
-                  </tr>
+
+            {editing ? (
+              <div className="divide-y divide-gray-100">
+                {editItems.map((item, i) => (
+                  <div key={i} className="px-5 py-3 grid grid-cols-12 gap-2 items-center">
+                    <input
+                      className="col-span-4 border border-gray-200 rounded px-2 py-1 text-xs"
+                      placeholder="Product name"
+                      value={item.productName}
+                      onChange={e => updateEditItem(i, "productName", e.target.value)}
+                    />
+                    <input
+                      className="col-span-2 border border-gray-200 rounded px-2 py-1 text-xs"
+                      placeholder="Size"
+                      value={item.size}
+                      onChange={e => updateEditItem(i, "size", e.target.value)}
+                    />
+                    <input
+                      className="col-span-2 border border-gray-200 rounded px-2 py-1 text-xs"
+                      placeholder="Color"
+                      value={item.color}
+                      onChange={e => updateEditItem(i, "color", e.target.value)}
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      className="col-span-1 border border-gray-200 rounded px-2 py-1 text-xs"
+                      placeholder="Price"
+                      value={item.unitPrice}
+                      onChange={e => updateEditItem(i, "unitPrice", e.target.value)}
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      className="col-span-1 border border-gray-200 rounded px-2 py-1 text-xs"
+                      placeholder="Qty"
+                      value={item.quantity}
+                      onChange={e => updateEditItem(i, "quantity", e.target.value)}
+                    />
+                    <button
+                      onClick={() => removeEditItem(i)}
+                      className="col-span-2 text-xs text-red-500 hover:underline text-right"
+                    >
+                      Remove
+                    </button>
+                    <input
+                      className="col-span-12 border border-gray-100 rounded px-2 py-1 text-xs font-mono text-gray-400"
+                      placeholder="Variant ID"
+                      value={item.variantId}
+                      onChange={e => updateEditItem(i, "variantId", e.target.value)}
+                    />
+                  </div>
                 ))}
-              </tbody>
-            </table>
-            <div className="border-t border-gray-100 px-5 py-3 space-y-1 text-sm">
-              <div className="flex justify-between text-gray-500">
-                <span>Subtotal</span><span>{fmt(order.subtotal)}</span>
+                <div className="px-5 py-3 text-right text-sm font-semibold text-gray-700">
+                  Subtotal: {fmt(editItems.reduce((s, it) => s + (Number(it.unitPrice) || 0) * (Number(it.quantity) || 0), 0))}
+                </div>
               </div>
-              <div className="flex justify-between text-gray-500">
-                <span>Delivery</span><span>{fmt(order.deliveryFee)}</span>
-              </div>
-              <div className="flex justify-between font-bold text-gray-900 text-base border-t border-gray-100 pt-2 mt-1">
-                <span>Total</span><span>{fmt(order.total)}</span>
-              </div>
-            </div>
+            ) : (
+              <>
+                <table className="w-full text-sm">
+                  <tbody className="divide-y divide-gray-100">
+                    {order.items.map((item, i) => (
+                      <tr key={i} className="px-5">
+                        <td className="px-5 py-3">
+                          <p className="font-medium text-gray-900">{item.productName}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{item.size} · {item.color}</p>
+                        </td>
+                        <td className="px-5 py-3 text-gray-500 text-xs text-center">× {item.quantity}</td>
+                        <td className="px-5 py-3 text-right font-medium text-gray-800">
+                          {fmt(item.unitPrice * item.quantity)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="border-t border-gray-100 px-5 py-3 space-y-1 text-sm">
+                  <div className="flex justify-between text-gray-500">
+                    <span>Subtotal</span><span>{fmt(order.subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-500">
+                    <span>Delivery</span><span>{fmt(order.deliveryFee)}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-gray-900 text-base border-t border-gray-100 pt-2 mt-1">
+                    <span>Total</span><span>{fmt(order.total)}</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Delivery address */}
           <div className="bg-white border border-gray-200 rounded-xl p-5">
             <h2 className="text-sm font-semibold text-gray-800 mb-3">Delivery Address</h2>
-            <p className="text-sm font-semibold text-gray-900">{order.address.recipientName}</p>
-            <p className="text-sm text-gray-600">{order.address.phone}</p>
-            <p className="text-sm text-gray-500 mt-1">
-              {[order.address.area, order.address.street, order.address.city,
-                order.address.district, order.address.province].filter(Boolean).join(", ")}
-            </p>
-            {order.address.landmark && (
-              <p className="text-xs text-gray-400 mt-0.5">Near: {order.address.landmark}</p>
+            {editing ? (
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  className="col-span-2 border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="Recipient name"
+                  value={editAddress.recipientName}
+                  onChange={e => setEditAddress(a => ({ ...a, recipientName: e.target.value }))}
+                />
+                <input
+                  className="col-span-2 border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="Phone"
+                  value={editAddress.phone}
+                  onChange={e => setEditAddress(a => ({ ...a, phone: e.target.value }))}
+                />
+                <input
+                  className="border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="Province"
+                  value={editAddress.province}
+                  onChange={e => setEditAddress(a => ({ ...a, province: e.target.value }))}
+                />
+                <input
+                  className="border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="District"
+                  value={editAddress.district}
+                  onChange={e => setEditAddress(a => ({ ...a, district: e.target.value }))}
+                />
+                <input
+                  className="border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="City"
+                  value={editAddress.city}
+                  onChange={e => setEditAddress(a => ({ ...a, city: e.target.value }))}
+                />
+                <input
+                  className="border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="Area"
+                  value={editAddress.area || ""}
+                  onChange={e => setEditAddress(a => ({ ...a, area: e.target.value }))}
+                />
+                <input
+                  className="col-span-2 border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="Street"
+                  value={editAddress.street || ""}
+                  onChange={e => setEditAddress(a => ({ ...a, street: e.target.value }))}
+                />
+                <input
+                  className="col-span-2 border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="Landmark"
+                  value={editAddress.landmark || ""}
+                  onChange={e => setEditAddress(a => ({ ...a, landmark: e.target.value }))}
+                />
+              </div>
+            ) : (
+              <>
+                <p className="text-sm font-semibold text-gray-900">{order.address.recipientName}</p>
+                <p className="text-sm text-gray-600">{order.address.phone}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {[order.address.area, order.address.street, order.address.city,
+                    order.address.district, order.address.province].filter(Boolean).join(", ")}
+                </p>
+                {order.address.landmark && (
+                  <p className="text-xs text-gray-400 mt-0.5">Near: {order.address.landmark}</p>
+                )}
+              </>
             )}
           </div>
 
           {/* Customer */}
           <div className="bg-white border border-gray-200 rounded-xl p-5">
             <h2 className="text-sm font-semibold text-gray-800 mb-2">Customer</h2>
-            <p className="text-sm font-medium text-gray-900">{order.userId?.name || "—"}</p>
-            <p className="text-sm text-gray-500">{order.userId?.email}</p>
-            {order.userId?.phone && <p className="text-sm text-gray-500">{order.userId.phone}</p>}
+            {editing ? (
+              <div className="space-y-2">
+                <input
+                  className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="Name"
+                  value={editCustomer.name}
+                  onChange={e => setEditCustomer(c => ({ ...c, name: e.target.value }))}
+                />
+                <input
+                  className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="Email"
+                  value={editCustomer.email}
+                  onChange={e => setEditCustomer(c => ({ ...c, email: e.target.value }))}
+                />
+                <input
+                  className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm"
+                  placeholder="Phone"
+                  value={editCustomer.phone}
+                  onChange={e => setEditCustomer(c => ({ ...c, phone: e.target.value }))}
+                />
+              </div>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-gray-900">{order.userId?.name || "—"}</p>
+                <p className="text-sm text-gray-500">{order.userId?.email}</p>
+                {order.userId?.phone && <p className="text-sm text-gray-500">{order.userId.phone}</p>}
+              </>
+            )}
           </div>
         </div>
 

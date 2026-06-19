@@ -1,5 +1,6 @@
 import Order from "../../models/Order.js";
 import ProductVariant from "../../models/ProductVariant.js";
+import User from "../../models/User.js";
 import { sendOrderStatusEmail } from "../../utils/orderEmails.js";
 
 const STATUS_TRANSITIONS = {
@@ -41,7 +42,7 @@ export async function listOrders(req, res) {
   const skip = (Number(page) - 1) * Number(limit);
   const [orders, total] = await Promise.all([
     Order.find(filter)
-      .populate("userId", "name email")
+      .populate("userId", "name email phone")
       .sort("-createdAt")
       .skip(skip)
       .limit(Number(limit)),
@@ -55,6 +56,55 @@ export async function getOrder(req, res) {
   const order = await Order.findById(req.params.id).populate("userId", "name email phone");
   if (!order) return res.status(404).json({ message: "Order not found" });
   res.json({ order });
+}
+
+const LOCKED_STATUSES = ["DELIVERED", "CANCELLED"];
+
+export async function updateOrder(req, res) {
+  const { items, address, customer } = req.body;
+  const order = await Order.findById(req.params.id).populate("userId", "name email phone");
+  if (!order) return res.status(404).json({ message: "Order not found" });
+
+  if (LOCKED_STATUSES.includes(order.status)) {
+    return res.status(400).json({ message: `Cannot edit an order that is ${order.status}` });
+  }
+
+  if (items) {
+    order.items = items.map((item) => ({
+      variantId: item.variantId,
+      productName: item.productName,
+      size: item.size,
+      color: item.color,
+      unitPrice: item.unitPrice,
+      quantity: item.quantity,
+    }));
+    order.subtotal = order.items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+    order.total = Math.max(0, order.subtotal - order.discountAmount + order.deliveryFee);
+  }
+
+  if (address) {
+    order.address = { ...order.address.toObject(), ...address };
+  }
+
+  if (customer && order.userId) {
+    const user = await User.findById(order.userId._id);
+    if (customer.name !== undefined) user.name = customer.name;
+    if (customer.email !== undefined) user.email = customer.email;
+    if (customer.phone !== undefined) user.phone = customer.phone;
+    try {
+      await user.save();
+    } catch (e) {
+      if (e.code === 11000) {
+        const field = Object.keys(e.keyPattern || {})[0] || "field";
+        return res.status(400).json({ message: `That ${field} is already in use by another account` });
+      }
+      throw e;
+    }
+  }
+
+  await order.save();
+  const updated = await Order.findById(order._id).populate("userId", "name email phone");
+  res.json({ order: updated });
 }
 
 export async function updateStatus(req, res) {

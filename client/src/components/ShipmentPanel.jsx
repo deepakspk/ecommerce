@@ -41,6 +41,7 @@ export default function ShipmentPanel({ orderId, order }) {
   const [deliveryType, setDeliveryType] = useState("DOOR_TO_DOOR");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
+  const [debugParams, setDebugParams] = useState(null);
 
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState("");
@@ -88,16 +89,18 @@ export default function ShipmentPanel({ orderId, order }) {
     setCreateError("");
     setCreating(true);
     try {
-      const { shipment: created } = await adminApi.createShipment(orderId, {
+      const { shipment: created, debugParams: sent } = await adminApi.createShipment(orderId, {
         provider: providerCode,
         toBranch,
         packageLabel: packageLabel || undefined,
         weight: weight || undefined,
         deliveryType,
       });
+      setDebugParams(sent || null);
       setShipment(created);
     } catch (e) {
       setCreateError(getErrorMessage(e));
+      setDebugParams(e.response?.data?.debugParams || null);
     } finally {
       setCreating(false);
     }
@@ -217,6 +220,17 @@ export default function ShipmentPanel({ orderId, order }) {
             {creating ? "Creating…" : "Create Shipment"}
           </button>
         </form>
+
+        {debugParams && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <p className="text-xs font-semibold text-gray-500 mb-1">
+              Debug — params sent to carrier{createError ? " (failed request)" : ""}
+            </p>
+            <pre className="text-[11px] bg-gray-50 border border-gray-200 rounded-lg p-2 overflow-x-auto text-gray-600 whitespace-pre-wrap break-all">
+              {JSON.stringify(debugParams, null, 2)}
+            </pre>
+          </div>
+        )}
       </div>
     );
   }

@@ -34,7 +34,7 @@ async function createShipment(shipment) {
   const { recipient, cod, fromBranch, toBranch, packageLabel, vendorRef, instruction, deliveryType, weight } =
     shipment;
 
-  const data = await ncm.createOrder({
+  const payload = {
     name: recipient.name,
     phone: recipient.phone,
     phone2: recipient.phone2 || "",
@@ -43,13 +43,19 @@ async function createShipment(shipment) {
     fbranch: fromBranch,
     branch: toBranch,
     package: packageLabel,
-    vref_id: vendorRef,
+    vref_id: "ecommerceREF",
     instruction,
     delivery_type: CREATE_TYPE_MAP[deliveryType] || CREATE_TYPE_MAP.DOOR_TO_DOOR,
     weight: weight ? String(weight) : undefined,
-  });
+  };
 
-  return { providerShipmentId: String(data.orderid), raw: data };
+  try {
+    const data = await ncm.createOrder(payload);
+    return { providerShipmentId: String(data.orderid), raw: data, sentPayload: payload };
+  } catch (err) {
+    err.sentPayload = payload;
+    throw err;
+  }
 }
 
 async function getShipmentStatus(providerShipmentId) {
