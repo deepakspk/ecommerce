@@ -11,6 +11,9 @@ import Seo from "../components/Seo";
 import WishlistButton from "../components/WishlistButton";
 import StarRating from "../components/StarRating";
 import ProductReviews from "../components/ProductReviews";
+import ProductRail from "../components/ProductRail";
+import RecentlyViewedRail from "../components/RecentlyViewedRail";
+import { addRecentlyViewed } from "../utils/recentlyViewed";
 import { PAGE_CLASS, H1_CLASS } from "../utils/ui";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
@@ -19,6 +22,7 @@ export default function ProductDetailPage() {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
   const [variants, setVariants] = useState([]);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -44,12 +48,14 @@ export default function ProductDetailPage() {
         if (!ignore) {
           setProduct(data.product);
           setVariants(data.variants);
+          setRelatedProducts(data.relatedProducts || []);
           setSelectedImage(0);
           setSelectedSize("");
           setSelectedColor("");
           setMainImageFailed(false);
           setFailedThumbs(new Set());
           setError("");
+          addRecentlyViewed(data.product.slug);
         }
       } catch (err) {
         if (!ignore) {
@@ -397,7 +403,11 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
+      <ProductRail title="Related products" products={relatedProducts} />
+
       <ProductReviews productId={product._id} />
+
+      <RecentlyViewedRail excludeSlug={product.slug} />
     </div>
   );
 }

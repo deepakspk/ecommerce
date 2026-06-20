@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { pingAdmin } from "../api/admin";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { FormError } from "../components/FormError";
+import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import { BUTTON_PRIMARY_FULL, CARD_CLASS, H1_CLASS } from "../utils/ui";
 
 function Badge({ ok, label }) {
@@ -85,6 +86,8 @@ export default function DashboardPage() {
       >
         Log out
       </button>
+
+      <RecentlyViewedRail />
     </div>
   );
 }

@@ -98,7 +98,26 @@ export async function getProduct(req, res) {
 
   const variants = await ProductVariant.find({ productId: product._id }).sort({ size: 1, color: 1 });
   const [withRating] = await attachRatings([product]);
-  res.json({ product: withRating, variants });
+
+  const sameCategoryProducts = await Product.find({
+    _id: { $ne: product._id },
+    categories: { $in: product.categories.map((c) => c._id) },
+    isActive: true,
+  }).populate("categories", "name slug");
+
+  const inStockIds = new Set(
+    (
+      await ProductVariant.find({
+        productId: { $in: sameCategoryProducts.map((p) => p._id) },
+        stockQuantity: { $gt: 0 },
+      }).distinct("productId")
+    ).map(String)
+  );
+  const relatedProducts = await attachRatings(
+    sameCategoryProducts.filter((p) => inStockIds.has(String(p._id))).slice(0, 8)
+  );
+
+  res.json({ product: withRating, variants, relatedProducts });
 }
 
 function escapeRegex(str) {
