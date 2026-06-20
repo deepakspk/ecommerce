@@ -324,7 +324,8 @@ export default function ProductFormPage() {
             multiple
             className="hidden"
             onChange={e => {
-              setNewFiles(f => [...f, ...Array.from(e.target.files)]);
+              const selected = Array.from(e.target.files);
+              setNewFiles(f => [...f, ...selected]);
               e.target.value = "";
             }}
           />
