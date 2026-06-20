@@ -74,6 +74,13 @@ export const getReportSummary = (params) => api.get("/admin/reports/summary", { 
 export const exportOrdersCsv = (params) =>
   api.get("/admin/reports/export", { params, responseType: "blob" }).then(r => r.data);
 
+// Banners
+export const getBanners = () => api.get("/admin/banners").then(r => r.data);
+export const createBanner = (formData) => api.post("/admin/banners", formData).then(r => r.data);
+export const updateBanner = (id, formData) => api.put(`/admin/banners/${id}`, formData).then(r => r.data);
+export const deleteBanner = (id) => api.delete(`/admin/banners/${id}`).then(r => r.data);
+export const reorderBanners = (items) => api.patch("/admin/banners/reorder", { items }).then(r => r.data);
+
 // Logistics
 export const listLogisticsProviders = () => api.get("/admin/logistics/providers").then(r => r.data);
 export const getProviderBranches = (code) =>

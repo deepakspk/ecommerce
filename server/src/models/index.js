@@ -14,3 +14,4 @@ export { default as ReturnRequest } from "./ReturnRequest.js";
 export { default as StockAlert } from "./StockAlert.js";
 export { default as Shipment } from "./Shipment.js";
 export { default as AuditLog } from "./AuditLog.js";
+export { default as Banner } from "./Banner.js";

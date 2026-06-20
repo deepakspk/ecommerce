@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation, Link } from "react-router-dom";
 import * as productsApi from "../api/products";
 import * as categoriesApi from "../api/categories";
 import { getErrorMessage } from "../utils/errorHelpers";
@@ -9,6 +9,8 @@ import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
 import ProductCard from "../components/ProductCard";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
+import BannerCarousel from "../components/BannerCarousel";
+import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import { INPUT_CLASS, BUTTON_GHOST, PAGE_CLASS, H1_CLASS } from "../utils/ui";
 
 function nodeContainsSlug(node, slug) {
@@ -18,6 +20,8 @@ function nodeContainsSlug(node, slug) {
 
 export default function ProductsPage() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const isHome = location.pathname === "/";
 
   const [categories, setCategories] = useState([]);
   const [availableFilters, setAvailableFilters] = useState({ sizes: [], colors: [] });
@@ -112,10 +116,52 @@ export default function ProductsPage() {
     ? categories.find((root) => nodeContainsSlug(root, selectedCategory))
     : null;
 
+  const showHero = isHome && !hasActiveFilters;
+
   return (
     <div className={PAGE_CLASS}>
       <Seo title="Shop Products" description="Browse shirts, pants, and shoes available for delivery across Nepal." />
-      <h1 className={`${H1_CLASS} mb-5`}>Products</h1>
+
+      {showHero && (
+        <div className="mb-8 space-y-8">
+          <BannerCarousel />
+
+          {!metaLoading && categories.length > 0 && (
+            <div>
+              <h2 className={`${H1_CLASS} mb-4`}>Shop by Category</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    to={`/products?category=${cat.slug}`}
+                    className="group rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    <div className="aspect-square bg-gray-100 overflow-hidden">
+                      {cat.image ? (
+                        <img
+                          src={cloudinaryUrl(cat.image, 240)}
+                          alt={cat.name}
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-3xl font-semibold text-gray-300">
+                          {cat.name.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <p className="px-3 py-2 text-sm font-medium text-gray-700 group-hover:text-brand-600 truncate">
+                      {cat.name}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <h1 className={`${H1_CLASS} mb-5`}>{showHero ? "All Products" : "Products"}</h1>
 
       {/* Category pills */}
       {!metaLoading && (

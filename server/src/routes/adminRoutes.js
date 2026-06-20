@@ -63,6 +63,13 @@ import {
 import { listUsers, updateUserRole, updateUserStatus } from "../controllers/admin/userController.js";
 import { listAuditLog } from "../controllers/admin/auditLogController.js";
 import { getReportSummary, exportOrdersCsv } from "../controllers/admin/reportsController.js";
+import {
+  listBanners,
+  createBanner,
+  updateBanner,
+  deleteBanner,
+  reorderBanners,
+} from "../controllers/admin/bannerController.js";
 
 const router = Router();
 router.use(protect, requireRole("ADMIN"));
@@ -137,6 +144,14 @@ const couponUpdateBodyValidators = [
   body("startsAt").optional({ values: "falsy" }).isISO8601().withMessage("startsAt must be a valid date"),
   body("expiresAt").optional({ values: "falsy" }).isISO8601().withMessage("expiresAt must be a valid date"),
   body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
+];
+
+const bannerBodyValidators = [body("link").optional().trim()];
+
+const bannerReorderValidators = [
+  body("items").isArray({ min: 1 }).withMessage("items must be a non-empty array"),
+  body("items.*.id").isMongoId().withMessage("each item needs a valid id"),
+  body("items.*.sortOrder").isInt().withMessage("each item needs an integer sortOrder"),
 ];
 
 const productBodyValidators = [
@@ -336,6 +351,19 @@ router.get("/audit-log", listAuditLog);
 // Reports
 router.get("/reports/summary", getReportSummary);
 router.get("/reports/export", exportOrdersCsv);
+
+// Banners
+router.get("/banners", listBanners);
+router.post("/banners", upload.single("image"), bannerBodyValidators, validate, createBanner);
+router.patch("/banners/reorder", bannerReorderValidators, validate, reorderBanners);
+router.put(
+  "/banners/:id",
+  upload.single("image"),
+  [mongoIdParam("id"), ...bannerBodyValidators],
+  validate,
+  updateBanner
+);
+router.delete("/banners/:id", [mongoIdParam("id")], validate, deleteBanner);
 
 // Logistics
 router.get("/logistics/providers", getProviders);

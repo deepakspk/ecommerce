@@ -14,6 +14,7 @@ import AdminReturnDetailPage from "./AdminReturnDetailPage";
 import UsersPage from "./UsersPage";
 import AuditLogPage from "./AuditLogPage";
 import ReportsPage from "./ReportsPage";
+import BannersPage from "./BannersPage";
 
 export default function AdminSection() {
   return (
@@ -35,6 +36,7 @@ export default function AdminSection() {
           <Route path="users" element={<UsersPage />} />
           <Route path="audit-log" element={<AuditLogPage />} />
           <Route path="reports" element={<ReportsPage />} />
+          <Route path="banners" element={<BannersPage />} />
         </Route>
       </Routes>
     </AdminRoute>
