@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
+import { CONTAINER_CLASS } from "../utils/ui";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -46,123 +47,125 @@ export default function Navbar() {
   );
 
   return (
-    <nav className="border-b border-gray-200 px-4 py-3">
-      <div className="flex items-center justify-between">
-        <div className="hidden sm:flex items-center gap-6">
-          <Link to="/" className="font-semibold text-lg text-gray-900">
-            Ecommerce Nepal
-          </Link>
-          <Link to="/products" className="text-sm text-gray-600 hover:text-gray-900">
-            Products
-          </Link>
-          {user && (
-            <Link to="/orders" className="text-sm text-gray-600 hover:text-gray-900">
-              Orders
+    <nav className="border-b border-gray-200 py-3">
+      <div className={CONTAINER_CLASS}>
+        <div className="flex items-center justify-between">
+          <div className="hidden sm:flex items-center gap-6">
+            <Link to="/" className="font-semibold text-lg text-gray-900">
+              Ecommerce Nepal
             </Link>
-          )}
-          {user && (
-            <Link to="/account" className="text-sm text-gray-600 hover:text-gray-900">
-              Account
+            <Link to="/products" className="text-sm text-gray-600 hover:text-gray-900">
+              Products
             </Link>
-          )}
-          {user?.role === "ADMIN" && (
-            <Link to="/admin" className="text-sm text-brand-600 hover:text-brand-800 font-medium">
-              Admin
-            </Link>
-          )}
-        </div>
+            {user && (
+              <Link to="/orders" className="text-sm text-gray-600 hover:text-gray-900">
+                Orders
+              </Link>
+            )}
+            {user && (
+              <Link to="/account" className="text-sm text-gray-600 hover:text-gray-900">
+                Account
+              </Link>
+            )}
+            {user?.role === "ADMIN" && (
+              <Link to="/admin" className="text-sm text-brand-600 hover:text-brand-800 font-medium">
+                Admin
+              </Link>
+            )}
+          </div>
 
-        {/* Mobile: brand + hamburger */}
-        <div className="flex sm:hidden items-center justify-between w-full">
-          <Link to="/" className="font-semibold text-lg text-gray-900" onClick={() => setMenuOpen(false)}>
-            Ecommerce Nepal
-          </Link>
-          <div className="flex items-center gap-4">
+          {/* Mobile: brand + hamburger */}
+          <div className="flex sm:hidden items-center justify-between w-full">
+            <Link to="/" className="font-semibold text-lg text-gray-900" onClick={() => setMenuOpen(false)}>
+              Ecommerce Nepal
+            </Link>
+            <div className="flex items-center gap-4">
+              {WishlistLink}
+              {CartLink}
+              <button
+                onClick={() => setMenuOpen(o => !o)}
+                aria-label="Toggle menu"
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  {menuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+                  )}
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-4 text-sm">
             {WishlistLink}
             {CartLink}
-            <button
-              onClick={() => setMenuOpen(o => !o)}
-              aria-label="Toggle menu"
-              className="text-gray-600 hover:text-gray-900"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                {menuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
-                )}
-              </svg>
-            </button>
+
+            {user ? (
+              <>
+                <span className="text-gray-700">{user.name}</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-red-600 hover:text-red-700 font-medium"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-gray-700 hover:text-gray-900">
+                  Login
+                </Link>
+                <Link to="/signup" className="text-gray-700 hover:text-gray-900">
+                  Signup
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center gap-4 text-sm">
-          {WishlistLink}
-          {CartLink}
-
-          {user ? (
-            <>
-              <span className="text-gray-700">{user.name}</span>
-              <button
-                onClick={handleLogout}
-                className="text-red-600 hover:text-red-700 font-medium"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="text-gray-700 hover:text-gray-900">
-                Login
+        {/* Mobile dropdown panel */}
+        {menuOpen && (
+          <div className="sm:hidden mt-3 pt-3 border-t border-gray-100 flex flex-col gap-3 text-sm">
+            <Link to="/products" className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
+              Products
+            </Link>
+            {user && (
+              <Link to="/orders" className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
+                Orders
               </Link>
-              <Link to="/signup" className="text-gray-700 hover:text-gray-900">
-                Signup
+            )}
+            {user && (
+              <Link to="/account" className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
+                Account
               </Link>
-            </>
-          )}
-        </div>
+            )}
+            {user?.role === "ADMIN" && (
+              <Link to="/admin" className="text-brand-600 hover:text-brand-800 font-medium" onClick={() => setMenuOpen(false)}>
+                Admin
+              </Link>
+            )}
+            {user ? (
+              <>
+                <span className="text-gray-700">{user.name}</span>
+                <button onClick={handleLogout} className="text-red-600 hover:text-red-700 font-medium text-left">
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-gray-700 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
+                  Login
+                </Link>
+                <Link to="/signup" className="text-gray-700 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
+                  Signup
+                </Link>
+              </>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* Mobile dropdown panel */}
-      {menuOpen && (
-        <div className="sm:hidden mt-3 pt-3 border-t border-gray-100 flex flex-col gap-3 text-sm">
-          <Link to="/products" className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
-            Products
-          </Link>
-          {user && (
-            <Link to="/orders" className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
-              Orders
-            </Link>
-          )}
-          {user && (
-            <Link to="/account" className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
-              Account
-            </Link>
-          )}
-          {user?.role === "ADMIN" && (
-            <Link to="/admin" className="text-brand-600 hover:text-brand-800 font-medium" onClick={() => setMenuOpen(false)}>
-              Admin
-            </Link>
-          )}
-          {user ? (
-            <>
-              <span className="text-gray-700">{user.name}</span>
-              <button onClick={handleLogout} className="text-red-600 hover:text-red-700 font-medium text-left">
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="text-gray-700 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
-                Login
-              </Link>
-              <Link to="/signup" className="text-gray-700 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
-                Signup
-              </Link>
-            </>
-          )}
-        </div>
-      )}
     </nav>
   );
 }

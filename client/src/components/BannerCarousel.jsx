@@ -55,7 +55,7 @@ export default function BannerCarousel() {
 
   return (
     <div
-      className="relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-xl overflow-hidden bg-gray-100"
+      className="relative w-full aspect-[32/9] sm:aspect-[42/9] rounded-xl overflow-hidden bg-gray-100"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >

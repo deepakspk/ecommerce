@@ -141,20 +141,20 @@ export default function ProductsPage() {
           {!metaLoading && categories.length > 0 && (
             <div>
               <h2 className={`${H1_CLASS} mb-4`}>Shop by Category</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-4">
                 {categories.map((cat) => (
                   <Link
                     key={cat.id}
                     to={`/products?category=${cat.slug}`}
                     className="group rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition-shadow"
                   >
-                    <div className="aspect-square bg-gray-100 overflow-hidden">
+                    <div className="aspect-square bg-gray-100 overflow-hidden p-6">
                       {cat.image ? (
                         <img
                           src={cloudinaryUrl(cat.image, 240)}
                           alt={cat.name}
                           loading="lazy"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-3xl font-semibold text-gray-300">
@@ -298,7 +298,7 @@ export default function ProductsPage() {
 
       {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 animate-pulse">
               <div className="aspect-[4/5] bg-gray-200 rounded-t-lg" />
@@ -320,7 +320,7 @@ export default function ProductsPage() {
           )}
         />
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {products.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
