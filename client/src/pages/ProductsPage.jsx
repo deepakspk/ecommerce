@@ -8,6 +8,7 @@ import FilterPill from "../components/FilterPill";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
 import ProductCard from "../components/ProductCard";
+import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import { INPUT_CLASS, BUTTON_GHOST, PAGE_CLASS, H1_CLASS } from "../utils/ui";
 
 function nodeContainsSlug(node, slug) {
@@ -269,6 +270,8 @@ export default function ProductsPage() {
       )}
 
       <Pagination page={page} pages={pages} onChange={setPage} />
+
+      <RecentlyViewedRail />
     </div>
   );
 }

@@ -60,6 +60,11 @@ export default function Navbar() {
               Orders
             </Link>
           )}
+          {user && (
+            <Link to="/account" className="text-sm text-gray-600 hover:text-gray-900">
+              Account
+            </Link>
+          )}
           {user?.role === "ADMIN" && (
             <Link to="/admin" className="text-sm text-brand-600 hover:text-brand-800 font-medium">
               Admin
@@ -127,6 +132,11 @@ export default function Navbar() {
           {user && (
             <Link to="/orders" className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
               Orders
+            </Link>
+          )}
+          {user && (
+            <Link to="/account" className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
+              Account
             </Link>
           )}
           {user?.role === "ADMIN" && (

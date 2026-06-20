@@ -45,8 +45,9 @@ export default function App() {
 
               {/* Store pages — wrapped in Layout (Navbar + main) */}
               <Route element={<StoreLayout />}>
+                <Route path="/" element={<ProductsPage />} />
                 <Route
-                  path="/"
+                  path="/account"
                   element={<ProtectedRoute><DashboardPage /></ProtectedRoute>}
                 />
                 <Route path="/login" element={<LoginPage />} />
