@@ -61,6 +61,7 @@ import {
 } from "../controllers/admin/logisticsController.js";
 import { listUsers, updateUserRole, updateUserStatus } from "../controllers/admin/userController.js";
 import { listAuditLog } from "../controllers/admin/auditLogController.js";
+import { getReportSummary, exportOrdersCsv } from "../controllers/admin/reportsController.js";
 
 const router = Router();
 router.use(protect, requireRole("ADMIN"));
@@ -329,6 +330,10 @@ router.patch(
 
 // Audit log
 router.get("/audit-log", listAuditLog);
+
+// Reports
+router.get("/reports/summary", getReportSummary);
+router.get("/reports/export", exportOrdersCsv);
 
 // Logistics
 router.get("/logistics/providers", getProviders);

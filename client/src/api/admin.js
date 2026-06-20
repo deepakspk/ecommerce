@@ -67,6 +67,11 @@ export const updateUserStatus = (id, status) => api.patch(`/admin/users/${id}/st
 // Audit log
 export const listAuditLog = (params) => api.get("/admin/audit-log", { params }).then(r => r.data);
 
+// Reports
+export const getReportSummary = (params) => api.get("/admin/reports/summary", { params }).then(r => r.data);
+export const exportOrdersCsv = (params) =>
+  api.get("/admin/reports/export", { params, responseType: "blob" }).then(r => r.data);
+
 // Logistics
 export const listLogisticsProviders = () => api.get("/admin/logistics/providers").then(r => r.data);
 export const getProviderBranches = (code) =>
