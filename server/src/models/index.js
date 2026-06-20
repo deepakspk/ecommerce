@@ -17,3 +17,4 @@ export { default as AuditLog } from "./AuditLog.js";
 export { default as Banner } from "./Banner.js";
 export { default as SystemSetting } from "./SystemSetting.js";
 export { default as CompanySettings } from "./CompanySettings.js";
+export { default as ThemeSettings } from "./ThemeSettings.js";

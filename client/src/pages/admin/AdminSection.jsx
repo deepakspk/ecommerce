@@ -17,6 +17,7 @@ import ReportsPage from "./ReportsPage";
 import BannersPage from "./BannersPage";
 import SettingsPage from "./SettingsPage";
 import CompanySettingsPage from "./CompanySettingsPage";
+import ThemeSettingsPage from "./ThemeSettingsPage";
 
 export default function AdminSection() {
   return (
@@ -41,6 +42,7 @@ export default function AdminSection() {
           <Route path="banners" element={<BannersPage />} />
           <Route path="settings" element={<AdminRoute superAdminOnly><SettingsPage /></AdminRoute>} />
           <Route path="company-settings" element={<AdminRoute superAdminOnly><CompanySettingsPage /></AdminRoute>} />
+          <Route path="theme-settings" element={<AdminRoute superAdminOnly><ThemeSettingsPage /></AdminRoute>} />
         </Route>
       </Routes>
     </AdminRoute>

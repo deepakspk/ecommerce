@@ -86,6 +86,10 @@ export const getCompanySettingsAdmin = () => api.get("/admin/company-settings").
 export const updateCompanySettings = (formData) =>
   api.put("/admin/company-settings", formData).then(r => r.data);
 
+// Theme Settings
+export const getThemeSettingsAdmin = () => api.get("/admin/theme-settings").then(r => r.data);
+export const updateThemeSettings = (data) => api.put("/admin/theme-settings", data).then(r => r.data);
+
 // Logistics
 export const listLogisticsProviders = () => api.get("/admin/logistics/providers").then(r => r.data);
 export const getProviderBranches = (code) =>

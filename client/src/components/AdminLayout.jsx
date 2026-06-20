@@ -20,7 +20,12 @@ export default function AdminLayout() {
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navItems = user?.role === "SUPER_ADMIN"
-    ? [...NAV, { to: "/admin/company-settings", label: "Company" }, { to: "/admin/settings", label: "Settings" }]
+    ? [
+        ...NAV,
+        { to: "/admin/company-settings", label: "Company" },
+        { to: "/admin/theme-settings", label: "Theme" },
+        { to: "/admin/settings", label: "Settings" },
+      ]
     : NAV;
 
   const sidebarContent = (

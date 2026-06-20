@@ -19,6 +19,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import stockAlertRoutes from "./routes/stockAlertRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
 import companySettingsRoutes from "./routes/companySettingsRoutes.js";
+import themeSettingsRoutes from "./routes/themeSettingsRoutes.js";
 import { protect, requireRole } from "./middleware/auth.js";
 
 const app = express();
@@ -52,6 +53,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/stock-alerts", stockAlertRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/settings/company", companySettingsRoutes);
+app.use("/api/settings/theme", themeSettingsRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/api/admin/ping", protect, requireRole("ADMIN"), (req, res) => {

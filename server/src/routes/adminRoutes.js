@@ -66,6 +66,7 @@ import { getReportSummary, exportOrdersCsv } from "../controllers/admin/reportsC
 import { listSettings, updateGroup, exportSettings } from "../controllers/admin/settingsController.js";
 import { SETTINGS_GROUPS } from "../config/settingsSchema.js";
 import { getCompanySettingsAdmin, updateCompanySettings } from "../controllers/admin/companySettingsController.js";
+import { getThemeSettingsAdmin, updateThemeSettings } from "../controllers/admin/themeSettingsController.js";
 import {
   listBanners,
   createBanner,
@@ -377,6 +378,26 @@ router.put(
   ],
   validate,
   updateCompanySettings
+);
+
+// Theme Settings (SUPER_ADMIN only)
+const hexColorValidator = (field) =>
+  body(field).optional({ values: "falsy" }).matches(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i).withMessage(`${field} must be a valid hex color`);
+
+router.get("/theme-settings", requireRole("SUPER_ADMIN"), getThemeSettingsAdmin);
+router.put(
+  "/theme-settings",
+  requireRole("SUPER_ADMIN"),
+  [
+    hexColorValidator("primaryColor"),
+    hexColorValidator("secondaryColor"),
+    hexColorValidator("accentColor"),
+    hexColorValidator("buttonColor"),
+    hexColorValidator("textColor"),
+    hexColorValidator("backgroundColor"),
+  ],
+  validate,
+  updateThemeSettings
 );
 
 // Banners
