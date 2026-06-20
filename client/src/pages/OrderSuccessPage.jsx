@@ -4,27 +4,12 @@ import * as ordersApi from "../api/orders";
 import * as paymentsApi from "../api/payments";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { submitEsewaForm } from "../utils/esewaForm";
+import Badge from "../components/Badge";
+import { H1_CLASS, CARD_CLASS } from "../utils/ui";
 
 const PAYMENT_METHOD_LABELS = { COD: "Cash on Delivery", KHALTI: "Khalti", ESEWA: "eSewa" };
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
-
-const STATUS_COLORS = {
-  PENDING: "bg-yellow-100 text-yellow-700",
-  CONFIRMED: "bg-blue-100 text-blue-700",
-  PACKED: "bg-indigo-100 text-indigo-700",
-  SHIPPED: "bg-purple-100 text-purple-700",
-  DELIVERED: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-700",
-};
-
-const RETURN_STATUS_COLORS = {
-  REQUESTED: "bg-yellow-100 text-yellow-700",
-  APPROVED: "bg-blue-100 text-blue-700",
-  REJECTED: "bg-red-100 text-red-700",
-  PICKED_UP: "bg-indigo-100 text-indigo-700",
-  REFUNDED: "bg-green-100 text-green-700",
-};
 
 const RETURN_STATUS_MESSAGES = {
   REQUESTED: "Your return request is awaiting review.",
@@ -157,7 +142,7 @@ export default function OrderSuccessPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-24 text-center">
         <p className="text-red-600 mb-4">{error || "Order not found."}</p>
-        <Link to="/orders" className="text-blue-600 hover:underline text-sm">View all orders</Link>
+        <Link to="/orders" className="text-brand-600 hover:underline text-sm">View all orders</Link>
       </div>
     );
   }
@@ -174,20 +159,18 @@ export default function OrderSuccessPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Order Placed!</h1>
+        <h1 className={H1_CLASS}>Order Placed!</h1>
         <p className="text-gray-500 text-sm mt-1">Thank you for your order. You'll receive your items soon.</p>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className={`${CARD_CLASS} overflow-hidden`}>
         {/* Order meta */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div>
             <p className="text-xs text-gray-400">Order ID</p>
             <p className="text-sm font-mono font-medium text-gray-700">{order._id}</p>
           </div>
-          <span className={`text-xs font-semibold px-3 py-1 rounded-full ${STATUS_COLORS[order.status] ?? "bg-gray-100 text-gray-600"}`}>
-            {order.status}
-          </span>
+          <Badge kind="order" status={order.status} />
         </div>
 
         {/* Items */}
@@ -238,7 +221,7 @@ export default function OrderSuccessPage() {
             <button
               onClick={handleRetryPayment}
               disabled={retrying}
-              className="w-full py-2.5 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50"
+              className="w-full py-2.5 bg-brand-600 text-white rounded-lg text-sm font-semibold hover:bg-brand-700 disabled:opacity-50"
             >
               {retrying ? "Redirecting…" : `Pay with ${PAYMENT_METHOD_LABELS[order.paymentMethod]}`}
             </button>
@@ -269,9 +252,7 @@ export default function OrderSuccessPage() {
                 {returnRequests.map(rr => (
                   <div key={rr._id} className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
                     <div className="flex items-center justify-between mb-1">
-                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${RETURN_STATUS_COLORS[rr.status]}`}>
-                        {rr.status.replace("_", " ")}
-                      </span>
+                      <Badge kind="return" status={rr.status} />
                       <span className="text-xs text-gray-400">
                         {new Date(rr.createdAt).toLocaleDateString("en-NP", { day: "numeric", month: "short", year: "numeric" })}
                       </span>
@@ -296,7 +277,7 @@ export default function OrderSuccessPage() {
               <form onSubmit={handleSubmitReturn} className="space-y-3">
                 <p className="text-xs text-gray-500">Select the items you want to return and tell us why.</p>
                 {returnItems.map((item, i) => (
-                  <div key={i} className={`border rounded-lg p-3 ${item.included ? "border-blue-300 bg-blue-50/30" : "border-gray-200"}`}>
+                  <div key={i} className={`border rounded-lg p-3 ${item.included ? "border-brand-300 bg-brand-50/30" : "border-gray-200"}`}>
                     <label className="flex items-start gap-2">
                       <input
                         type="checkbox"
@@ -364,7 +345,7 @@ export default function OrderSuccessPage() {
             View all orders
           </Link>
           <Link to="/products"
-            className="flex-1 text-center py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700">
+            className="flex-1 text-center py-2.5 bg-brand-600 text-white rounded-lg text-sm font-semibold hover:bg-brand-700">
             Continue shopping
           </Link>
         </div>

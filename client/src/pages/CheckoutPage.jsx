@@ -8,6 +8,7 @@ import * as cartApi from "../api/cart";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { submitEsewaForm } from "../utils/esewaForm";
 import ItemThumb from "../components/ItemThumb";
+import { H1_CLASS, CARD_CLASS } from "../utils/ui";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -31,7 +32,7 @@ function AddressCard({ address, selected, onSelect }) {
   const parts = [address.area, address.street, address.city, address.district, address.province].filter(Boolean);
   return (
     <label className={`flex gap-3 border rounded-xl p-4 cursor-pointer transition-colors ${
-      selected ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:border-gray-400"
+      selected ? "border-brand-500 bg-brand-50" : "border-gray-200 bg-white hover:border-gray-400"
     }`}>
       <input type="radio" name="address" value={address._id} checked={selected}
         onChange={() => onSelect(address._id)} className="mt-0.5 flex-shrink-0" />
@@ -41,7 +42,7 @@ function AddressCard({ address, selected, onSelect }) {
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">{address.label}</span>
           )}
           {address.isDefault && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Default</span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-100 text-brand-700">Default</span>
           )}
         </div>
         <p className="text-sm font-semibold text-gray-900">{address.recipientName}</p>
@@ -81,7 +82,7 @@ export default function CheckoutPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-24 text-center">
         <p className="text-gray-500 mb-4">Your cart is empty.</p>
-        <Link to="/products" className="text-blue-600 hover:underline text-sm">Browse products →</Link>
+        <Link to="/products" className="text-brand-600 hover:underline text-sm">Browse products →</Link>
       </div>
     );
   }
@@ -146,7 +147,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Checkout</h1>
+      <h1 className={`${H1_CLASS} mb-8`}>Checkout</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
         {/* ── Left: Delivery address ─────────────────────────── */}
@@ -160,7 +161,7 @@ export default function CheckoutPage() {
           ) : addresses.length === 0 ? (
             <div className="border border-dashed border-gray-300 rounded-xl p-8 text-center">
               <p className="text-gray-500 mb-3 text-sm">No saved addresses.</p>
-              <Link to="/addresses" className="text-blue-600 hover:underline text-sm font-medium">
+              <Link to="/addresses" className="text-brand-600 hover:underline text-sm font-medium">
                 Add a delivery address →
               </Link>
             </div>
@@ -170,7 +171,7 @@ export default function CheckoutPage() {
                 <AddressCard key={a._id} address={a} selected={selectedAddrId === a._id}
                   onSelect={setSelectedAddrId} />
               ))}
-              <Link to="/addresses" className="inline-block text-sm text-blue-600 hover:underline mt-1">
+              <Link to="/addresses" className="inline-block text-sm text-brand-600 hover:underline mt-1">
                 + Add new address
               </Link>
             </div>
@@ -181,7 +182,7 @@ export default function CheckoutPage() {
         <section>
           <h2 className="text-base font-semibold text-gray-800 mb-4">Order Summary</h2>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className={`${CARD_CLASS} p-5`}>
             <div className="space-y-3 mb-5">
               {items.map(item => {
                 const unitPrice = item.variantPrice ?? item.basePrice;
@@ -220,7 +221,7 @@ export default function CheckoutPage() {
                     onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                     onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
                     placeholder="Coupon code"
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                   <button
                     type="button"
@@ -265,21 +266,21 @@ export default function CheckoutPage() {
             <div className="border-t border-gray-100 pt-4 mt-4 space-y-2">
               <p className="text-sm font-semibold text-gray-800 mb-1">Payment Method</p>
               <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
-                paymentMethod === "COD" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-400"
+                paymentMethod === "COD" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
               }`}>
                 <input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === "COD"}
                   onChange={() => setPaymentMethod("COD")} />
                 <span className="text-sm text-gray-800">Cash on Delivery</span>
               </label>
               <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
-                paymentMethod === "KHALTI" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-400"
+                paymentMethod === "KHALTI" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
               }`}>
                 <input type="radio" name="paymentMethod" value="KHALTI" checked={paymentMethod === "KHALTI"}
                   onChange={() => setPaymentMethod("KHALTI")} />
                 <span className="text-sm text-gray-800">Pay with Khalti</span>
               </label>
               <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
-                paymentMethod === "ESEWA" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-400"
+                paymentMethod === "ESEWA" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
               }`}>
                 <input type="radio" name="paymentMethod" value="ESEWA" checked={paymentMethod === "ESEWA"}
                   onChange={() => setPaymentMethod("ESEWA")} />
@@ -294,7 +295,7 @@ export default function CheckoutPage() {
             <button
               onClick={handlePlaceOrder}
               disabled={placing || !selectedAddrId || addresses.length === 0}
-              className="w-full mt-5 bg-blue-600 text-white py-3 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full mt-5 bg-brand-600 text-white py-3 rounded-lg font-semibold text-sm hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {placing ? "Placing order…" : PLACE_ORDER_LABELS[paymentMethod]}
             </button>

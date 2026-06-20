@@ -2,17 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import * as adminApi from "../api/admin";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { printShippingLabel } from "../utils/shippingLabel";
-
-const SHIPMENT_STATUS_COLORS = {
-  BOOKED: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  PICKED_UP: "bg-blue-100 text-blue-700 border-blue-200",
-  IN_TRANSIT: "bg-indigo-100 text-indigo-700 border-indigo-200",
-  OUT_FOR_DELIVERY: "bg-purple-100 text-purple-700 border-purple-200",
-  DELIVERED: "bg-green-100 text-green-700 border-green-200",
-  RETURNED: "bg-orange-100 text-orange-700 border-orange-200",
-  CANCELLED: "bg-red-100 text-red-600 border-red-200",
-  FAILED: "bg-red-100 text-red-600 border-red-200",
-};
+import Badge from "./Badge";
+import { CARD_CLASS } from "../utils/ui";
 
 const DELIVERY_TYPES = [
   { value: "DOOR_TO_DOOR", label: "Door to Door" },
@@ -151,7 +142,7 @@ export default function ShipmentPanel({ orderId, order }) {
 
   if (loading) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl p-5">
+      <div className={`${CARD_CLASS} p-5`}>
         <h2 className="text-sm font-semibold text-gray-800 mb-1">Shipment</h2>
         <p className="text-xs text-gray-400">Loading…</p>
       </div>
@@ -160,7 +151,7 @@ export default function ShipmentPanel({ orderId, order }) {
 
   if (providers.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl p-5">
+      <div className={`${CARD_CLASS} p-5`}>
         <h2 className="text-sm font-semibold text-gray-800 mb-1">Shipment</h2>
         <p className="text-xs text-gray-400">No logistics providers are configured.</p>
       </div>
@@ -170,7 +161,7 @@ export default function ShipmentPanel({ orderId, order }) {
   if (!shipment) {
     const provider = providers.find((p) => p.code === providerCode);
     return (
-      <div className="bg-white border border-gray-200 rounded-xl p-5">
+      <div className={`${CARD_CLASS} p-5`}>
         <h2 className="text-sm font-semibold text-gray-800 mb-3">Create Shipment</h2>
         <form onSubmit={handleCreateShipment} className="space-y-3">
           <select
@@ -232,7 +223,7 @@ export default function ShipmentPanel({ orderId, order }) {
           <button
             type="submit"
             disabled={creating || !providerCode || (provider?.capabilities.branchResolution && !toBranch)}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="w-full bg-brand-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 disabled:opacity-50 transition-colors"
           >
             {creating ? "Creating…" : "Create Shipment"}
           </button>
@@ -255,12 +246,10 @@ export default function ShipmentPanel({ orderId, order }) {
   const shipmentProvider = providers.find((p) => p.code === shipment.provider);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5">
+    <div className={`${CARD_CLASS} p-5`}>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-gray-800">Shipment</h2>
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${SHIPMENT_STATUS_COLORS[shipment.status] || ""}`}>
-          {shipment.status}
-        </span>
+        <Badge kind="shipment" status={shipment.status} />
       </div>
 
       <p className="text-sm text-gray-700">

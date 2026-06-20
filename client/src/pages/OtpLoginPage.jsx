@@ -5,7 +5,7 @@ import * as authApi from "../api/auth";
 import { FormError, FieldError } from "../components/FormError";
 import { getErrorMessage, getFieldErrors } from "../utils/errorHelpers";
 import { isValidNepaliPhone, isValidOtpCode } from "../utils/validators";
-import { INPUT_CLASS, LABEL_CLASS, BUTTON_CLASS } from "../utils/ui";
+import { INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY_FULL, H1_CLASS } from "../utils/ui";
 
 export default function OtpLoginPage() {
   const { loginWithOtp } = useAuth();
@@ -59,7 +59,7 @@ export default function OtpLoginPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-10">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Log in with phone OTP</h1>
+      <h1 className={`${H1_CLASS} mb-6`}>Log in with phone OTP</h1>
       <FormError message={generalError} />
 
       {stage === "phone" ? (
@@ -74,7 +74,7 @@ export default function OtpLoginPage() {
             />
             <FieldError errors={fieldErrors} field="phone" />
           </div>
-          <button type="submit" className={BUTTON_CLASS} disabled={submitting}>
+          <button type="submit" className={BUTTON_PRIMARY_FULL} disabled={submitting}>
             {submitting ? "Sending OTP..." : "Send OTP"}
           </button>
         </form>
@@ -92,7 +92,7 @@ export default function OtpLoginPage() {
             />
             <FieldError errors={fieldErrors} field="code" />
           </div>
-          <button type="submit" className={BUTTON_CLASS} disabled={submitting}>
+          <button type="submit" className={BUTTON_PRIMARY_FULL} disabled={submitting}>
             {submitting ? "Verifying..." : "Verify and log in"}
           </button>
           <button

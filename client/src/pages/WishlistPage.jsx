@@ -5,6 +5,7 @@ import { useCart } from "../hooks/useCart";
 import * as productsApi from "../api/products";
 import { getErrorMessage } from "../utils/errorHelpers";
 import ItemThumb from "../components/ItemThumb";
+import { CARD_CLASS, H1_CLASS } from "../utils/ui";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -23,7 +24,7 @@ export default function WishlistPage() {
             d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
         </svg>
         <p className="text-gray-500 text-lg mb-2">Your wishlist is empty</p>
-        <Link to="/products" className="text-blue-600 hover:underline text-sm">
+        <Link to="/products" className="text-brand-600 hover:underline text-sm">
           Browse products →
         </Link>
       </div>
@@ -79,7 +80,7 @@ export default function WishlistPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className={H1_CLASS}>
           Wishlist <span className="text-gray-400 font-normal text-lg">({itemCount} item{itemCount !== 1 ? "s" : ""})</span>
         </h1>
         <button onClick={handleClear} className="text-sm text-red-500 hover:text-red-700">
@@ -113,7 +114,7 @@ export default function WishlistPage() {
 
 function WishlistItem({ item, onRemove, onMoveToCart, moving }) {
   return (
-    <div className="flex gap-4 bg-white border border-gray-200 rounded-xl p-4 items-start">
+    <div className={`flex gap-4 ${CARD_CLASS} p-4 items-start`}>
       {/* Image */}
       <Link to={`/products/${item.productSlug}`} className="flex-shrink-0 w-20 h-24 rounded-lg overflow-hidden bg-gray-100">
         <ItemThumb src={item.imageUrl} alt={item.productName} width={150} className="w-full h-full" />
@@ -135,7 +136,7 @@ function WishlistItem({ item, onRemove, onMoveToCart, moving }) {
         <button
           onClick={() => onMoveToCart(item)}
           disabled={moving}
-          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 whitespace-nowrap"
+          className="px-3 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-semibold hover:bg-brand-700 disabled:opacity-50 whitespace-nowrap"
         >
           {moving ? "Moving…" : "Move to Cart"}
         </button>

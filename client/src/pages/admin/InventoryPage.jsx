@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import * as adminApi from "../../api/admin";
+import EmptyState from "../../components/EmptyState";
+import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
 
 const LOW_STOCK = 5;
 
@@ -56,7 +58,7 @@ export default function InventoryPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <h1 className="text-xl font-bold text-gray-900 mb-1">Inventory</h1>
+      <h1 className={`${H1_CLASS} mb-1`}>Inventory</h1>
       <p className="text-sm text-gray-500 mb-6">
         {lowCount > 0
           ? <span className="text-amber-700 font-medium">{lowCount} variant{lowCount > 1 ? "s" : ""} below {LOW_STOCK} units</span>
@@ -67,9 +69,9 @@ export default function InventoryPage() {
       {loading ? (
         <p className="text-gray-400 text-sm">Loading…</p>
       ) : variants.length === 0 ? (
-        <p className="text-gray-400 text-sm">No variants found. Create products and add variants first.</p>
+        <EmptyState title="No variants found. Create products and add variants first." />
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className={`${CARD_CLASS} overflow-hidden`}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -109,7 +111,7 @@ export default function InventoryPage() {
                     <td className="px-5 py-3 text-right">
                       <button
                         onClick={() => openAdjust(v)}
-                        className="text-blue-600 hover:underline text-xs font-medium"
+                        className="text-brand-600 hover:underline text-xs font-medium"
                       >
                         Adjust
                       </button>
@@ -126,7 +128,7 @@ export default function InventoryPage() {
       {/* Adjust stock modal */}
       {adjusting && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm">
             <h3 className="text-base font-bold text-gray-900 mb-1">Adjust Stock</h3>
             <p className="text-sm text-gray-500 mb-4">
               <span className="font-medium text-gray-800">{adjusting.productId?.name}</span>{" "}
@@ -142,7 +144,7 @@ export default function InventoryPage() {
                   value={adjForm.change}
                   onChange={e => setAdjForm(f => ({ ...f, change: e.target.value }))}
                   placeholder="e.g. 10 or -3"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   required
                 />
                 <p className="text-xs text-gray-400 mt-1">Use a negative number to reduce stock.</p>
@@ -154,7 +156,7 @@ export default function InventoryPage() {
                   value={adjForm.reason}
                   onChange={e => setAdjForm(f => ({ ...f, reason: e.target.value }))}
                   placeholder="e.g. Manual restock, damaged goods…"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   required
                 />
               </div>
@@ -163,7 +165,7 @@ export default function InventoryPage() {
                 <button
                   type="submit"
                   disabled={adjSaving}
-                  className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  className="flex-1 bg-brand-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 disabled:opacity-50 transition-colors"
                 >
                   {adjSaving ? "Saving…" : "Save"}
                 </button>

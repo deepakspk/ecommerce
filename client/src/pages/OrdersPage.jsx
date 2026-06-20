@@ -2,18 +2,12 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as ordersApi from "../api/orders";
 import { getErrorMessage } from "../utils/errorHelpers";
+import Badge from "../components/Badge";
+import EmptyState from "../components/EmptyState";
+import { H1_CLASS, CARD_CLASS } from "../utils/ui";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 const fmtDate = (d) => new Date(d).toLocaleDateString("en-NP", { day: "numeric", month: "short", year: "numeric" });
-
-const STATUS_COLORS = {
-  PENDING: "bg-yellow-100 text-yellow-700",
-  CONFIRMED: "bg-blue-100 text-blue-700",
-  PACKED: "bg-indigo-100 text-indigo-700",
-  SHIPPED: "bg-purple-100 text-purple-700",
-  DELIVERED: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-700",
-};
 
 const PAYMENT_METHOD_LABELS = { COD: "Cash on Delivery", KHALTI: "Khalti", ESEWA: "eSewa" };
 
@@ -56,28 +50,26 @@ export default function OrdersPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
+      <h1 className={`${H1_CLASS} mb-6`}>My Orders</h1>
 
       {error && (
         <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-4">{error}</p>
       )}
 
       {orders.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <p className="mb-2">No orders yet.</p>
-          <Link to="/products" className="text-blue-600 hover:underline text-sm">Start shopping →</Link>
-        </div>
+        <EmptyState
+          title="No orders yet."
+          action={<Link to="/products" className="text-brand-600 hover:underline text-sm">Start shopping →</Link>}
+        />
       ) : (
         <div className="space-y-3">
           {orders.map(order => (
             <Link key={order._id} to={`/orders/${order._id}`}
-              className="block bg-white border border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-sm transition-all">
+              className={`block ${CARD_CLASS} p-5 hover:border-brand-300 hover:shadow-sm transition-all`}>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COLORS[order.status] ?? "bg-gray-100 text-gray-600"}`}>
-                      {order.status}
-                    </span>
+                    <Badge kind="order" status={order.status} />
                     <span className="text-xs text-gray-400">{fmtDate(order.createdAt)}</span>
                   </div>
                   <p className="text-sm font-mono text-gray-400 truncate">{order._id}</p>

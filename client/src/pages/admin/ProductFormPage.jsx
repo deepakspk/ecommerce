@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import { cloudinaryUrl } from "../../utils/cloudinaryUrl";
+import { H1_CLASS } from "../../utils/ui";
 
 const EMPTY_VARIANT = { size: "", color: "", sku: "", price: "", stockQuantity: "" };
 
@@ -153,7 +154,7 @@ export default function ProductFormPage() {
     return (
       <div className="p-8 max-w-3xl animate-pulse">
         <div className="h-5 bg-gray-200 rounded w-48 mb-6" />
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
           <div className="h-4 bg-gray-200 rounded w-24" />
           <div className="h-9 bg-gray-200 rounded" />
           <div className="h-20 bg-gray-200 rounded" />
@@ -173,12 +174,12 @@ export default function ProductFormPage() {
       <div className="flex items-center gap-3 mb-6">
         <Link to="/admin/products" className="text-gray-400 hover:text-gray-700 text-sm">← Products</Link>
         <span className="text-gray-300">/</span>
-        <h1 className="text-xl font-bold text-gray-900">{isEdit ? "Edit Product" : "New Product"}</h1>
+        <h1 className={H1_CLASS}>{isEdit ? "Edit Product" : "New Product"}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Details */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
           <h2 className="text-sm font-semibold text-gray-700 mb-1">Details</h2>
 
           <div>
@@ -187,7 +188,7 @@ export default function ProductFormPage() {
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Product name"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
           </div>
@@ -199,7 +200,7 @@ export default function ProductFormPage() {
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               rows={3}
               placeholder="Product description"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
             />
           </div>
 
@@ -238,7 +239,7 @@ export default function ProductFormPage() {
               value={form.basePrice}
               onChange={e => setForm(f => ({ ...f, basePrice: e.target.value }))}
               placeholder="0"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
           </div>
@@ -256,7 +257,7 @@ export default function ProductFormPage() {
         </div>
 
         {/* Images */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <div className="bg-white border border-gray-200 rounded-lg p-5">
           <h2 className="text-sm font-semibold text-gray-700 mb-3">Images</h2>
 
           {isEdit && existingImages.length > 0 && (
@@ -295,7 +296,7 @@ export default function ProductFormPage() {
                   <img
                     src={URL.createObjectURL(f)}
                     alt=""
-                    className="w-20 h-20 object-cover rounded-lg border-2 border-dashed border-blue-300"
+                    className="w-20 h-20 object-cover rounded-lg border-2 border-dashed border-brand-300"
                   />
                   <button
                     type="button"
@@ -337,14 +338,14 @@ export default function ProductFormPage() {
         <button
           type="submit"
           disabled={saving}
-          className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="bg-brand-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 disabled:opacity-50 transition-colors"
         >
           {saving ? "Saving…" : isEdit ? "Save Changes" : "Create Product"}
         </button>
       </form>
 
       {/* Variants */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5 mt-6">
+      <div className="bg-white border border-gray-200 rounded-lg p-5 mt-6">
         <h2 className="text-sm font-semibold text-gray-700 mb-4">
           Variants
           {!isEdit && <span className="ml-2 text-xs font-normal text-gray-400">(added when you submit the form)</span>}
@@ -367,19 +368,19 @@ export default function ProductFormPage() {
                 {isEdit
                   ? variants.map(v =>
                       editingVariantId === v._id ? (
-                        <tr key={v._id} className="bg-blue-50">
+                        <tr key={v._id} className="bg-brand-50">
                           {(["size", "color", "sku", "price", "stockQuantity"]).map(k => (
                             <td key={k} className="py-1.5 pr-2">
                               <input
                                 value={editVariantForm[k]}
                                 onChange={e => setEditVariantForm(f => ({ ...f, [k]: e.target.value }))}
-                                className="w-full border border-blue-400 rounded px-2 py-1 text-xs focus:outline-none"
+                                className="w-full border border-brand-400 rounded px-2 py-1 text-xs focus:outline-none"
                               />
                             </td>
                           ))}
                           <td className="py-1.5 whitespace-nowrap">
                             <button onClick={() => saveEditVariant(v._id)}
-                              className="text-blue-600 hover:underline mr-2">Save</button>
+                              className="text-brand-600 hover:underline mr-2">Save</button>
                             <button onClick={() => setEditingVariantId(null)}
                               className="text-gray-400 hover:underline">Cancel</button>
                           </td>
@@ -393,7 +394,7 @@ export default function ProductFormPage() {
                           <td className="py-2 pr-3 text-gray-700">{v.stockQuantity}</td>
                           <td className="py-2 whitespace-nowrap">
                             <button onClick={() => startEditVariant(v)}
-                              className="text-blue-600 hover:underline mr-2">Edit</button>
+                              className="text-brand-600 hover:underline mr-2">Edit</button>
                             <button onClick={() => handleDeleteVariant(v._id)}
                               className="text-red-500 hover:underline">Delete</button>
                           </td>
@@ -427,7 +428,7 @@ export default function ProductFormPage() {
                 value={newVariant[key]}
                 onChange={e => setNewVariant(v => ({ ...v, [key]: e.target.value }))}
                 placeholder={label}
-                className="border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             )
           )}

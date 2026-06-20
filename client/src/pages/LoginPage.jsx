@@ -5,7 +5,7 @@ import { FormError, FieldError } from "../components/FormError";
 import { getErrorMessage, getFieldErrors } from "../utils/errorHelpers";
 import { isValidEmail } from "../utils/validators";
 import { getGoogleAuthUrl } from "../api/auth";
-import { INPUT_CLASS, LABEL_CLASS, BUTTON_CLASS } from "../utils/ui";
+import { INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY_FULL, H1_CLASS } from "../utils/ui";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -50,7 +50,7 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-10">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Log in</h1>
+      <h1 className={`${H1_CLASS} mb-6`}>Log in</h1>
       <FormError message={googleError ? "Google sign-in failed. Please try again." : generalError} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -75,16 +75,16 @@ export default function LoginPage() {
           />
           <FieldError errors={fieldErrors} field="password" />
         </div>
-        <button type="submit" className={BUTTON_CLASS} disabled={submitting}>
+        <button type="submit" className={BUTTON_PRIMARY_FULL} disabled={submitting}>
           {submitting ? "Logging in..." : "Log in"}
         </button>
       </form>
 
       <div className="flex justify-between text-sm mt-4">
-        <Link to="/forgot-password" className="text-blue-600 hover:underline">
+        <Link to="/forgot-password" className="text-brand-600 hover:underline">
           Forgot password?
         </Link>
-        <Link to="/otp-login" className="text-blue-600 hover:underline">
+        <Link to="/otp-login" className="text-brand-600 hover:underline">
           Log in with phone OTP
         </Link>
       </div>
@@ -98,7 +98,7 @@ export default function LoginPage() {
 
       <p className="text-sm text-gray-600 mt-4">
         Don't have an account?{" "}
-        <Link to="/signup" className="text-blue-600 hover:underline">
+        <Link to="/signup" className="text-brand-600 hover:underline">
           Sign up
         </Link>
       </p>

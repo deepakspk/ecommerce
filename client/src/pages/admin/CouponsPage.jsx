@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import * as adminApi from "../../api/admin";
+import EmptyState from "../../components/EmptyState";
+import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
 
 const EMPTY_FORM = {
   code: "",
@@ -136,10 +138,10 @@ export default function CouponsPage() {
   return (
     <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Coupons</h1>
+        <h1 className={H1_CLASS}>Coupons</h1>
         <button
           onClick={openCreate}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors"
         >
           + New Coupon
         </button>
@@ -150,9 +152,9 @@ export default function CouponsPage() {
       {loading ? (
         <p className="text-gray-400 text-sm">Loading…</p>
       ) : coupons.length === 0 ? (
-        <p className="text-gray-400 text-sm">No coupons yet.</p>
+        <EmptyState title="No coupons yet." />
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className={`${CARD_CLASS} overflow-hidden`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -200,7 +202,7 @@ export default function CouponsPage() {
                       </button>
                     </td>
                     <td className="px-5 py-3 text-right whitespace-nowrap">
-                      <button onClick={() => openEdit(c)} className="text-blue-600 hover:underline text-xs mr-3">Edit</button>
+                      <button onClick={() => openEdit(c)} className="text-brand-600 hover:underline text-xs mr-3">Edit</button>
                       <button onClick={() => handleDelete(c)} className="text-red-600 hover:underline text-xs">Delete</button>
                     </td>
                   </tr>
@@ -214,7 +216,7 @@ export default function CouponsPage() {
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeForm}>
           <div
-            className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-base font-bold text-gray-900 mb-4">{editId ? "Edit Coupon" : "New Coupon"}</h3>
@@ -225,7 +227,7 @@ export default function CouponsPage() {
                   value={form.code}
                   onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
                   placeholder="e.g. WELCOME10"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
                   required
                 />
               </div>
@@ -236,7 +238,7 @@ export default function CouponsPage() {
                   <select
                     value={form.type}
                     onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   >
                     <option value="PERCENTAGE">Percentage</option>
                     <option value="FIXED">Fixed Amount</option>
@@ -252,7 +254,7 @@ export default function CouponsPage() {
                     max={form.type === "PERCENTAGE" ? 100 : undefined}
                     value={form.value}
                     onChange={(e) => setForm((f) => ({ ...f, value: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     required
                   />
                 </div>
@@ -267,7 +269,7 @@ export default function CouponsPage() {
                     value={form.minOrderValue}
                     onChange={(e) => setForm((f) => ({ ...f, minOrderValue: e.target.value }))}
                     placeholder="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
                 <div>
@@ -278,7 +280,7 @@ export default function CouponsPage() {
                     value={form.maxDiscountAmount}
                     onChange={(e) => setForm((f) => ({ ...f, maxDiscountAmount: e.target.value }))}
                     placeholder="No cap"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
               </div>
@@ -292,7 +294,7 @@ export default function CouponsPage() {
                     value={form.usageLimit}
                     onChange={(e) => setForm((f) => ({ ...f, usageLimit: e.target.value }))}
                     placeholder="Unlimited"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
                 <div>
@@ -303,7 +305,7 @@ export default function CouponsPage() {
                     value={form.perUserLimit}
                     onChange={(e) => setForm((f) => ({ ...f, perUserLimit: e.target.value }))}
                     placeholder="Unlimited"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
               </div>
@@ -315,7 +317,7 @@ export default function CouponsPage() {
                     type="date"
                     value={form.startsAt}
                     onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
                 <div>
@@ -324,7 +326,7 @@ export default function CouponsPage() {
                     type="date"
                     value={form.expiresAt}
                     onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
               </div>
@@ -346,7 +348,7 @@ export default function CouponsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  className="flex-1 bg-brand-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 disabled:opacity-50 transition-colors"
                 >
                   {saving ? "Saving…" : editId ? "Save Changes" : "Create"}
                 </button>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import * as addressApi from "../api/addresses";
 import { getErrorMessage } from "../utils/errorHelpers";
 import NEPAL_GEO, { getDistricts, getMunicipalities } from "../data/nepalGeoData";
+import { H1_CLASS } from "../utils/ui";
 
 const PROVINCES = Object.keys(NEPAL_GEO);
 
@@ -23,7 +24,7 @@ function Select({ label, required, value, onChange, options, placeholder, disabl
         value={value}
         onChange={e => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
       >
         <option value="">{placeholder}</option>
         {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -43,7 +44,7 @@ function TextInput({ label, required, value, onChange, placeholder }) {
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
     </div>
   );
@@ -131,7 +132,7 @@ function AddressForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
           type="checkbox"
           checked={form.isDefault}
           onChange={e => set("isDefault", e.target.checked)}
-          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
         />
         Set as default address
       </label>
@@ -140,7 +141,7 @@ function AddressForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
         <button
           type="submit"
           disabled={saving}
-          className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="px-5 py-2 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save Address"}
         </button>
@@ -231,11 +232,11 @@ export default function AddressesPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Saved Addresses</h1>
+        <h1 className={H1_CLASS}>Saved Addresses</h1>
         {!showForm && (
           <button
             onClick={() => { setShowForm(true); setEditId(null); }}
-            className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700"
           >
             + Add Address
           </button>
@@ -264,7 +265,7 @@ export default function AddressesPage() {
       ) : addresses.length === 0 && !showForm ? (
         <div className="text-center py-16 text-gray-400">
           <p className="mb-2">No saved addresses yet.</p>
-          <button onClick={() => setShowForm(true)} className="text-blue-600 hover:underline text-sm">
+          <button onClick={() => setShowForm(true)} className="text-brand-600 hover:underline text-sm">
             Add your first address →
           </button>
         </div>
@@ -283,7 +284,7 @@ export default function AddressesPage() {
                   />
                 </div>
               ) : (
-                <div className={`border rounded-xl p-4 ${a.isDefault ? "border-blue-400 bg-blue-50" : "border-gray-200 bg-white"}`}>
+                <div className={`border rounded-lg p-4 ${a.isDefault ? "border-brand-400 bg-brand-50" : "border-gray-200 bg-white"}`}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -291,7 +292,7 @@ export default function AddressesPage() {
                           <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">{a.label}</span>
                         )}
                         {a.isDefault && (
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Default</span>
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-100 text-brand-700">Default</span>
                         )}
                       </div>
                       <p className="text-sm font-semibold text-gray-900">{a.recipientName}</p>
@@ -304,7 +305,7 @@ export default function AddressesPage() {
                       {!a.isDefault && (
                         <button
                           onClick={() => handleSetDefault(a._id)}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium text-right"
+                          className="text-xs text-brand-600 hover:text-brand-800 font-medium text-right"
                         >
                           Set default
                         </button>

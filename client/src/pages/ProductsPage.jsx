@@ -7,6 +7,10 @@ import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import Seo from "../components/Seo";
 import WishlistButton from "../components/WishlistButton";
 import StarRating from "../components/StarRating";
+import FilterPill from "../components/FilterPill";
+import Pagination from "../components/Pagination";
+import EmptyState from "../components/EmptyState";
+import { INPUT_CLASS, BUTTON_GHOST, PAGE_CLASS, H1_CLASS, CARD_CLASS } from "../utils/ui";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
@@ -112,20 +116,20 @@ export default function ProductsPage() {
     : null;
 
   return (
-    <div className="w-full px-4 sm:px-8 py-6">
+    <div className={PAGE_CLASS}>
       <Seo title="Shop Products" description="Browse shirts, pants, and shoes available for delivery across Nepal." />
-      <h1 className="text-2xl font-bold text-gray-900 mb-5">Products</h1>
+      <h1 className={`${H1_CLASS} mb-5`}>Products</h1>
 
       {/* Category pills */}
       {!metaLoading && (
         <div className="flex flex-wrap gap-2 mb-4">
-          <CategoryPill
+          <FilterPill
             label="All"
             active={selectedCategory === ""}
             onClick={() => changeFilter(setSelectedCategory, "")}
           />
           {categories.map((cat) => (
-            <CategoryPill
+            <FilterPill
               key={cat.id}
               label={cat.name}
               active={selectedCategory === cat.slug}
@@ -139,7 +143,7 @@ export default function ProductsPage() {
       {activeRoot && activeRoot.children.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4 pl-2">
           {activeRoot.children.map((child) => (
-            <CategoryPill
+            <FilterPill
               key={child.id}
               label={child.name}
               active={selectedCategory === child.slug}
@@ -158,7 +162,7 @@ export default function ProductsPage() {
             placeholder="Search products…"
             value={search}
             onChange={(e) => changeFilter(setSearch, e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-52"
+            className={`${INPUT_CLASS} sm:w-52`}
           />
         </div>
 
@@ -168,7 +172,7 @@ export default function ProductsPage() {
             <select
               value={selectedSize}
               onChange={(e) => changeFilter(setSelectedSize, e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+              className={`${INPUT_CLASS} sm:w-auto`}
             >
               <option value="">All sizes</option>
               {availableFilters.sizes.map((s) => (
@@ -184,7 +188,7 @@ export default function ProductsPage() {
             <select
               value={selectedColor}
               onChange={(e) => changeFilter(setSelectedColor, e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+              className={`${INPUT_CLASS} sm:w-auto`}
             >
               <option value="">All colors</option>
               {availableFilters.colors.map((c) => (
@@ -203,7 +207,7 @@ export default function ProductsPage() {
               value={minPrice}
               onChange={(e) => changeFilter(setMinPrice, e.target.value)}
               min={0}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-24"
+              className={`${INPUT_CLASS} sm:w-24`}
             />
             <span className="text-gray-400 text-sm">–</span>
             <input
@@ -212,7 +216,7 @@ export default function ProductsPage() {
               value={maxPrice}
               onChange={(e) => changeFilter(setMaxPrice, e.target.value)}
               min={0}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-24"
+              className={`${INPUT_CLASS} sm:w-24`}
             />
           </div>
         </div>
@@ -220,7 +224,7 @@ export default function ProductsPage() {
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-sm text-red-600 hover:text-red-700 font-medium pb-0.5 self-start sm:self-auto"
+            className={`${BUTTON_GHOST} text-red-600 hover:text-red-700 pb-0.5 self-start sm:self-auto`}
           >
             Clear filters
           </button>
@@ -252,14 +256,14 @@ export default function ProductsPage() {
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <p className="text-lg mb-2">No products match your filters</p>
-          {hasActiveFilters && (
-            <button onClick={clearFilters} className="text-sm text-blue-600 hover:underline">
+        <EmptyState
+          title="No products match your filters"
+          action={hasActiveFilters && (
+            <button onClick={clearFilters} className="text-sm text-brand-600 hover:underline">
               Clear all filters
             </button>
           )}
-        </div>
+        />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {products.map((product) => (
@@ -268,54 +272,8 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Pagination */}
-      {pages > 1 && (
-        <div className="flex justify-center gap-2 mt-10">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="px-3 py-1.5 border border-gray-300 rounded text-sm disabled:opacity-40 hover:border-blue-400 transition-colors"
-          >
-            Previous
-          </button>
-          {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`px-3 py-1.5 border rounded text-sm transition-colors ${
-                p === page
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "border-gray-300 hover:border-blue-400"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-          <button
-            onClick={() => setPage((p) => Math.min(pages, p + 1))}
-            disabled={page === pages}
-            className="px-3 py-1.5 border border-gray-300 rounded text-sm disabled:opacity-40 hover:border-blue-400 transition-colors"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination page={page} pages={pages} onChange={setPage} />
     </div>
-  );
-}
-
-function CategoryPill({ label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-        active
-          ? "bg-blue-600 text-white border-blue-600"
-          : "bg-white text-gray-700 border-gray-300 hover:border-blue-400"
-      }`}
-    >
-      {label}
-    </button>
   );
 }
 
@@ -325,7 +283,7 @@ function ProductCard({ product }) {
   return (
     <Link
       to={`/products/${product.slug}`}
-      className="group block bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+      className={`group block ${CARD_CLASS} overflow-hidden hover:shadow-md transition-shadow`}
     >
       <div className="relative aspect-[4/5] bg-gray-100 overflow-hidden">
         <WishlistButton
@@ -348,7 +306,7 @@ function ProductCard({ product }) {
         )}
       </div>
       <div className="p-3">
-        <p className="text-xs text-blue-600 mb-0.5">{product.categories?.map((c) => c.name).join(", ")}</p>
+        <p className="text-xs text-brand-600 mb-0.5">{product.categories?.map((c) => c.name).join(", ")}</p>
         <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">{product.name}</h3>
         {product.reviewCount > 0 && (
           <div className="flex items-center gap-1 mb-1">

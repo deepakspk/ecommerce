@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
+import Badge from "../../components/Badge";
+import { H1_CLASS } from "../../utils/ui";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -10,14 +12,6 @@ const STATUS_TRANSITIONS = {
   PICKED_UP: ["REFUNDED"],
   REJECTED: [],
   REFUNDED: [],
-};
-
-const STATUS_COLORS = {
-  REQUESTED: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  APPROVED: "bg-blue-100 text-blue-700 border-blue-200",
-  REJECTED: "bg-red-100 text-red-600 border-red-200",
-  PICKED_UP: "bg-indigo-100 text-indigo-700 border-indigo-200",
-  REFUNDED: "bg-green-100 text-green-700 border-green-200",
 };
 
 const ACTION_LABELS = {
@@ -69,7 +63,7 @@ export default function AdminReturnDetailPage() {
   if (!returnRequest) return (
     <div className="p-8">
       <p className="text-red-600 mb-3">Return request not found.</p>
-      <Link to="/admin/returns" className="text-blue-600 hover:underline text-sm">← Back to returns</Link>
+      <Link to="/admin/returns" className="text-brand-600 hover:underline text-sm">← Back to returns</Link>
     </div>
   );
 
@@ -82,10 +76,10 @@ export default function AdminReturnDetailPage() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <Link to="/admin/returns" className="text-gray-400 hover:text-gray-700 text-sm">← Returns</Link>
-          <h1 className="text-xl font-bold text-gray-900 mt-1">
+          <h1 className={`${H1_CLASS} mt-1`}>
             Return for order{" "}
             {order?._id ? (
-              <Link to={`/admin/orders/${order._id}`} className="font-mono text-blue-600 hover:underline">
+              <Link to={`/admin/orders/${order._id}`} className="font-mono text-brand-600 hover:underline">
                 #{order._id.slice(-8).toUpperCase()}
               </Link>
             ) : (
@@ -94,15 +88,13 @@ export default function AdminReturnDetailPage() {
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">Requested {fmtDate(returnRequest.createdAt)}</p>
         </div>
-        <span className={`text-sm font-semibold px-3 py-1 rounded-full border ${STATUS_COLORS[returnRequest.status]}`}>
-          {returnRequest.status.replace("_", " ")}
-        </span>
+        <Badge kind="return" status={returnRequest.status} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5">
         <div className="space-y-5">
           {/* Items */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100">
               <h2 className="text-sm font-semibold text-gray-800">Items to return ({returnRequest.items.length})</h2>
             </div>
@@ -129,7 +121,7 @@ export default function AdminReturnDetailPage() {
           </div>
 
           {/* Customer */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
             <h2 className="text-sm font-semibold text-gray-800 mb-2">Customer</h2>
             <p className="text-sm font-medium text-gray-900">{returnRequest.userId?.name || "—"}</p>
             <p className="text-sm text-gray-500">{returnRequest.userId?.email}</p>
@@ -139,7 +131,7 @@ export default function AdminReturnDetailPage() {
 
         {/* Actions */}
         <div className="space-y-5">
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
             <h2 className="text-sm font-semibold text-gray-800 mb-3">Admin note</h2>
             <textarea
               value={adminNote}
@@ -150,7 +142,7 @@ export default function AdminReturnDetailPage() {
             />
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
             <h2 className="text-sm font-semibold text-gray-800 mb-3">Update Status</h2>
 
             {nextStatuses.length === 0 ? (
@@ -165,7 +157,7 @@ export default function AdminReturnDetailPage() {
                     className={`w-full py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 ${
                       s === "REJECTED"
                         ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-brand-600 text-white hover:bg-brand-700"
                     }`}
                   >
                     {updating ? "Updating…" : ACTION_LABELS[s]}

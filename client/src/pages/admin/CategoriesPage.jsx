@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import * as adminApi from "../../api/admin";
 import { cloudinaryUrl } from "../../utils/cloudinaryUrl";
+import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
 
 const EMPTY_FORM = {
   name: "",
@@ -222,10 +223,10 @@ export default function CategoriesPage() {
   return (
     <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Categories</h1>
+        <h1 className={H1_CLASS}>Categories</h1>
         <button
           onClick={() => openCreate(null)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors"
         >
           + Root Category
         </button>
@@ -238,7 +239,7 @@ export default function CategoriesPage() {
       ) : roots.length === 0 ? (
         <p className="text-gray-400 text-sm">No categories yet.</p>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className={`${CARD_CLASS} overflow-hidden`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -281,7 +282,7 @@ export default function CategoriesPage() {
               <input
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 required
               />
             </div>
@@ -291,7 +292,7 @@ export default function CategoriesPage() {
               <select
                 value={form.parent}
                 onChange={(e) => setForm((f) => ({ ...f, parent: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 <option value="">— None (root category) —</option>
                 {categories
@@ -311,7 +312,7 @@ export default function CategoriesPage() {
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 rows={2}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
               />
             </div>
 
@@ -356,7 +357,7 @@ export default function CategoriesPage() {
                   type="number"
                   value={form.sortOrder}
                   onChange={(e) => setForm((f) => ({ ...f, sortOrder: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
               <div className="flex items-center gap-2 pt-6">
@@ -379,7 +380,7 @@ export default function CategoriesPage() {
                   <input
                     value={form.seoTitle}
                     onChange={(e) => setForm((f) => ({ ...f, seoTitle: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
                 <div>
@@ -388,7 +389,7 @@ export default function CategoriesPage() {
                     value={form.seoDescription}
                     onChange={(e) => setForm((f) => ({ ...f, seoDescription: e.target.value }))}
                     rows={2}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                   />
                 </div>
               </div>
@@ -403,7 +404,7 @@ export default function CategoriesPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
               >
                 {saving ? "Saving…" : editId ? "Save Changes" : "Create"}
               </button>
@@ -496,8 +497,8 @@ function CategoryRow({ cat, depth, byParent, expanded, toggleExpand, onAddChild,
         </td>
         <td className="px-5 py-3 text-right whitespace-nowrap">
           <button onClick={() => onStats(cat)} className="text-gray-500 hover:underline text-xs mr-3">Stats</button>
-          <button onClick={() => onAddChild(cat._id)} className="text-blue-600 hover:underline text-xs mr-3">+ Sub</button>
-          <button onClick={() => onEdit(cat)} className="text-blue-600 hover:underline text-xs mr-3">Edit</button>
+          <button onClick={() => onAddChild(cat._id)} className="text-brand-600 hover:underline text-xs mr-3">+ Sub</button>
+          <button onClick={() => onEdit(cat)} className="text-brand-600 hover:underline text-xs mr-3">Edit</button>
           <button onClick={() => onDelete(cat)} className="text-red-600 hover:underline text-xs">Delete</button>
         </td>
       </tr>

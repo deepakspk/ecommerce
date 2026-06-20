@@ -11,6 +11,7 @@ import Seo from "../components/Seo";
 import WishlistButton from "../components/WishlistButton";
 import StarRating from "../components/StarRating";
 import ProductReviews from "../components/ProductReviews";
+import { PAGE_CLASS, H1_CLASS } from "../utils/ui";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
@@ -66,7 +67,7 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="w-full px-8 py-6">
+      <div className={PAGE_CLASS}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-pulse">
           <div className="aspect-[4/5] bg-gray-200 rounded-lg" />
           <div className="space-y-4 pt-2">
@@ -84,7 +85,7 @@ export default function ProductDetailPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-24 text-center">
         <p className="text-red-600 mb-4">{error || "Product not found."}</p>
-        <Link to="/products" className="text-blue-600 hover:underline text-sm">
+        <Link to="/products" className="text-brand-600 hover:underline text-sm">
           ← Back to products
         </Link>
       </div>
@@ -152,7 +153,7 @@ export default function ProductDetailPage() {
   const canAddToCart = hasVariants && selectedSize && selectedColor && !isOutOfStock;
 
   return (
-    <div className="w-full px-4 sm:px-8 py-6">
+    <div className={PAGE_CLASS}>
       <Seo
         title={product.name}
         description={product.description?.slice(0, 160) || undefined}
@@ -202,7 +203,7 @@ export default function ProductDetailPage() {
                     setMainImageFailed(false);
                   }}
                   className={`flex-shrink-0 w-16 h-20 rounded-lg border overflow-hidden transition-colors ${
-                    i === selectedImage ? "border-blue-500" : "border-gray-200 hover:border-gray-400"
+                    i === selectedImage ? "border-brand-500" : "border-gray-200 hover:border-gray-400"
                   }`}
                 >
                   {failedThumbs.has(i) ? (
@@ -228,8 +229,8 @@ export default function ProductDetailPage() {
         <div>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm text-blue-600 mb-1">{product.categories?.map((c) => c.name).join(", ")}</p>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">{product.name}</h1>
+              <p className="text-sm text-brand-600 mb-1">{product.categories?.map((c) => c.name).join(", ")}</p>
+              <h1 className={`${H1_CLASS} mb-1`}>{product.name}</h1>
               {product.reviewCount > 0 && (
                 <div className="flex items-center gap-1.5 mb-2">
                   <StarRating rating={product.averageRating} />
@@ -247,7 +248,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Price */}
-          <p className="text-2xl font-semibold text-gray-900 mb-4">
+          <p className="text-2xl font-bold text-gray-900 mb-4">
             {formatPrice(displayPrice)}
           </p>
 
@@ -272,7 +273,7 @@ export default function ProductDetailPage() {
                     onClick={() => handleSizeClick(size)}
                     className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
                       selectedSize === size
-                        ? "border-blue-600 bg-blue-50 text-blue-700"
+                        ? "border-brand-600 bg-brand-50 text-brand-700"
                         : "border-gray-300 text-gray-700 hover:border-gray-500"
                     }`}
                   >
@@ -299,7 +300,7 @@ export default function ProductDetailPage() {
                     onClick={() => handleColorClick(color)}
                     className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
                       selectedColor === color
-                        ? "border-blue-600 bg-blue-50 text-blue-700"
+                        ? "border-brand-600 bg-brand-50 text-brand-700"
                         : "border-gray-300 text-gray-700 hover:border-gray-500"
                     }`}
                   >
@@ -324,7 +325,7 @@ export default function ProductDetailPage() {
               {isOutOfStock && (
                 <div className="mt-2">
                   {!user ? (
-                    <Link to="/login" className="text-sm text-blue-600 hover:underline">
+                    <Link to="/login" className="text-sm text-brand-600 hover:underline">
                       Log in to get notified when this is back in stock
                     </Link>
                   ) : notifyState === "done" ? (
@@ -335,7 +336,7 @@ export default function ProductDetailPage() {
                         type="button"
                         onClick={handleNotifyMe}
                         disabled={notifyState === "pending"}
-                        className="text-sm font-medium text-blue-600 hover:underline disabled:opacity-50"
+                        className="text-sm font-medium text-brand-600 hover:underline disabled:opacity-50"
                       >
                         {notifyState === "pending" ? "Submitting…" : "Notify me when back in stock"}
                       </button>
@@ -366,8 +367,8 @@ export default function ProductDetailPage() {
                 : !hasVariants || (isOutOfStock && selectedVariant)
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : canAddToCart
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-blue-600 text-white opacity-50 cursor-not-allowed"
+                ? "bg-brand-600 text-white hover:bg-brand-700"
+                : "bg-brand-600 text-white opacity-50 cursor-not-allowed"
             }`}
           >
             {cartFeedback
@@ -384,7 +385,7 @@ export default function ProductDetailPage() {
           </button>
 
           {cartFeedback && (
-            <Link to="/cart" className="block text-center text-sm text-blue-600 hover:underline mt-2">
+            <Link to="/cart" className="block text-center text-sm text-brand-600 hover:underline mt-2">
               View cart →
             </Link>
           )}

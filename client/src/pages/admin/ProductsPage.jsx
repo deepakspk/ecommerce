@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import ItemThumb from "../../components/ItemThumb";
+import EmptyState from "../../components/EmptyState";
+import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -35,10 +37,10 @@ export default function ProductsPage() {
   return (
     <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Products</h1>
+        <h1 className={H1_CLASS}>Products</h1>
         <Link
           to="/admin/products/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors"
         >
           + New Product
         </Link>
@@ -51,14 +53,16 @@ export default function ProductsPage() {
       {loading ? (
         <p className="text-gray-400 text-sm">Loading…</p>
       ) : products.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-gray-400 mb-4">No products yet.</p>
-          <Link to="/admin/products/new" className="text-blue-600 hover:underline text-sm font-medium">
-            Create your first product →
-          </Link>
-        </div>
+        <EmptyState
+          title="No products yet."
+          action={
+            <Link to="/admin/products/new" className="text-brand-600 hover:underline text-sm font-medium">
+              Create your first product →
+            </Link>
+          }
+        />
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className={`${CARD_CLASS} overflow-hidden`}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -101,7 +105,7 @@ export default function ProductsPage() {
                   <td className="px-5 py-3 text-right whitespace-nowrap">
                     <Link
                       to={`/admin/products/${p._id}/edit`}
-                      className="text-blue-600 hover:underline text-xs mr-4"
+                      className="text-brand-600 hover:underline text-xs mr-4"
                     >
                       Edit
                     </Link>

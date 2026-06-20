@@ -2,17 +2,10 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import * as adminApi from "../../api/admin";
+import Badge from "../../components/Badge";
+import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
-
-const STATUS_COLORS = {
-  PENDING:   "bg-yellow-100 text-yellow-700",
-  CONFIRMED: "bg-blue-100 text-blue-700",
-  PACKED:    "bg-purple-100 text-purple-700",
-  SHIPPED:   "bg-indigo-100 text-indigo-700",
-  DELIVERED: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-600",
-};
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -36,7 +29,7 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Dashboard</h1>
+      <h1 className={`${H1_CLASS} mb-1`}>Dashboard</h1>
       <p className="text-sm text-gray-500 mb-8">Welcome back, {user?.name}</p>
 
       {error && (
@@ -74,10 +67,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent orders */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mb-8">
+      <div className={`${CARD_CLASS} overflow-hidden mb-8`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-800">Recent Orders</h2>
-          <Link to="/admin/orders" className="text-xs text-blue-600 hover:underline">
+          <Link to="/admin/orders" className="text-xs text-brand-600 hover:underline">
             View all →
           </Link>
         </div>
@@ -99,16 +92,14 @@ export default function DashboardPage() {
               {recentOrders.map(o => (
                 <tr key={o._id} className="hover:bg-gray-50">
                   <td className="px-5 py-3">
-                    <Link to={`/admin/orders/${o._id}`} className="text-blue-600 hover:underline font-mono text-xs">
+                    <Link to={`/admin/orders/${o._id}`} className="text-brand-600 hover:underline font-mono text-xs">
                       #{o._id.slice(-8).toUpperCase()}
                     </Link>
                   </td>
                   <td className="px-5 py-3 text-gray-700">{o.userId?.name || "—"}</td>
                   <td className="px-5 py-3 font-medium text-gray-900">{fmt(o.total)}</td>
                   <td className="px-5 py-3">
-                    <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[o.status]}`}>
-                      {o.status}
-                    </span>
+                    <Badge kind="order" status={o.status} />
                   </td>
                 </tr>
               ))}
@@ -120,7 +111,7 @@ export default function DashboardPage() {
       {/* Quick actions */}
       <div className="flex gap-3 flex-wrap">
         <Link to="/admin/products/new"
-          className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+          className="bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors">
           + New Product
         </Link>
         <Link to="/admin/orders"
@@ -138,13 +129,13 @@ export default function DashboardPage() {
 
 function StatCard({ label, value, sub, color, to }) {
   const colors = {
-    blue:   "text-blue-600 bg-blue-50",
+    blue:   "text-brand-600 bg-brand-50",
     indigo: "text-indigo-600 bg-indigo-50",
     yellow: "text-yellow-700 bg-yellow-50",
     red:    "text-red-600 bg-red-50",
   };
   const card = (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow">
+    <div className={`${CARD_CLASS} p-5 hover:shadow-sm transition-shadow`}>
       <p className={`text-3xl font-bold mb-1 ${colors[color].split(" ")[0]}`}>{value}</p>
       <p className="text-sm font-semibold text-gray-800 mb-0.5">{label}</p>
       <p className="text-xs text-gray-400">{sub}</p>

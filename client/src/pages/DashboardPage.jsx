@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { pingAdmin } from "../api/admin";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { FormError } from "../components/FormError";
-import { BUTTON_CLASS } from "../utils/ui";
+import { BUTTON_PRIMARY_FULL, CARD_CLASS, H1_CLASS } from "../utils/ui";
 
 function Badge({ ok, label }) {
   return (
@@ -48,9 +48,9 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Welcome, {user.name}</h1>
+      <h1 className={`${H1_CLASS} mb-6`}>Welcome, {user.name}</h1>
 
-      <div className="bg-white border border-gray-200 rounded-md p-4 space-y-3">
+      <div className={`${CARD_CLASS} p-4 space-y-3`}>
         <p className="text-sm text-gray-700">
           <span className="font-medium">Email:</span> {user.email || "—"}
         </p>
@@ -66,7 +66,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="mt-6 bg-white border border-gray-200 rounded-md p-4">
+      <div className={`mt-6 ${CARD_CLASS} p-4`}>
         <p className="text-sm font-medium text-gray-700 mb-2">Role-gated test route</p>
         <FormError message={adminError} />
         {adminMessage && (
@@ -74,7 +74,7 @@ export default function DashboardPage() {
             {adminMessage}
           </div>
         )}
-        <button onClick={handlePingAdmin} className={BUTTON_CLASS} disabled={pinging}>
+        <button onClick={handlePingAdmin} className={BUTTON_PRIMARY_FULL} disabled={pinging}>
           {pinging ? "Pinging..." : "Ping admin route"}
         </button>
       </div>

@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import ShipmentPanel from "../../components/ShipmentPanel";
+import Badge from "../../components/Badge";
+import { H1_CLASS } from "../../utils/ui";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -12,15 +14,6 @@ const STATUS_TRANSITIONS = {
   SHIPPED:   ["DELIVERED"],
   DELIVERED: [],
   CANCELLED: [],
-};
-
-const STATUS_COLORS = {
-  PENDING:   "bg-yellow-100 text-yellow-700 border-yellow-200",
-  CONFIRMED: "bg-blue-100 text-blue-700 border-blue-200",
-  PACKED:    "bg-purple-100 text-purple-700 border-purple-200",
-  SHIPPED:   "bg-indigo-100 text-indigo-700 border-indigo-200",
-  DELIVERED: "bg-green-100 text-green-700 border-green-200",
-  CANCELLED: "bg-red-100 text-red-600 border-red-200",
 };
 
 const STATUS_ORDER = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED"];
@@ -163,7 +156,7 @@ export default function AdminOrderDetailPage() {
   if (!order) return (
     <div className="p-8">
       <p className="text-red-600 mb-3">Order not found.</p>
-      <Link to="/admin/orders" className="text-blue-600 hover:underline text-sm">← Back to orders</Link>
+      <Link to="/admin/orders" className="text-brand-600 hover:underline text-sm">← Back to orders</Link>
     </div>
   );
 
@@ -178,20 +171,14 @@ export default function AdminOrderDetailPage() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <Link to="/admin/orders" className="text-gray-400 hover:text-gray-700 text-sm">← Orders</Link>
-          <h1 className="text-xl font-bold text-gray-900 mt-1">
+          <h1 className={`${H1_CLASS} mt-1`}>
             Order <span className="font-mono text-gray-500">#{order._id.slice(-8).toUpperCase()}</span>
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">{fmtDate(order.createdAt)}</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-sm font-semibold px-3 py-1 rounded-full border ${STATUS_COLORS[order.status]}`}>
-            {order.status}
-          </span>
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-            order.paymentStatus === "PAID" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-          }`}>
-            {order.paymentStatus}
-          </span>
+          <Badge kind="order" status={order.status} />
+          <Badge kind="payment" status={order.paymentStatus} />
           {!editing && !isCancelled && !isDelivered && (
             <button
               onClick={startEditing}
@@ -204,8 +191,8 @@ export default function AdminOrderDetailPage() {
       </div>
 
       {editing && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-3 mb-5 flex items-center justify-between">
-          <p className="text-sm text-blue-700 font-medium">Editing order — items, delivery address, and customer details</p>
+        <div className="bg-brand-50 border border-brand-200 rounded-lg px-5 py-3 mb-5 flex items-center justify-between">
+          <p className="text-sm text-brand-700 font-medium">Editing order — items, delivery address, and customer details</p>
           <div className="flex items-center gap-2">
             {saveError && <p className="text-xs text-red-600">{saveError}</p>}
             <button
@@ -218,7 +205,7 @@ export default function AdminOrderDetailPage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+              className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save Changes"}
             </button>
@@ -228,7 +215,7 @@ export default function AdminOrderDetailPage() {
 
       {/* Status timeline */}
       {!isCancelled && (
-        <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">
+        <div className="bg-white border border-gray-200 rounded-lg p-5 mb-5">
           <div className="flex items-center gap-0">
             {STATUS_ORDER.map((s, i) => {
               const reached = STATUS_ORDER.indexOf(order.status) >= i;
@@ -236,8 +223,8 @@ export default function AdminOrderDetailPage() {
               return (
                 <div key={s} className="flex items-center flex-1 min-w-0">
                   <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors ${
-                    current ? "border-blue-600 bg-blue-600 text-white" :
-                    reached ? "border-blue-400 bg-blue-50 text-blue-600" :
+                    current ? "border-brand-600 bg-brand-600 text-white" :
+                    reached ? "border-brand-400 bg-brand-50 text-brand-600" :
                     "border-gray-200 bg-white text-gray-300"
                   }`}>
                     {reached && !current ? "✓" : i + 1}
@@ -247,7 +234,7 @@ export default function AdminOrderDetailPage() {
                   </div>
                   {i < STATUS_ORDER.length - 1 && (
                     <div className={`w-4 h-0.5 flex-shrink-0 ${
-                      STATUS_ORDER.indexOf(order.status) > i ? "bg-blue-400" : "bg-gray-200"
+                      STATUS_ORDER.indexOf(order.status) > i ? "bg-brand-400" : "bg-gray-200"
                     }`} />
                   )}
                 </div>
@@ -261,7 +248,7 @@ export default function AdminOrderDetailPage() {
         {/* Left */}
         <div className="space-y-5">
           {/* Items */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-800">
                 Items ({editing ? editItems.length : order.items.length})
@@ -269,7 +256,7 @@ export default function AdminOrderDetailPage() {
               {editing && (
                 <button
                   onClick={addEditItem}
-                  className="text-xs font-semibold text-blue-600 hover:underline"
+                  className="text-xs font-semibold text-brand-600 hover:underline"
                 >
                   + Add item
                 </button>
@@ -366,7 +353,7 @@ export default function AdminOrderDetailPage() {
           </div>
 
           {/* Delivery address */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
             <h2 className="text-sm font-semibold text-gray-800 mb-3">Delivery Address</h2>
             {editing ? (
               <div className="grid grid-cols-2 gap-2">
@@ -435,7 +422,7 @@ export default function AdminOrderDetailPage() {
           </div>
 
           {/* Customer */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
             <h2 className="text-sm font-semibold text-gray-800 mb-2">Customer</h2>
             {editing ? (
               <div className="space-y-2">
@@ -471,7 +458,7 @@ export default function AdminOrderDetailPage() {
         {/* Right — actions */}
         <div className="space-y-5">
           {/* Status update */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
             <h2 className="text-sm font-semibold text-gray-800 mb-3">Update Status</h2>
 
             {isCancelled || isDelivered ? (
@@ -490,7 +477,7 @@ export default function AdminOrderDetailPage() {
                     className={`w-full py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 ${
                       s === "CANCELLED"
                         ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-brand-600 text-white hover:bg-brand-700"
                     }`}
                   >
                     {updating ? "Updating…" : `Mark as ${s}`}
@@ -508,7 +495,7 @@ export default function AdminOrderDetailPage() {
           <ShipmentPanel orderId={order._id} order={order} />
 
           {/* Mark as paid */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
             <h2 className="text-sm font-semibold text-gray-800 mb-1">Payment</h2>
             <p className="text-xs text-gray-500 mb-3">
               Method: <span className="font-medium text-gray-700">{order.paymentMethod}</span>
@@ -535,7 +522,7 @@ export default function AdminOrderDetailPage() {
           </div>
 
           {/* Order meta */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs text-gray-400 space-y-1">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-xs text-gray-400 space-y-1">
             <p>Order ID: <span className="font-mono text-gray-600">{order._id}</span></p>
             <p>Placed: {fmtDate(order.createdAt)}</p>
           </div>

@@ -1,26 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import * as adminApi from "../../api/admin";
+import Badge from "../../components/Badge";
+import Pagination from "../../components/Pagination";
+import EmptyState from "../../components/EmptyState";
+import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
 const ALL_STATUSES = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "CANCELLED"];
-
-const STATUS_COLORS = {
-  PENDING:   "bg-yellow-100 text-yellow-700",
-  CONFIRMED: "bg-blue-100 text-blue-700",
-  PACKED:    "bg-purple-100 text-purple-700",
-  SHIPPED:   "bg-indigo-100 text-indigo-700",
-  DELIVERED: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-600",
-};
-
-const PAYMENT_COLORS = {
-  PENDING:  "bg-gray-100 text-gray-600",
-  PAID:     "bg-green-100 text-green-700",
-  FAILED:   "bg-red-100 text-red-600",
-  REFUNDED: "bg-orange-100 text-orange-700",
-};
 
 function fmtDate(d) {
   return new Date(d).toLocaleDateString("en-NP", { day: "2-digit", month: "short", year: "numeric" });
@@ -62,7 +50,7 @@ export default function AdminOrdersPage() {
     <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Orders</h1>
+          <h1 className={H1_CLASS}>Orders</h1>
           {!loading && <p className="text-sm text-gray-400 mt-0.5">{total} order{total !== 1 ? "s" : ""}</p>}
         </div>
       </div>
@@ -78,12 +66,10 @@ export default function AdminOrdersPage() {
       {loading ? (
         <p className="text-gray-400 text-sm">Loading…</p>
       ) : orders.length === 0 ? (
-        <div className="text-center py-20 text-gray-400 text-sm">
-          No orders{statusFilter ? ` with status "${statusFilter}"` : ""}.
-        </div>
+        <EmptyState title={`No orders${statusFilter ? ` with status "${statusFilter}"` : ""}.`} />
       ) : (
         <>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className={`${CARD_CLASS} overflow-hidden`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -113,17 +99,13 @@ export default function AdminOrdersPage() {
                     <td className="px-5 py-3 text-gray-600">{o.items.length}</td>
                     <td className="px-5 py-3 font-semibold text-gray-900">{fmt(o.total)}</td>
                     <td className="px-5 py-3">
-                      <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[o.status]}`}>
-                        {o.status}
-                      </span>
+                      <Badge kind="order" status={o.status} />
                     </td>
                     <td className="px-5 py-3">
-                      <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${PAYMENT_COLORS[o.paymentStatus]}`}>
-                        {o.paymentStatus}
-                      </span>
+                      <Badge kind="payment" status={o.paymentStatus} />
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <Link to={`/admin/orders/${o._id}`} className="text-blue-600 hover:underline text-xs font-medium">
+                      <Link to={`/admin/orders/${o._id}`} className="text-brand-600 hover:underline text-xs font-medium">
                         View
                       </Link>
                     </td>
@@ -134,22 +116,7 @@ export default function AdminOrdersPage() {
           </div>
           </div>
 
-          {/* Pagination */}
-          {pages > 1 && (
-            <div className="flex justify-center gap-2 mt-5">
-              {Array.from({ length: pages }, (_, i) => i + 1).map(p => (
-                <button
-                  key={p}
-                  onClick={() => load(p)}
-                  className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                    p === page ? "bg-blue-600 text-white" : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          )}
+          <Pagination page={page} pages={pages} onChange={load} />
         </>
       )}
     </div>

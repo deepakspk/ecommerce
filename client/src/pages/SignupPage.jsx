@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { FormError, FieldError } from "../components/FormError";
 import { getErrorMessage, getFieldErrors } from "../utils/errorHelpers";
 import { isValidEmail, isValidPassword, isValidNepaliPhone } from "../utils/validators";
-import { INPUT_CLASS, LABEL_CLASS, BUTTON_CLASS } from "../utils/ui";
+import { INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY_FULL, H1_CLASS } from "../utils/ui";
 
 export default function SignupPage() {
   const { signup } = useAuth();
@@ -50,7 +50,7 @@ export default function SignupPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-10">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Create an account</h1>
+      <h1 className={`${H1_CLASS} mb-6`}>Create an account</h1>
       <FormError message={generalError} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -96,13 +96,13 @@ export default function SignupPage() {
           />
           <FieldError errors={fieldErrors} field="phone" />
         </div>
-        <button type="submit" className={BUTTON_CLASS} disabled={submitting}>
+        <button type="submit" className={BUTTON_PRIMARY_FULL} disabled={submitting}>
           {submitting ? "Creating account..." : "Sign up"}
         </button>
       </form>
       <p className="text-sm text-gray-600 mt-4">
         Already have an account?{" "}
-        <Link to="/login" className="text-blue-600 hover:underline">
+        <Link to="/login" className="text-brand-600 hover:underline">
           Log in
         </Link>
       </p>
