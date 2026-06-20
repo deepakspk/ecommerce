@@ -20,7 +20,6 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState([]);
   const [availableFilters, setAvailableFilters] = useState({ sizes: [], colors: [] });
   const [products, setProducts] = useState([]);
-  const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(0);
   const [metaLoading, setMetaLoading] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -100,7 +99,6 @@ export default function ProductsPage() {
         const data = await productsApi.getProducts(params);
         if (!ignore) {
           setProducts(data.products);
-          setTotal(data.total);
           setPages(data.pages);
           setError("");
         }
@@ -176,7 +174,9 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Search + attribute filters */}
+      {/* Search + attribute filters — homepage relies on the Navbar search bar and
+          category tiles instead; the full filter bar only shows on /products */}
+      {!isHome && (
       <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mb-5 sm:items-end">
         <div className="w-full sm:w-auto">
           <label className="block text-xs font-medium text-gray-500 mb-1">Search</label>
@@ -253,16 +253,10 @@ export default function ProductsPage() {
           </button>
         )}
       </div>
+      )}
 
       {/* Error */}
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
-
-      {/* Result count */}
-      {!loading && (
-        <p className="text-sm text-gray-500 mb-4">
-          {total === 0 ? "No products found" : `${total} product${total !== 1 ? "s" : ""}`}
-        </p>
-      )}
 
       {/* Grid */}
       {loading ? (
