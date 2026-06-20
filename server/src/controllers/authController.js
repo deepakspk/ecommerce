@@ -80,6 +80,10 @@ export async function login(req, res) {
     return res.status(401).json({ message: "Invalid email or password" });
   }
 
+  if (user.status === "DISABLED") {
+    return res.status(403).json({ message: "This account has been disabled" });
+  }
+
   user.failedLoginAttempts = 0;
   user.lockUntil = undefined;
   await user.save();
@@ -179,6 +183,10 @@ export async function verifyOtp(req, res) {
     return res.status(400).json({ message: "Invalid or expired OTP" });
   }
 
+  if (user.status === "DISABLED") {
+    return res.status(403).json({ message: "This account has been disabled" });
+  }
+
   user.phoneVerified = true;
   user.otpCode = undefined;
   user.otpExpires = undefined;
@@ -193,7 +201,10 @@ export async function getMe(req, res) {
 }
 
 export function googleCallback(req, res) {
+  const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+  if (req.user.status === "DISABLED") {
+    return res.redirect(`${clientUrl}/login?error=disabled`);
+  }
   const token = signAccessToken(req.user);
-  const redirectUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/oauth-callback?token=${token}`;
-  res.redirect(redirectUrl);
+  res.redirect(`${clientUrl}/oauth-callback?token=${token}`);
 }

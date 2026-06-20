@@ -48,6 +48,16 @@ export const RETURN_STATUS_COLORS = {
   REFUNDED: "bg-green-100 text-green-700",
 };
 
+export const USER_ROLE_COLORS = {
+  ADMIN: "bg-purple-100 text-purple-700",
+  CUSTOMER: "bg-gray-100 text-gray-600",
+};
+
+export const USER_STATUS_COLORS = {
+  ACTIVE: "bg-green-100 text-green-700",
+  DISABLED: "bg-red-100 text-red-600",
+};
+
 export const SHIPMENT_STATUS_COLORS = {
   BOOKED: "bg-amber-100 text-amber-700",
   PICKED_UP: "bg-brand-100 text-brand-700",

@@ -59,6 +59,14 @@ export const listAdminReturns = (params) => api.get("/admin/returns", { params }
 export const getAdminReturn = (id) => api.get(`/admin/returns/${id}`).then(r => r.data);
 export const updateReturnStatus = (id, data) => api.patch(`/admin/returns/${id}/status`, data).then(r => r.data);
 
+// Users
+export const listUsers = (params) => api.get("/admin/users", { params }).then(r => r.data);
+export const updateUserRole = (id, role) => api.patch(`/admin/users/${id}/role`, { role }).then(r => r.data);
+export const updateUserStatus = (id, status) => api.patch(`/admin/users/${id}/status`, { status }).then(r => r.data);
+
+// Audit log
+export const listAuditLog = (params) => api.get("/admin/audit-log", { params }).then(r => r.data);
+
 // Logistics
 export const listLogisticsProviders = () => api.get("/admin/logistics/providers").then(r => r.data);
 export const getProviderBranches = (code) =>

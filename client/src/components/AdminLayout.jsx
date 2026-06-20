@@ -9,6 +9,8 @@ const NAV = [
   { to: "/admin/products", label: "Products" },
   { to: "/admin/inventory", label: "Inventory" },
   { to: "/admin/coupons", label: "Coupons" },
+  { to: "/admin/users", label: "Users" },
+  { to: "/admin/audit-log", label: "Audit Log" },
 ];
 
 export default function AdminLayout() {

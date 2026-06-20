@@ -59,6 +59,8 @@ import {
   refreshShipment,
   returnShipment,
 } from "../controllers/admin/logisticsController.js";
+import { listUsers, updateUserRole, updateUserStatus } from "../controllers/admin/userController.js";
+import { listAuditLog } from "../controllers/admin/auditLogController.js";
 
 const router = Router();
 router.use(protect, requireRole("ADMIN"));
@@ -309,6 +311,24 @@ router.patch(
   validate,
   updateReturnStatus
 );
+
+// Users
+router.get("/users", listUsers);
+router.patch(
+  "/users/:id/role",
+  [mongoIdParam("id"), body("role").isIn(["CUSTOMER", "ADMIN"]).withMessage("Invalid role")],
+  validate,
+  updateUserRole
+);
+router.patch(
+  "/users/:id/status",
+  [mongoIdParam("id"), body("status").isIn(["ACTIVE", "DISABLED"]).withMessage("Invalid status")],
+  validate,
+  updateUserStatus
+);
+
+// Audit log
+router.get("/audit-log", listAuditLog);
 
 // Logistics
 router.get("/logistics/providers", getProviders);

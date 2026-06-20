@@ -1,6 +1,7 @@
 import Product from "../../models/Product.js";
 import ProductVariant from "../../models/ProductVariant.js";
 import { uploadToCloudinary } from "../../config/cloudinary.js";
+import { logAudit } from "../../utils/auditLog.js";
 
 function slugify(name) {
   return name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
@@ -111,6 +112,15 @@ export async function deleteProduct(req, res) {
   const product = await Product.findByIdAndDelete(req.params.id);
   if (!product) return res.status(404).json({ message: "Product not found" });
   await ProductVariant.deleteMany({ productId: req.params.id });
+
+  logAudit({
+    adminUserId: req.user._id,
+    action: "PRODUCT_DELETE",
+    targetType: "Product",
+    targetId: product._id,
+    meta: { name: product.name, slug: product.slug },
+  });
+
   res.json({ message: "Product deleted" });
 }
 

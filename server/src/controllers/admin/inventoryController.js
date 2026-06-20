@@ -3,6 +3,7 @@ import InventoryLog from "../../models/InventoryLog.js";
 import StockAlert from "../../models/StockAlert.js";
 import Product from "../../models/Product.js";
 import { sendBackInStockEmail } from "../../utils/orderEmails.js";
+import { logAudit } from "../../utils/auditLog.js";
 
 async function notifyStockAlerts(variant) {
   const alerts = await StockAlert.find({ variantId: variant._id, notifiedAt: null }).populate("userId", "email");
@@ -45,6 +46,14 @@ export async function adjustStock(req, res) {
   variant.stockQuantity = newStock;
   await variant.save();
   await InventoryLog.create({ variantId: variant._id, change: delta, reason: reason.trim() });
+
+  logAudit({
+    adminUserId: req.user._id,
+    action: "STOCK_ADJUSTMENT",
+    targetType: "ProductVariant",
+    targetId: variant._id,
+    meta: { change: delta, reason: reason.trim(), previousStock, newStock },
+  });
 
   if (previousStock === 0 && newStock > 0) await notifyStockAlerts(variant);
 

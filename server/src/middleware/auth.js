@@ -15,6 +15,9 @@ export async function protect(req, res, next) {
     if (!user) {
       return res.status(401).json({ message: "Not authenticated" });
     }
+    if (user.status === "DISABLED") {
+      return res.status(403).json({ message: "This account has been disabled" });
+    }
     req.user = user;
     next();
   } catch {

@@ -11,6 +11,8 @@ import AdminOrdersPage from "./AdminOrdersPage";
 import AdminOrderDetailPage from "./AdminOrderDetailPage";
 import AdminReturnsPage from "./AdminReturnsPage";
 import AdminReturnDetailPage from "./AdminReturnDetailPage";
+import UsersPage from "./UsersPage";
+import AuditLogPage from "./AuditLogPage";
 
 export default function AdminSection() {
   return (
@@ -29,6 +31,8 @@ export default function AdminSection() {
           <Route path="products/:id/edit" element={<ProductFormPage />} />
           <Route path="inventory" element={<InventoryPage />} />
           <Route path="coupons" element={<CouponsPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="audit-log" element={<AuditLogPage />} />
         </Route>
       </Routes>
     </AdminRoute>

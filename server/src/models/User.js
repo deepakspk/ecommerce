@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
     passwordHash: { type: String },
     googleId: { type: String, unique: true, sparse: true },
     role: { type: String, enum: ["CUSTOMER", "ADMIN"], default: "CUSTOMER" },
+    status: { type: String, enum: ["ACTIVE", "DISABLED"], default: "ACTIVE" },
     emailVerified: { type: Boolean, default: false },
     emailVerificationToken: { type: String, select: false },
     emailVerificationExpires: { type: Date, select: false },

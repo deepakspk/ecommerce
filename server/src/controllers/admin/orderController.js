@@ -2,6 +2,7 @@ import Order from "../../models/Order.js";
 import ProductVariant from "../../models/ProductVariant.js";
 import User from "../../models/User.js";
 import { sendOrderStatusEmail } from "../../utils/orderEmails.js";
+import { logAudit } from "../../utils/auditLog.js";
 
 const STATUS_TRANSITIONS = {
   PENDING:   ["CONFIRMED", "CANCELLED"],
@@ -119,9 +120,18 @@ export async function updateStatus(req, res) {
     });
   }
 
+  const previousStatus = order.status;
   order.status = status;
   if (status === "DELIVERED" && !order.deliveredAt) order.deliveredAt = new Date();
   await order.save();
+
+  logAudit({
+    adminUserId: req.user._id,
+    action: "ORDER_STATUS_CHANGE",
+    targetType: "Order",
+    targetId: order._id,
+    meta: { previousStatus, newStatus: status },
+  });
 
   sendOrderStatusEmail(order, order.userId?.email, status);
 
