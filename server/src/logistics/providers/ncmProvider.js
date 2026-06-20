@@ -1,4 +1,5 @@
 import * as ncm from "../../config/ncm.js";
+import * as settingsService from "../../services/settingsService.js";
 
 // NCM's rate-quote endpoint and its order-create endpoint each use their own vocabulary
 // for the same four delivery types — this is the one canonical enum the rest of the app sees.
@@ -109,7 +110,7 @@ async function addComment(providerShipmentId, message) {
 }
 
 function isConfigured() {
-  return Boolean(process.env.NCM_API_TOKEN);
+  return Boolean(settingsService.get("LOGISTICS_API_TOKEN"));
 }
 
 export default {

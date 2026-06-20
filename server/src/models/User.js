@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, trim: true, unique: true, sparse: true },
     passwordHash: { type: String },
     googleId: { type: String, unique: true, sparse: true },
-    role: { type: String, enum: ["CUSTOMER", "ADMIN"], default: "CUSTOMER" },
+    role: { type: String, enum: ["CUSTOMER", "ADMIN", "SUPER_ADMIN"], default: "CUSTOMER" },
     status: { type: String, enum: ["ACTIVE", "DISABLED"], default: "ACTIVE" },
     emailVerified: { type: Boolean, default: false },
     emailVerificationToken: { type: String, select: false },

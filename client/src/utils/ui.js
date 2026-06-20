@@ -54,6 +54,7 @@ export const RETURN_STATUS_COLORS = {
 };
 
 export const USER_ROLE_COLORS = {
+  SUPER_ADMIN: "bg-amber-100 text-amber-700",
   ADMIN: "bg-purple-100 text-purple-700",
   CUSTOMER: "bg-gray-100 text-gray-600",
 };

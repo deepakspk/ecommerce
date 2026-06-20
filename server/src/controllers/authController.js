@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import { signAccessToken, generateRawToken, hashRawToken } from "../utils/token.js";
 import { generateOtp } from "../utils/otp.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import * as settingsService from "../services/settingsService.js";
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCK_DURATION_MS = 15 * 60 * 1000;
@@ -42,7 +43,7 @@ export async function signup(req, res) {
     emailVerificationExpires: new Date(Date.now() + EMAIL_TOKEN_TTL_MS),
   });
 
-  const verifyUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${rawToken}`;
+  const verifyUrl = `${settingsService.get("FRONTEND_URL")}/verify-email/${rawToken}`;
   await sendEmail({
     to: user.email,
     subject: "Verify your email",
@@ -122,7 +123,7 @@ export async function forgotPassword(req, res) {
     user.passwordResetExpires = new Date(Date.now() + RESET_TOKEN_TTL_MS);
     await user.save();
 
-    const resetUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password/${rawToken}`;
+    const resetUrl = `${settingsService.get("FRONTEND_URL")}/reset-password/${rawToken}`;
     await sendEmail({
       to: user.email,
       subject: "Reset your password",
@@ -201,7 +202,7 @@ export async function getMe(req, res) {
 }
 
 export function googleCallback(req, res) {
-  const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+  const clientUrl = settingsService.get("FRONTEND_URL");
   if (req.user.status === "DISABLED") {
     return res.redirect(`${clientUrl}/login?error=disabled`);
   }

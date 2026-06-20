@@ -1,18 +1,16 @@
 import nodemailer from "nodemailer";
-
-let transporter = null;
+import * as settingsService from "../services/settingsService.js";
 
 function getTransporter() {
-  if (transporter) return transporter;
-  if (!process.env.SMTP_HOST) return null;
+  const host = settingsService.get("SMTP_HOST");
+  if (!host) return null;
 
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: false,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  return nodemailer.createTransport({
+    host,
+    port: Number(settingsService.get("SMTP_PORT")) || 587,
+    secure: settingsService.get("SMTP_ENCRYPTION") === "SSL",
+    auth: { user: settingsService.get("SMTP_USER"), pass: settingsService.get("SMTP_PASS") },
   });
-  return transporter;
 }
 
 export async function sendEmail({ to, subject, html }) {
@@ -23,8 +21,11 @@ export async function sendEmail({ to, subject, html }) {
     return;
   }
 
+  const fromName = settingsService.get("EMAIL_FROM_NAME");
+  const fromAddress = settingsService.get("EMAIL_FROM_ADDRESS") || "no-reply@ecommerce-nepal.local";
+
   await transport.sendMail({
-    from: process.env.EMAIL_FROM || "no-reply@ecommerce-nepal.local",
+    from: fromName ? `"${fromName}" <${fromAddress}>` : fromAddress,
     to,
     subject,
     html,

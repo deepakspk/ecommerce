@@ -1,7 +1,23 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as categoriesApi from "../api/categories";
+import { useCompanySettings } from "../hooks/useCompanySettings";
 import { MUTED_CLASS, CONTAINER_CLASS } from "../utils/ui";
+
+const SOCIAL_LABELS = {
+  facebook: "Facebook",
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  linkedin: "LinkedIn",
+  twitter: "X (Twitter)",
+  youtube: "YouTube",
+  whatsapp: "WhatsApp",
+};
+
+function socialHref(platform, value) {
+  if (/^https?:\/\//i.test(value)) return value;
+  return platform === "whatsapp" ? `https://wa.me/${value.replace(/[^0-9]/g, "")}` : value;
+}
 
 function FooterHeading({ children }) {
   return (
@@ -23,6 +39,7 @@ const PAYMENT_METHODS = ["Cash on Delivery", "eSewa", "Khalti"];
 
 export default function Footer() {
   const [categories, setCategories] = useState([]);
+  const { company } = useCompanySettings();
 
   useEffect(() => {
     categoriesApi.getCategoryTree()
@@ -30,17 +47,36 @@ export default function Footer() {
       .catch(() => setCategories([]));
   }, []);
 
+  const companyName = company.companyName || "Ecommerce Nepal";
+  const socialEntries = Object.entries(company.social || {}).filter(([, value]) => value?.trim());
+
   return (
     <footer className="border-t border-gray-200 bg-gray-50 mt-12">
       <div className={`${CONTAINER_CLASS} py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10`}>
         {/* Brand */}
         <div>
-          <Link to="/" className="text-lg font-bold text-gray-900">
-            Ecommerce Nepal
+          <Link to="/" className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            {company.logoUrl && <img src={company.logoUrl} alt={companyName} className="h-7 w-auto" />}
+            {companyName}
           </Link>
           <p className="text-sm text-gray-500 mt-3 leading-relaxed">
-            Bringing quality products to your doorstep, anywhere in Nepal.
+            {company.description || "Bringing quality products to your doorstep, anywhere in Nepal."}
           </p>
+          {socialEntries.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {socialEntries.map(([platform, value]) => (
+                <a
+                  key={platform}
+                  href={socialHref(platform, value)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-brand-600 hover:border-brand-200"
+                >
+                  {SOCIAL_LABELS[platform] || platform}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Categories */}
@@ -76,7 +112,7 @@ export default function Footer() {
         <div>
           <FooterHeading>Customer Support</FooterHeading>
           <p className="text-sm text-gray-500 mb-4">
-            Need help with your order? We're here to assist you.
+            {company.address || "Need help with your order? We're here to assist you."}
           </p>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -87,7 +123,7 @@ export default function Footer() {
               </IconCircle>
               <div>
                 <p className="text-xs text-gray-400">Call us</p>
-                <p className="text-sm font-medium text-gray-700">+977-1XXXXXXX</p>
+                <p className="text-sm font-medium text-gray-700">{company.phone || "+977-1XXXXXXX"}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -98,7 +134,7 @@ export default function Footer() {
               </IconCircle>
               <div>
                 <p className="text-xs text-gray-400">Email us</p>
-                <p className="text-sm font-medium text-gray-700">support@ecommercenepal.com</p>
+                <p className="text-sm font-medium text-gray-700">{company.email || "support@ecommercenepal.com"}</p>
               </div>
             </div>
           </div>
@@ -125,7 +161,7 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-gray-200">
         <div className={`${CONTAINER_CLASS} py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400`}>
-          <p>© {new Date().getFullYear()} Ecommerce Nepal. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {companyName}. All rights reserved.</p>
           <span>Terms of Service</span>
         </div>
       </div>

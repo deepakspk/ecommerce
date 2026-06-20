@@ -15,6 +15,8 @@ import UsersPage from "./UsersPage";
 import AuditLogPage from "./AuditLogPage";
 import ReportsPage from "./ReportsPage";
 import BannersPage from "./BannersPage";
+import SettingsPage from "./SettingsPage";
+import CompanySettingsPage from "./CompanySettingsPage";
 
 export default function AdminSection() {
   return (
@@ -37,6 +39,8 @@ export default function AdminSection() {
           <Route path="audit-log" element={<AuditLogPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="banners" element={<BannersPage />} />
+          <Route path="settings" element={<AdminRoute superAdminOnly><SettingsPage /></AdminRoute>} />
+          <Route path="company-settings" element={<AdminRoute superAdminOnly><CompanySettingsPage /></AdminRoute>} />
         </Route>
       </Routes>
     </AdminRoute>

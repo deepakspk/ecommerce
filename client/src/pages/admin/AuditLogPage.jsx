@@ -10,6 +10,8 @@ const ACTIONS = [
   "STOCK_ADJUSTMENT",
   "ORDER_STATUS_CHANGE",
   "PRODUCT_DELETE",
+  "SYSTEM_SETTINGS_UPDATE",
+  "COMPANY_SETTINGS_UPDATE",
 ];
 
 function fmtDateTime(d) {
@@ -32,6 +34,10 @@ function describeMeta(log) {
       return `${m.previousStatus} → ${m.newStatus}`;
     case "PRODUCT_DELETE":
       return m.name || "";
+    case "SYSTEM_SETTINGS_UPDATE":
+      return `${m.group}: ${(m.changedKeys || []).map((c) => `${c.key}=${c.value}`).join(", ")}`;
+    case "COMPANY_SETTINGS_UPDATE":
+      return `Updated: ${(m.changedKeys || []).join(", ")}`;
     default:
       return JSON.stringify(m);
   }

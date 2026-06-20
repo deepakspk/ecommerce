@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { connectDB } from "./config/db.js";
+import { load as loadSettings } from "./services/settingsService.js";
 import { checkAbandonedCarts } from "./utils/abandonedCart.js";
 import passport from "./config/passport.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -17,6 +18,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import stockAlertRoutes from "./routes/stockAlertRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
+import companySettingsRoutes from "./routes/companySettingsRoutes.js";
 import { protect, requireRole } from "./middleware/auth.js";
 
 const app = express();
@@ -49,6 +51,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/stock-alerts", stockAlertRoutes);
 app.use("/api/banners", bannerRoutes);
+app.use("/api/settings/company", companySettingsRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/api/admin/ping", protect, requireRole("ADMIN"), (req, res) => {
@@ -70,6 +73,7 @@ const PORT = process.env.PORT || 5000;
 const ABANDONED_CART_CHECK_INTERVAL_MS = 60 * 60 * 1000;
 
 connectDB()
+  .then(() => loadSettings())
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

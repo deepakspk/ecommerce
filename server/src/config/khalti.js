@@ -1,10 +1,12 @@
+import * as settingsService from "../services/settingsService.js";
+
 const BASE_URL = process.env.KHALTI_BASE_URL || "https://dev.khalti.com/api/v2";
 
 async function khaltiRequest(path, body) {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
     headers: {
-      Authorization: `Key ${process.env.KHALTI_SECRET_KEY}`,
+      Authorization: `Key ${settingsService.get("KHALTI_SECRET_KEY")}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),

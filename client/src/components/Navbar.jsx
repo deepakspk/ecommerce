@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
+import { useCompanySettings } from "../hooks/useCompanySettings";
 import { CONTAINER_CLASS } from "../utils/ui";
 
 function SearchForm({ className, value, onChange, onSubmit, onClear }) {
@@ -102,9 +103,11 @@ export default function Navbar() {
   const { user } = useAuth();
   const { itemCount } = useCart();
   const { itemCount: wishlistCount } = useWishlist();
+  const { company } = useCompanySettings();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const isAdminViewer = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   function handleSearchSubmit(e) {
     e.preventDefault();
@@ -119,8 +122,12 @@ export default function Navbar() {
     <nav className="border-b border-gray-200 py-3">
       <div className={CONTAINER_CLASS}>
         <div className="flex items-center gap-4">
-          <Link to="/" className="font-semibold text-lg text-gray-900 flex-shrink-0">
-            Ecommerce Nepal
+          <Link to="/" className="font-semibold text-lg text-gray-900 flex-shrink-0 flex items-center gap-2">
+            {company?.logoUrl ? (
+              <img src={company.logoUrl} alt={company.companyName || "Ecommerce Nepal"} className="h-8 w-auto" />
+            ) : (
+              company?.companyName || "Ecommerce Nepal"
+            )}
           </Link>
 
           <SearchForm
@@ -132,7 +139,7 @@ export default function Navbar() {
           />
 
           <div className="hidden sm:flex items-center gap-6 flex-shrink-0">
-            {user?.role === "ADMIN" && (
+            {isAdminViewer && (
               <NavIconLink to="/admin" label="Admin" icon={AdminIcon} />
             )}
             <NavIconLink to="/orders" label="Track Order" icon={TrackOrderIcon} />
@@ -192,7 +199,7 @@ export default function Navbar() {
             <Link to={accountTarget} className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
               Account
             </Link>
-            {user?.role === "ADMIN" && (
+            {isAdminViewer && (
               <Link to="/admin" className="text-brand-600 hover:text-brand-800 font-medium" onClick={() => setMenuOpen(false)}>
                 Admin
               </Link>

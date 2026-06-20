@@ -3,6 +3,7 @@ import Payment from "../models/Payment.js";
 import * as khalti from "../config/khalti.js";
 import * as esewa from "../config/esewa.js";
 import { sendPaymentFailedEmail } from "../utils/orderEmails.js";
+import * as settingsService from "../services/settingsService.js";
 
 const FAILED_STATUSES = ["Expired", "User canceled"];
 const ESEWA_FAILED_STATUSES = ["CANCELED", "NOT_FOUND"];
@@ -20,9 +21,10 @@ export async function initiateKhalti(req, res) {
     return res.status(400).json({ message: "Order is already paid" });
   }
 
+  const frontendUrl = settingsService.get("FRONTEND_URL");
   const result = await khalti.initiatePayment({
-    return_url: `${process.env.CLIENT_URL}/payment/khalti/callback`,
-    website_url: process.env.CLIENT_URL,
+    return_url: `${frontendUrl}/payment/khalti/callback`,
+    website_url: frontendUrl,
     amount: Math.round(order.total * 100),
     purchase_order_id: String(order._id),
     purchase_order_name: `Order ${order._id}`,
@@ -90,11 +92,14 @@ export async function initiateEsewa(req, res) {
   }
 
   const transactionUuid = `${order._id}-${Date.now()}`;
+  const frontendUrl = settingsService.get("FRONTEND_URL");
+  const successUrl = settingsService.get("ESEWA_SUCCESS_URL") || `${frontendUrl}/payment/esewa/callback`;
+  const failureUrlBase = settingsService.get("ESEWA_FAILURE_URL") || `${frontendUrl}/payment/esewa/callback`;
   const { formUrl, fields } = esewa.buildPaymentForm({
     amount: order.total,
     transactionUuid,
-    successUrl: `${process.env.CLIENT_URL}/payment/esewa/callback`,
-    failureUrl: `${process.env.CLIENT_URL}/payment/esewa/callback?status=failure&transaction_uuid=${transactionUuid}`,
+    successUrl,
+    failureUrl: `${failureUrlBase}?status=failure&transaction_uuid=${transactionUuid}`,
   });
 
   await Payment.create({

@@ -29,6 +29,11 @@ export async function updateUserRole(req, res) {
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ message: "User not found" });
 
+  // Only a SUPER_ADMIN may grant or revoke SUPER_ADMIN — a plain ADMIN cannot create peers above itself.
+  if ((role === "SUPER_ADMIN" || user.role === "SUPER_ADMIN") && req.user.role !== "SUPER_ADMIN") {
+    return res.status(403).json({ message: "Only a Super Admin can assign or change the Super Admin role" });
+  }
+
   const previousRole = user.role;
   user.role = role;
   await user.save();

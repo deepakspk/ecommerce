@@ -53,19 +53,23 @@ export default function UsersPage() {
     return () => { active = false; };
   }, [page, search, roleFilter, statusFilter]);
 
-  function askRoleChange(u) {
-    const newRole = u.role === "ADMIN" ? "CUSTOMER" : "ADMIN";
+  const ROLE_LABELS = { CUSTOMER: "Customer", ADMIN: "Admin", SUPER_ADMIN: "Super Admin" };
+
+  // Only a Super Admin can change another Super Admin's role (mirrors the server-side check).
+  function canManageRole(u) {
+    return u.role !== "SUPER_ADMIN" || currentUser?.role === "SUPER_ADMIN";
+  }
+
+  function askRoleChange(u, newRole) {
+    if (newRole === u.role) return;
     setActionError("");
     setConfirmAction({
       type: "role",
       user: u,
       newRole,
-      title: newRole === "ADMIN" ? "Promote to admin?" : "Demote to customer?",
-      message:
-        newRole === "ADMIN"
-          ? `${u.name} will gain full admin access, including managing products, orders, and other users.`
-          : `${u.name} will lose admin access immediately.`,
-      danger: newRole === "CUSTOMER",
+      title: `Change role to ${ROLE_LABELS[newRole]}?`,
+      message: `${u.name} will become a ${ROLE_LABELS[newRole]}, changing what they can access in the Admin Portal immediately.`,
+      danger: newRole === "CUSTOMER" || u.role === "SUPER_ADMIN",
     });
   }
 
@@ -129,6 +133,7 @@ export default function UsersPage() {
           <option value="">All roles</option>
           <option value="CUSTOMER">Customer</option>
           <option value="ADMIN">Admin</option>
+          <option value="SUPER_ADMIN">Super Admin</option>
         </select>
         <select
           value={statusFilter}
@@ -178,15 +183,23 @@ export default function UsersPage() {
                         <td className="px-5 py-3"><Badge kind="userStatus" status={u.status} /></td>
                         <td className="px-5 py-3 text-gray-500 text-xs whitespace-nowrap">{fmtDate(u.createdAt)}</td>
                         <td className="px-5 py-3 text-right whitespace-nowrap">
+                          {!isSelf && canManageRole(u) && (
+                            <select
+                              value={u.role}
+                              onChange={(e) => askRoleChange(u, e.target.value)}
+                              className="text-xs border border-gray-200 rounded-md px-1.5 py-1 mr-3"
+                            >
+                              <option value="CUSTOMER">Customer</option>
+                              <option value="ADMIN">Admin</option>
+                              {currentUser?.role === "SUPER_ADMIN" && (
+                                <option value="SUPER_ADMIN">Super Admin</option>
+                              )}
+                            </select>
+                          )}
                           {!isSelf && (
-                            <>
-                              <button onClick={() => askRoleChange(u)} className="text-brand-600 hover:underline text-xs mr-3">
-                                {u.role === "ADMIN" ? "Demote" : "Promote"}
-                              </button>
-                              <button onClick={() => askStatusChange(u)} className="text-red-600 hover:underline text-xs">
-                                {u.status === "DISABLED" ? "Enable" : "Disable"}
-                              </button>
-                            </>
+                            <button onClick={() => askStatusChange(u)} className="text-red-600 hover:underline text-xs">
+                              {u.status === "DISABLED" ? "Enable" : "Disable"}
+                            </button>
                           )}
                         </td>
                       </tr>

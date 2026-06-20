@@ -1,22 +1,23 @@
 import crypto from "crypto";
+import * as settingsService from "../services/settingsService.js";
 
 const FORM_URL = process.env.ESEWA_FORM_URL || "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
 const STATUS_URL = process.env.ESEWA_STATUS_URL || "https://rc.esewa.com.np/api/epay/transaction/status/";
-const PRODUCT_CODE = process.env.ESEWA_PRODUCT_CODE || "EPAYTEST";
 
 function sign(fields, signedFieldNames) {
   const message = signedFieldNames.map((name) => `${name}=${fields[name]}`).join(",");
-  return crypto.createHmac("sha256", process.env.ESEWA_SECRET_KEY).update(message).digest("base64");
+  return crypto.createHmac("sha256", settingsService.get("ESEWA_SECRET_KEY")).update(message).digest("base64");
 }
 
 export function buildPaymentForm({ amount, transactionUuid, successUrl, failureUrl }) {
+  const productCode = settingsService.get("ESEWA_MERCHANT_ID") || "EPAYTEST";
   const signedFieldNames = ["total_amount", "transaction_uuid", "product_code"];
   const fields = {
     amount,
     tax_amount: 0,
     total_amount: amount,
     transaction_uuid: transactionUuid,
-    product_code: PRODUCT_CODE,
+    product_code: productCode,
     product_service_charge: 0,
     product_delivery_charge: 0,
     success_url: successUrl,
@@ -29,7 +30,7 @@ export function buildPaymentForm({ amount, transactionUuid, successUrl, failureU
 
 export async function checkStatus({ transactionUuid, totalAmount }) {
   const url = `${STATUS_URL}?${new URLSearchParams({
-    product_code: PRODUCT_CODE,
+    product_code: settingsService.get("ESEWA_MERCHANT_ID") || "EPAYTEST",
     total_amount: totalAmount,
     transaction_uuid: transactionUuid,
   })}`;

@@ -14,11 +14,13 @@ function register(provider) {
 }
 
 // Future carriers (Pathao, DHL, ...) are added here — nothing else in the app needs to change.
-[ncmProvider].filter((provider) => provider.isConfigured()).forEach(register);
+// Registered unconditionally; isConfigured() is checked per-call (not at import time) so a
+// SUPER_ADMIN enabling a carrier's credentials via /admin/settings takes effect without a restart.
+[ncmProvider].forEach(register);
 
 export function getProvider(code) {
   const provider = registry.get(code);
-  if (!provider) {
+  if (!provider || !provider.isConfigured()) {
     const err = new Error(`Unknown or unconfigured logistics provider: ${code}`);
     err.status = 400;
     throw err;
@@ -27,5 +29,7 @@ export function getProvider(code) {
 }
 
 export function listProviders() {
-  return [...registry.values()].map(({ code, label, capabilities }) => ({ code, label, capabilities }));
+  return [...registry.values()]
+    .filter((provider) => provider.isConfigured())
+    .map(({ code, label, capabilities }) => ({ code, label, capabilities }));
 }

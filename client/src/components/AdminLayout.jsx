@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const NAV = [
   { to: "/admin/dashboard", label: "Dashboard" },
@@ -16,7 +17,11 @@ const NAV = [
 ];
 
 export default function AdminLayout() {
+  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navItems = user?.role === "SUPER_ADMIN"
+    ? [...NAV, { to: "/admin/company-settings", label: "Company" }, { to: "/admin/settings", label: "Settings" }]
+    : NAV;
 
   const sidebarContent = (
     <>
@@ -26,7 +31,7 @@ export default function AdminLayout() {
         </span>
       </div>
       <nav className="flex-1 py-4 px-3 space-y-0.5">
-        {NAV.map(item => (
+        {navItems.map(item => (
           <NavLink
             key={item.to}
             to={item.to}

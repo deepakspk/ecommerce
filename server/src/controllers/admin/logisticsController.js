@@ -2,6 +2,7 @@ import Order from "../../models/Order.js";
 import Shipment from "../../models/Shipment.js";
 import { getProvider, listProviders } from "../../logistics/logisticsManager.js";
 import { refreshShipmentTracking } from "../../services/trackingService.js";
+import * as settingsService from "../../services/settingsService.js";
 
 function requireCapability(provider, capability) {
   if (!provider.capabilities[capability]) {
@@ -49,7 +50,7 @@ export async function createShipment(req, res) {
         .join(", "),
     },
     cod: order.paymentMethod === "COD" ? order.total : 0,
-    fromBranch: process.env.NCM_PICKUP_BRANCH,
+    fromBranch: settingsService.get("LOGISTICS_PICKUP_BRANCH"),
     toBranch,
     packageLabel: packageLabel || `Order ${order._id}`,
     vendorRef: String(order._id),
@@ -73,7 +74,7 @@ export async function createShipment(req, res) {
     orderId: order._id,
     provider: provider.code,
     providerShipmentId,
-    fromBranch: process.env.NCM_PICKUP_BRANCH,
+    fromBranch: settingsService.get("LOGISTICS_PICKUP_BRANCH"),
     toBranch,
     codCharge: order.paymentMethod === "COD" ? order.total : 0,
     meta: raw,

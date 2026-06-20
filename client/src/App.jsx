@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import AuthProvider from "./context/AuthProvider";
 import CartProvider from "./context/CartProvider";
 import WishlistProvider from "./context/WishlistProvider";
+import CompanySettingsProvider from "./context/CompanySettingsProvider";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminSection from "./pages/admin/AdminSection";
@@ -35,62 +36,64 @@ function StoreLayout() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Admin section — has its own layout (dark sidebar), no store Navbar */}
-              <Route path="/admin/*" element={<AdminSection />} />
+    <CompanySettingsProvider>
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Admin section — has its own layout (dark sidebar), no store Navbar */}
+                <Route path="/admin/*" element={<AdminSection />} />
 
-              {/* Store pages — wrapped in Layout (Navbar + main) */}
-              <Route element={<StoreLayout />}>
-                <Route path="/" element={<ProductsPage />} />
-                <Route
-                  path="/account"
-                  element={<ProtectedRoute><DashboardPage /></ProtectedRoute>}
-                />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-                <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-                <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
-                <Route path="/otp-login" element={<OtpLoginPage />} />
-                <Route path="/products" element={<ProductsPage />} />
-                <Route path="/products/:slug" element={<ProductDetailPage />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/wishlist" element={<WishlistPage />} />
-                <Route
-                  path="/addresses"
-                  element={<ProtectedRoute><AddressesPage /></ProtectedRoute>}
-                />
-                <Route
-                  path="/checkout"
-                  element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>}
-                />
-                <Route
-                  path="/payment/khalti/callback"
-                  element={<ProtectedRoute><KhaltiCallbackPage /></ProtectedRoute>}
-                />
-                <Route
-                  path="/payment/esewa/callback"
-                  element={<ProtectedRoute><EsewaCallbackPage /></ProtectedRoute>}
-                />
-                <Route
-                  path="/orders"
-                  element={<ProtectedRoute><OrdersPage /></ProtectedRoute>}
-                />
-                <Route
-                  path="/orders/:id"
-                  element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>}
-                />
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </WishlistProvider>
-      </CartProvider>
-    </AuthProvider>
+                {/* Store pages — wrapped in Layout (Navbar + main) */}
+                <Route element={<StoreLayout />}>
+                  <Route path="/" element={<ProductsPage />} />
+                  <Route
+                    path="/account"
+                    element={<ProtectedRoute><DashboardPage /></ProtectedRoute>}
+                  />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+                  <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+                  <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
+                  <Route path="/otp-login" element={<OtpLoginPage />} />
+                  <Route path="/products" element={<ProductsPage />} />
+                  <Route path="/products/:slug" element={<ProductDetailPage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route
+                    path="/addresses"
+                    element={<ProtectedRoute><AddressesPage /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/checkout"
+                    element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/payment/khalti/callback"
+                    element={<ProtectedRoute><KhaltiCallbackPage /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/payment/esewa/callback"
+                    element={<ProtectedRoute><EsewaCallbackPage /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/orders"
+                    element={<ProtectedRoute><OrdersPage /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/orders/:id"
+                    element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>}
+                  />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
+    </CompanySettingsProvider>
   );
 }

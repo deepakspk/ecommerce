@@ -63,6 +63,9 @@ import {
 import { listUsers, updateUserRole, updateUserStatus } from "../controllers/admin/userController.js";
 import { listAuditLog } from "../controllers/admin/auditLogController.js";
 import { getReportSummary, exportOrdersCsv } from "../controllers/admin/reportsController.js";
+import { listSettings, updateGroup, exportSettings } from "../controllers/admin/settingsController.js";
+import { SETTINGS_GROUPS } from "../config/settingsSchema.js";
+import { getCompanySettingsAdmin, updateCompanySettings } from "../controllers/admin/companySettingsController.js";
 import {
   listBanners,
   createBanner,
@@ -334,7 +337,7 @@ router.patch(
 router.get("/users", listUsers);
 router.patch(
   "/users/:id/role",
-  [mongoIdParam("id"), body("role").isIn(["CUSTOMER", "ADMIN"]).withMessage("Invalid role")],
+  [mongoIdParam("id"), body("role").isIn(["CUSTOMER", "ADMIN", "SUPER_ADMIN"]).withMessage("Invalid role")],
   validate,
   updateUserRole
 );
@@ -351,6 +354,30 @@ router.get("/audit-log", listAuditLog);
 // Reports
 router.get("/reports/summary", getReportSummary);
 router.get("/reports/export", exportOrdersCsv);
+
+// System Settings (SUPER_ADMIN only — stricter than the router-level ADMIN gate above)
+router.get("/settings", requireRole("SUPER_ADMIN"), listSettings);
+router.get("/settings/export", requireRole("SUPER_ADMIN"), exportSettings);
+router.put(
+  "/settings/:group",
+  requireRole("SUPER_ADMIN"),
+  [param("group").isIn(SETTINGS_GROUPS).withMessage("Invalid settings group")],
+  validate,
+  updateGroup
+);
+
+// Company Settings (SUPER_ADMIN only)
+router.get("/company-settings", requireRole("SUPER_ADMIN"), getCompanySettingsAdmin);
+router.put(
+  "/company-settings",
+  requireRole("SUPER_ADMIN"),
+  upload.fields([{ name: "logo", maxCount: 1 }, { name: "favicon", maxCount: 1 }]),
+  [
+    body("email").optional({ values: "falsy" }).isEmail().withMessage("email must be valid"),
+  ],
+  validate,
+  updateCompanySettings
+);
 
 // Banners
 router.get("/banners", listBanners);

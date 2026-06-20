@@ -1,12 +1,17 @@
 import { v2 as cloudinary } from "cloudinary";
+import * as settingsService from "../services/settingsService.js";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+function configureCloudinary() {
+  cloudinary.config({
+    cloud_name: settingsService.get("CLOUDINARY_CLOUD_NAME"),
+    api_key: settingsService.get("CLOUDINARY_API_KEY"),
+    api_secret: settingsService.get("CLOUDINARY_API_SECRET"),
+  });
+  return cloudinary;
+}
 
 export function uploadToCloudinary(buffer, folder = "ecommerce-nepal") {
+  configureCloudinary();
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { folder, resource_type: "image" },

@@ -1,8 +1,12 @@
-const BASE_URL = process.env.NCM_BASE_URL || "https://demo.nepalcanmove.com/api";
+import * as settingsService from "../services/settingsService.js";
+
+function baseUrl() {
+  return settingsService.get("LOGISTICS_API_BASE_URL") || "https://demo.nepalcanmove.com/api";
+}
 
 function authHeaders() {
   return {
-    Authorization: `Token ${process.env.NCM_API_TOKEN}`,
+    Authorization: `Token ${settingsService.get("LOGISTICS_API_TOKEN")}`,
     "Content-Type": "application/json",
   };
 }
@@ -14,7 +18,7 @@ function extractErrorMessage(data) {
 }
 
 async function ncmRequest(path, { method = "GET", body, version = "v1" } = {}) {
-  const res = await fetch(`${BASE_URL}/${version}${path}`, {
+  const res = await fetch(`${baseUrl()}/${version}${path}`, {
     method,
     headers: authHeaders(),
     body: body ? JSON.stringify(body) : undefined,
