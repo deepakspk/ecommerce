@@ -36,6 +36,7 @@ import {
   updateOrder,
   updateStatus,
   markPaid,
+  downloadInvoice,
 } from "../controllers/admin/orderController.js";
 import {
   listCoupons,
@@ -254,6 +255,7 @@ router.get("/stats", getDashboardStats);
 // Orders
 router.get("/orders", listOrders);
 router.get("/orders/:id", [mongoIdParam("id")], validate, getOrder);
+router.get("/orders/:id/invoice", [mongoIdParam("id")], validate, downloadInvoice);
 router.put(
   "/orders/:id",
   [mongoIdParam("id"), ...orderUpdateBodyValidators],

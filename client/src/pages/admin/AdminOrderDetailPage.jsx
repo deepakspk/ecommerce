@@ -4,6 +4,7 @@ import * as adminApi from "../../api/admin";
 import ShipmentPanel from "../../components/ShipmentPanel";
 import Badge from "../../components/Badge";
 import { H1_CLASS } from "../../utils/ui";
+import { downloadBlob } from "../../utils/downloadBlob";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -36,6 +37,7 @@ export default function AdminOrderDetailPage() {
   const [statusError, setStatusError] = useState("");
   const [updating, setUpdating] = useState(false);
   const [markingPaid, setMarkingPaid] = useState(false);
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -152,6 +154,18 @@ export default function AdminOrderDetailPage() {
     }
   }
 
+  async function handleDownloadInvoice() {
+    setDownloadingInvoice(true);
+    try {
+      const blob = await adminApi.downloadOrderInvoice(id);
+      downloadBlob(blob, `invoice-${id}.pdf`);
+    } catch (e) {
+      setStatusError(e.response?.data?.message || "Error downloading invoice");
+    } finally {
+      setDownloadingInvoice(false);
+    }
+  }
+
   if (loading) return <div className="p-8 text-gray-400 text-sm">Loading…</div>;
   if (!order) return (
     <div className="p-8">
@@ -179,6 +193,13 @@ export default function AdminOrderDetailPage() {
         <div className="flex items-center gap-2">
           <Badge kind="order" status={order.status} />
           <Badge kind="payment" status={order.paymentStatus} />
+          <button
+            onClick={handleDownloadInvoice}
+            disabled={downloadingInvoice}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            {downloadingInvoice ? "Downloading…" : "Invoice"}
+          </button>
           {!editing && !isCancelled && !isDelivered && (
             <button
               onClick={startEditing}

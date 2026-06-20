@@ -8,10 +8,14 @@ const cartItemSchema = new mongoose.Schema(
   { _id: false }
 );
 
-const cartSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  sessionId: { type: String },
-  items: { type: [cartItemSchema], default: [] },
-});
+const cartSchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    sessionId: { type: String },
+    items: { type: [cartItemSchema], default: [] },
+    lastAbandonedEmailSentAt: { type: Date, default: null },
+  },
+  { timestamps: true }
+);
 
 export default mongoose.model("Cart", cartSchema);

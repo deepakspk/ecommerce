@@ -4,6 +4,7 @@ import * as ordersApi from "../api/orders";
 import * as paymentsApi from "../api/payments";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { submitEsewaForm } from "../utils/esewaForm";
+import { downloadBlob } from "../utils/downloadBlob";
 import Badge from "../components/Badge";
 import { H1_CLASS, CARD_CLASS } from "../utils/ui";
 
@@ -30,6 +31,8 @@ export default function OrderSuccessPage() {
 
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState("");
+
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
   const [returnRequests, setReturnRequests] = useState([]);
   const [showReturnForm, setShowReturnForm] = useState(false);
@@ -110,6 +113,18 @@ export default function OrderSuccessPage() {
       setReturnError(getErrorMessage(e));
     } finally {
       setSubmittingReturn(false);
+    }
+  }
+
+  async function handleDownloadInvoice() {
+    setDownloadingInvoice(true);
+    try {
+      const blob = await ordersApi.downloadInvoice(id);
+      downloadBlob(blob, `invoice-${id}.pdf`);
+    } catch (e) {
+      setError(getErrorMessage(e));
+    } finally {
+      setDownloadingInvoice(false);
     }
   }
 
@@ -339,7 +354,15 @@ export default function OrderSuccessPage() {
         )}
 
         {/* Actions */}
-        <div className="px-5 py-4 flex gap-3">
+        <div className="px-5 py-4 flex gap-3 flex-wrap">
+          <button
+            type="button"
+            onClick={handleDownloadInvoice}
+            disabled={downloadingInvoice}
+            className="flex-1 text-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            {downloadingInvoice ? "Downloading…" : "Download Invoice"}
+          </button>
           <Link to="/orders"
             className="flex-1 text-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
             View all orders

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import * as adminApi from "../../api/admin";
 import EmptyState from "../../components/EmptyState";
+import { downloadBlob } from "../../utils/downloadBlob";
 import { H1_CLASS, CARD_CLASS, INPUT_CLASS, BUTTON_SECONDARY, SECTION_HEADING_CLASS } from "../../utils/ui";
 
 const PRESETS = [
@@ -117,14 +118,7 @@ export default function ReportsPage() {
     setExporting(true);
     try {
       const blob = await adminApi.exportOrdersCsv({ from, to });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `orders-${from}-to-${to}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, `orders-${from}-to-${to}.csv`);
     } catch (e) {
       setError(e.response?.data?.message || "Failed to export CSV");
     } finally {

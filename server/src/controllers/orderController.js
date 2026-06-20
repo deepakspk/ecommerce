@@ -6,6 +6,7 @@ import ProductVariant from "../models/ProductVariant.js";
 import InventoryLog from "../models/InventoryLog.js";
 import { validateCoupon, redeemCoupon } from "../services/couponService.js";
 import { sendOrderConfirmedEmail } from "../utils/orderEmails.js";
+import { streamInvoicePdf } from "../utils/invoice.js";
 
 function calcDeliveryFee(province) {
   return province.toLowerCase().trim() === "bagmati" ? 100 : 200;
@@ -144,6 +145,12 @@ export async function getOrder(req, res) {
   const order = await Order.findOne({ _id: req.params.id, userId: req.user._id });
   if (!order) return res.status(404).json({ message: "Order not found" });
   res.json({ order });
+}
+
+export async function downloadInvoice(req, res) {
+  const order = await Order.findOne({ _id: req.params.id, userId: req.user._id });
+  if (!order) return res.status(404).json({ message: "Order not found" });
+  streamInvoicePdf(res, order, { name: req.user.name, email: req.user.email });
 }
 
 export async function cancelOrder(req, res) {

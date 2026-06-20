@@ -39,6 +39,8 @@ export const updateOrder = (id, data) => api.put(`/admin/orders/${id}`, data).th
 export const updateOrderStatus = (id, status) =>
   api.patch(`/admin/orders/${id}/status`, { status }).then(r => r.data);
 export const markOrderPaid = (id) => api.patch(`/admin/orders/${id}/paid`).then(r => r.data);
+export const downloadOrderInvoice = (id) =>
+  api.get(`/admin/orders/${id}/invoice`, { responseType: "blob" }).then(r => r.data);
 
 // Coupons
 export const getCoupons = () => api.get("/admin/coupons").then(r => r.data);

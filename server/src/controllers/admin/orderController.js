@@ -3,6 +3,7 @@ import ProductVariant from "../../models/ProductVariant.js";
 import User from "../../models/User.js";
 import { sendOrderStatusEmail } from "../../utils/orderEmails.js";
 import { logAudit } from "../../utils/auditLog.js";
+import { streamInvoicePdf } from "../../utils/invoice.js";
 
 const STATUS_TRANSITIONS = {
   PENDING:   ["CONFIRMED", "CANCELLED"],
@@ -57,6 +58,12 @@ export async function getOrder(req, res) {
   const order = await Order.findById(req.params.id).populate("userId", "name email phone");
   if (!order) return res.status(404).json({ message: "Order not found" });
   res.json({ order });
+}
+
+export async function downloadInvoice(req, res) {
+  const order = await Order.findById(req.params.id).populate("userId", "name email");
+  if (!order) return res.status(404).json({ message: "Order not found" });
+  streamInvoicePdf(res, order, { name: order.userId?.name, email: order.userId?.email });
 }
 
 const LOCKED_STATUSES = ["DELIVERED", "CANCELLED"];
