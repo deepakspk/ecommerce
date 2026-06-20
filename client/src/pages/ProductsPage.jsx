@@ -19,7 +19,7 @@ function nodeContainsSlug(node, slug) {
 }
 
 export default function ProductsPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const isHome = location.pathname === "/";
 
@@ -32,14 +32,26 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Filter state — initialise category from ?category= URL param
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
+  // Category filter is derived straight from the ?category= URL param (not local
+  // state) so that external navigations — CategoryNav, the homepage category tiles,
+  // browser back/forward — always take effect immediately, with no separate sync step.
+  const selectedCategory = searchParams.get("category") || "";
   const [search, setSearch] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [page, setPage] = useState(1);
+
+  function selectCategory(slug) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (slug) next.set("category", slug);
+      else next.delete("category");
+      return next;
+    });
+    setPage(1);
+  }
 
   // Load categories + available filter values once on mount
   useEffect(() => {
@@ -101,7 +113,7 @@ export default function ProductsPage() {
   }
 
   function clearFilters() {
-    setSelectedCategory("");
+    selectCategory("");
     setSearch("");
     setSelectedSize("");
     setSelectedColor("");
@@ -169,14 +181,14 @@ export default function ProductsPage() {
           <FilterPill
             label="All"
             active={selectedCategory === ""}
-            onClick={() => changeFilter(setSelectedCategory, "")}
+            onClick={() => selectCategory("")}
           />
           {categories.map((cat) => (
             <FilterPill
               key={cat.id}
               label={cat.name}
               active={selectedCategory === cat.slug}
-              onClick={() => changeFilter(setSelectedCategory, cat.slug)}
+              onClick={() => selectCategory(cat.slug)}
             />
           ))}
         </div>
@@ -190,7 +202,7 @@ export default function ProductsPage() {
               key={child.id}
               label={child.name}
               active={selectedCategory === child.slug}
-              onClick={() => changeFilter(setSelectedCategory, child.slug)}
+              onClick={() => selectCategory(child.slug)}
             />
           ))}
         </div>

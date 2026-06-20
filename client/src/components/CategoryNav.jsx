@@ -15,7 +15,7 @@ export default function CategoryNav() {
 
   return (
     <nav className="hidden sm:block border-b border-gray-200 bg-white relative z-20">
-      <ul className="flex items-stretch gap-1 px-4 overflow-x-auto">
+      <ul className="flex items-stretch flex-wrap gap-1 px-4">
         {categories.map((cat) => (
           <li key={cat.id} className="group relative flex-shrink-0">
             <Link
