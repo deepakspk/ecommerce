@@ -10,7 +10,7 @@ import ProductCard from "../components/ProductCard";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
-import { INPUT_CLASS, BUTTON_GHOST, PAGE_CLASS, H1_CLASS } from "../utils/ui";
+import { INPUT_CLASS, BUTTON_GHOST, PAGE_CLASS } from "../utils/ui";
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -141,7 +141,6 @@ export default function ProductsPage() {
 
           {!metaLoading && categories.length > 0 && (
             <div>
-              <h2 className={`${H1_CLASS} mb-4`}>Shop by Category</h2>
               <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-4">
                 {categories.map((cat) => (
                   <Link
