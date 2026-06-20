@@ -10,7 +10,7 @@ import ProductCard from "../components/ProductCard";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
-import { INPUT_CLASS, BUTTON_GHOST, PAGE_CLASS } from "../utils/ui";
+import { INPUT_CLASS, BUTTON_GHOST, CARD_CLASS, PAGE_CLASS } from "../utils/ui";
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -173,122 +173,117 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Search + attribute filters — homepage relies on the Navbar search bar and
-          category tiles instead; the full filter bar only shows on /products */}
-      {!isHome && (
-      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mb-5 sm:items-end">
-        <div className="w-full sm:w-auto">
-          <label className="block text-xs font-medium text-gray-500 mb-1">Search</label>
-          <input
-            type="text"
-            placeholder="Search products…"
-            value={search}
-            onChange={(e) => updateSearch(e.target.value)}
-            className={`${INPUT_CLASS} sm:w-52`}
-          />
-        </div>
-
-        {availableFilters.sizes.length > 0 && (
-          <div className="w-full sm:w-auto">
-            <label className="block text-xs font-medium text-gray-500 mb-1">Size</label>
-            <select
-              value={selectedSize}
-              onChange={(e) => changeFilter(setSelectedSize, e.target.value)}
-              className={`${INPUT_CLASS} sm:w-auto`}
-            >
-              <option value="">All sizes</option>
-              {availableFilters.sizes.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {availableFilters.colors.length > 0 && (
-          <div className="w-full sm:w-auto">
-            <label className="block text-xs font-medium text-gray-500 mb-1">Color</label>
-            <select
-              value={selectedColor}
-              onChange={(e) => changeFilter(setSelectedColor, e.target.value)}
-              className={`${INPUT_CLASS} sm:w-auto`}
-            >
-              <option value="">All colors</option>
-              {availableFilters.colors.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <div className="w-full sm:w-auto">
-          <label className="block text-xs font-medium text-gray-500 mb-1">Price (Rs.)</label>
-          <div className="flex items-center gap-1">
-            <input
-              type="number"
-              placeholder="Min"
-              value={minPrice}
-              onChange={(e) => changeFilter(setMinPrice, e.target.value)}
-              min={0}
-              className={`${INPUT_CLASS} sm:w-24`}
-            />
-            <span className="text-gray-400 text-sm">–</span>
-            <input
-              type="number"
-              placeholder="Max"
-              value={maxPrice}
-              onChange={(e) => changeFilter(setMaxPrice, e.target.value)}
-              min={0}
-              className={`${INPUT_CLASS} sm:w-24`}
-            />
-          </div>
-        </div>
-
-        {hasActiveFilters && (
-          <button
-            onClick={clearFilters}
-            className={`${BUTTON_GHOST} text-red-600 hover:text-red-700 pb-0.5 self-start sm:self-auto`}
-          >
-            Clear filters
-          </button>
-        )}
-      </div>
-      )}
-
-      {/* Error */}
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
-
-      {/* Grid */}
-      {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 animate-pulse">
-              <div className="aspect-[4/5] bg-gray-200 rounded-t-lg" />
-              <div className="p-3 space-y-2">
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-4 bg-gray-200 rounded w-1/3" />
+      <div className={!isHome ? "flex flex-col sm:flex-row gap-6" : undefined}>
+        {/* Filter sidebar — homepage relies on the Navbar search bar and category
+            tiles instead; this only shows on /products */}
+        {!isHome && (
+          <aside className="w-full sm:w-56 flex-shrink-0">
+            <div className={`${CARD_CLASS} p-4 space-y-5 sm:sticky sm:top-20`}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-gray-900">Filters</h2>
+                {hasActiveFilters && (
+                  <button onClick={clearFilters} className={`${BUTTON_GHOST} text-red-600 hover:text-red-700 text-xs`}>
+                    Clear
+                  </button>
+                )}
               </div>
-            </div>
-          ))}
-        </div>
-      ) : products.length === 0 ? (
-        <EmptyState
-          title="No products match your filters"
-          action={hasActiveFilters && (
-            <button onClick={clearFilters} className="text-sm text-brand-600 hover:underline">
-              Clear all filters
-            </button>
-          )}
-        />
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
-      )}
 
-      <Pagination page={page} pages={pages} onChange={setPage} />
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Price (Rs.)</label>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={minPrice}
+                    onChange={(e) => changeFilter(setMinPrice, e.target.value)}
+                    min={0}
+                    className={`${INPUT_CLASS} w-full`}
+                  />
+                  <span className="text-gray-400 text-sm">–</span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={maxPrice}
+                    onChange={(e) => changeFilter(setMaxPrice, e.target.value)}
+                    min={0}
+                    className={`${INPUT_CLASS} w-full`}
+                  />
+                </div>
+              </div>
+
+              {availableFilters.sizes.length > 0 && (
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Size</label>
+                  <select
+                    value={selectedSize}
+                    onChange={(e) => changeFilter(setSelectedSize, e.target.value)}
+                    className={`${INPUT_CLASS} w-full`}
+                  >
+                    <option value="">All sizes</option>
+                    {availableFilters.sizes.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {availableFilters.colors.length > 0 && (
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Color</label>
+                  <select
+                    value={selectedColor}
+                    onChange={(e) => changeFilter(setSelectedColor, e.target.value)}
+                    className={`${INPUT_CLASS} w-full`}
+                  >
+                    <option value="">All colors</option>
+                    {availableFilters.colors.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          </aside>
+        )}
+
+        <div className={!isHome ? "flex-1 min-w-0" : undefined}>
+          {/* Error */}
+          {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+
+          {/* Grid */}
+          {loading ? (
+            <div className={`grid ${isHome ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4`}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 animate-pulse">
+                  <div className="aspect-[4/5] bg-gray-200 rounded-t-lg" />
+                  <div className="p-3 space-y-2">
+                    <div className="h-3 bg-gray-200 rounded w-1/2" />
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : products.length === 0 ? (
+            <EmptyState
+              title="No products match your filters"
+              action={hasActiveFilters && (
+                <button onClick={clearFilters} className="text-sm text-brand-600 hover:underline">
+                  Clear all filters
+                </button>
+              )}
+            />
+          ) : (
+            <div className={`grid ${isHome ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4`}>
+              {products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          )}
+
+          <Pagination page={page} pages={pages} onChange={setPage} />
+        </div>
+      </div>
 
       <RecentlyViewedRail />
     </div>
