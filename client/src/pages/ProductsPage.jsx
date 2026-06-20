@@ -4,7 +4,6 @@ import * as productsApi from "../api/products";
 import * as categoriesApi from "../api/categories";
 import { getErrorMessage } from "../utils/errorHelpers";
 import Seo from "../components/Seo";
-import FilterPill from "../components/FilterPill";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
 import ProductCard from "../components/ProductCard";
@@ -12,11 +11,6 @@ import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import { INPUT_CLASS, BUTTON_GHOST, PAGE_CLASS, H1_CLASS } from "../utils/ui";
-
-function nodeContainsSlug(node, slug) {
-  if (node.slug === slug) return true;
-  return node.children.some((child) => nodeContainsSlug(child, slug));
-}
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -36,7 +30,9 @@ export default function ProductsPage() {
   // state) so that external navigations — CategoryNav, the homepage category tiles,
   // browser back/forward — always take effect immediately, with no separate sync step.
   const selectedCategory = searchParams.get("category") || "";
-  const [search, setSearch] = useState("");
+  // Search is also derived from the URL (?search=) so the Navbar's search bar
+  // and this page stay in sync — same reasoning as selectCategory below.
+  const search = searchParams.get("search") || "";
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -50,6 +46,17 @@ export default function ProductsPage() {
       else next.delete("category");
       return next;
     });
+    setPage(1);
+  }
+
+  // Uses { replace: true } so live typing doesn't push a new history entry per keystroke.
+  function updateSearch(value) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value) next.set("search", value);
+      else next.delete("search");
+      return next;
+    }, { replace: true });
     setPage(1);
   }
 
@@ -114,7 +121,7 @@ export default function ProductsPage() {
 
   function clearFilters() {
     selectCategory("");
-    setSearch("");
+    updateSearch("");
     setSelectedSize("");
     setSelectedColor("");
     setMinPrice("");
@@ -123,10 +130,6 @@ export default function ProductsPage() {
   }
 
   const hasActiveFilters = selectedCategory || search || selectedSize || selectedColor || minPrice || maxPrice;
-
-  const activeRoot = selectedCategory
-    ? categories.find((root) => nodeContainsSlug(root, selectedCategory))
-    : null;
 
   const showHero = isHome && !hasActiveFilters;
 
@@ -173,41 +176,6 @@ export default function ProductsPage() {
         </div>
       )}
 
-      <h1 className={`${H1_CLASS} mb-5`}>{showHero ? "All Products" : "Products"}</h1>
-
-      {/* Category pills */}
-      {!metaLoading && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          <FilterPill
-            label="All"
-            active={selectedCategory === ""}
-            onClick={() => selectCategory("")}
-          />
-          {categories.map((cat) => (
-            <FilterPill
-              key={cat.id}
-              label={cat.name}
-              active={selectedCategory === cat.slug}
-              onClick={() => selectCategory(cat.slug)}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Subcategory pills — shown once a top-level category (or one of its subcategories) is selected */}
-      {activeRoot && activeRoot.children.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4 pl-2">
-          {activeRoot.children.map((child) => (
-            <FilterPill
-              key={child.id}
-              label={child.name}
-              active={selectedCategory === child.slug}
-              onClick={() => selectCategory(child.slug)}
-            />
-          ))}
-        </div>
-      )}
-
       {/* Search + attribute filters */}
       <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mb-5 sm:items-end">
         <div className="w-full sm:w-auto">
@@ -216,7 +184,7 @@ export default function ProductsPage() {
             type="text"
             placeholder="Search products…"
             value={search}
-            onChange={(e) => changeFilter(setSearch, e.target.value)}
+            onChange={(e) => updateSearch(e.target.value)}
             className={`${INPUT_CLASS} sm:w-52`}
           />
         </div>

@@ -5,17 +5,50 @@ import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import { CONTAINER_CLASS } from "../utils/ui";
 
+function SearchForm({ className, value, onChange, onSubmit }) {
+  return (
+    <form onSubmit={onSubmit} className={className}>
+      <div className="relative w-full">
+        <input
+          type="text"
+          value={value}
+          onChange={onChange}
+          placeholder="Search for products…"
+          className="w-full border border-gray-300 rounded-full pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        />
+        <button
+          type="submit"
+          aria-label="Search"
+          className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-brand-600"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { itemCount } = useCart();
   const { itemCount: wishlistCount } = useWishlist();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   function handleLogout() {
     setMenuOpen(false);
     logout();
     navigate("/login");
+  }
+
+  function handleSearchSubmit(e) {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    setMenuOpen(false);
+    navigate(q ? `/products?search=${encodeURIComponent(q)}` : "/products");
   }
 
   const CartLink = (
@@ -74,6 +107,13 @@ export default function Navbar() {
             )}
           </div>
 
+          <SearchForm
+            className="hidden sm:flex flex-1 max-w-xl mx-6"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onSubmit={handleSearchSubmit}
+          />
+
           {/* Mobile: brand + hamburger */}
           <div className="flex sm:hidden items-center justify-between w-full">
             <Link to="/" className="font-semibold text-lg text-gray-900" onClick={() => setMenuOpen(false)}>
@@ -124,6 +164,13 @@ export default function Navbar() {
             )}
           </div>
         </div>
+
+        <SearchForm
+          className="sm:hidden mt-3"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onSubmit={handleSearchSubmit}
+        />
 
         {/* Mobile dropdown panel */}
         {menuOpen && (
