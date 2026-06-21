@@ -3,14 +3,32 @@ import { Link } from "react-router-dom";
 import * as categoriesApi from "../api/categories";
 import { CONTAINER_CLASS } from "../utils/ui";
 
+const SKELETON_WIDTHS = ["w-16", "w-20", "w-14", "w-24", "w-16", "w-20"];
+
 export default function CategoryNav() {
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     categoriesApi.getCategoryTree()
       .then((d) => setCategories(d.tree))
-      .catch(() => setCategories([]));
+      .catch(() => setCategories([]))
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) {
+    return (
+      <nav className="hidden sm:block border-b border-gray-200 bg-white relative z-20">
+        <ul className={`${CONTAINER_CLASS} flex items-stretch flex-wrap gap-1`}>
+          {SKELETON_WIDTHS.map((w, i) => (
+            <li key={i} className="px-3 py-2.5">
+              <div className={`h-4 ${w} bg-gray-200 rounded animate-pulse`} />
+            </li>
+          ))}
+        </ul>
+      </nav>
+    );
+  }
 
   if (categories.length === 0) return null;
 

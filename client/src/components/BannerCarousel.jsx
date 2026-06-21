@@ -31,6 +31,7 @@ function BannerSlide({ banner }) {
 
 export default function BannerCarousel() {
   const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef();
@@ -38,7 +39,8 @@ export default function BannerCarousel() {
   useEffect(() => {
     bannersApi.getBanners()
       .then((d) => setBanners(d.banners))
-      .catch(() => setBanners([]));
+      .catch(() => setBanners([]))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -48,6 +50,12 @@ export default function BannerCarousel() {
     }, AUTO_ADVANCE_MS);
     return () => clearInterval(timerRef.current);
   }, [banners.length, paused]);
+
+  if (loading) {
+    return (
+      <div className="relative w-full aspect-[32/9] sm:aspect-[42/9] rounded-xl overflow-hidden bg-gray-200 animate-pulse" />
+    );
+  }
 
   if (banners.length === 0) return null;
 

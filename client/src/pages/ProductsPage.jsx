@@ -139,6 +139,19 @@ export default function ProductsPage() {
         <div className="mb-8 space-y-8">
           <BannerCarousel />
 
+          {metaLoading && (
+            <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-4">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-gray-200 bg-white overflow-hidden animate-pulse">
+                  <div className="aspect-square bg-gray-200" />
+                  <div className="px-3 py-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {!metaLoading && categories.length > 0 && (
             <div>
               <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-4">
