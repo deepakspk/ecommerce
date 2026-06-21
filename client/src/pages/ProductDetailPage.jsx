@@ -444,7 +444,7 @@ export default function ProductDetailPage() {
             <p className="text-xs text-gray-400 mt-3 text-right">SKU: {selectedVariant.sku}</p>
           )}
 
-          <TrustBadges className="mt-6 pt-6 border-t border-gray-100" compact />
+          {/* <TrustBadges className="mt-6 pt-6 border-t border-gray-100" compact /> */}
         </div>
       </div>
 

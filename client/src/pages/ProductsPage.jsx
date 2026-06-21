@@ -208,7 +208,7 @@ export default function ProductsPage() {
           <BannerCarousel />
 
           <div>
-            <h2 className={`${SECTION_HEADING_CLASS} mb-4`}>Shop by Category</h2>
+            {/* <h2 className={`${SECTION_HEADING_CLASS} mb-4`}>Shop by Category</h2> */}
 
             {metaLoading && (
               <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-4">
@@ -395,7 +395,7 @@ export default function ProductsPage() {
         )}
 
         <div ref={gridRef} className={!isHome ? "flex-1 min-w-0" : undefined}>
-          {isHome && <h2 className={`${SECTION_HEADING_CLASS} mb-4`}>All Products</h2>}
+          {/* {isHome && <h2 className={`${SECTION_HEADING_CLASS} mb-4`}>All Products</h2>} */}
 
           {!isHome && !loading && !error && (
             <div className="flex items-center justify-between gap-3 mb-4">
