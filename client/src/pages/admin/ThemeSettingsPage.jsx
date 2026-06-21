@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import * as adminApi from "../../api/admin";
-import { deriveBrandScale } from "../../utils/colorShades";
+import { deriveBrandScale, getContrastColor } from "../../utils/colorShades";
 import { H1_CLASS, CARD_CLASS, INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY } from "../../utils/ui";
 
 const FIELDS = [
@@ -111,6 +111,34 @@ export default function ThemeSettingsPage() {
             onChange={(v) => setField(field.key, v)}
           />
         ))}
+
+        <div>
+          <p className={LABEL_CLASS}>Navbar / Footer preview</p>
+          <div className="rounded-lg overflow-hidden border border-gray-200">
+            <div
+              className="px-4 py-3 flex items-center justify-between"
+              style={{ backgroundColor: form.secondaryColor, color: getContrastColor(form.secondaryColor) }}
+            >
+              <span className="font-semibold text-sm">Your Store</span>
+              <span
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                style={{ backgroundColor: form.primaryColor }}
+              >
+                2
+              </span>
+            </div>
+            <div
+              className="px-4 py-2.5 text-xs flex items-center justify-between"
+              style={{ backgroundColor: form.secondaryColor, color: getContrastColor(form.secondaryColor) }}
+            >
+              <span className="opacity-70">© Your Store</span>
+              <span style={{ color: form.primaryColor }} className="font-medium">Shop Now</span>
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 mt-1.5">
+            How Secondary Color (background) and Primary Color (accents) look together — pick colors with enough contrast and visual harmony before saving.
+          </p>
+        </div>
 
         {scale && (
           <div>

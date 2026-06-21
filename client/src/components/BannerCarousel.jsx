@@ -105,8 +105,11 @@ export default function BannerCarousel() {
                 key={banner._id}
                 type="button"
                 aria-label={`Go to banner ${i + 1}`}
+                aria-current={i === index ? "true" : undefined}
                 onClick={() => goTo(i)}
-                className={`w-2 h-2 rounded-full transition-colors ${i === index ? "bg-white" : "bg-white/50"}`}
+                className={`rounded-full transition-all shadow-sm ring-1 ring-black/10 ${
+                  i === index ? "w-6 h-2.5 bg-white" : "w-2.5 h-2.5 bg-white/70 hover:bg-white/90"
+                }`}
               />
             ))}
           </div>

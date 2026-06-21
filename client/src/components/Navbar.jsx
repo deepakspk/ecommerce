@@ -4,7 +4,40 @@ import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import { useCompanySettings } from "../hooks/useCompanySettings";
+import { useCategories } from "../hooks/useCategories";
 import { CONTAINER_CLASS } from "../utils/ui";
+
+// Mobile has no hover, so nested categories expand via native <details> instead of
+// the desktop CategoryNav's hover-flyout — works at any depth with zero extra state.
+function MobileCategoryTree({ items, onNavigate }) {
+  return (
+    <ul className="space-y-0.5">
+      {items.map((cat) => (
+        <li key={cat.id}>
+          {cat.children.length > 0 ? (
+            <details className="group">
+              <summary className="flex items-center justify-between py-1.5 cursor-pointer list-none marker:content-none">
+                <Link to={`/products?category=${cat.slug}`} onClick={onNavigate} className="flex-1 text-secondary-contrast/90 hover:text-secondary-contrast">
+                  {cat.name}
+                </Link>
+                <svg className="w-3.5 h-3.5 text-secondary-contrast/40 transition-transform duration-200 group-open:rotate-90 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </summary>
+              <div className="pl-3 ml-1 border-l border-secondary-contrast/10">
+                <MobileCategoryTree items={cat.children} onNavigate={onNavigate} />
+              </div>
+            </details>
+          ) : (
+            <Link to={`/products?category=${cat.slug}`} onClick={onNavigate} className="block py-1.5 text-secondary-contrast/80 hover:text-secondary-contrast">
+              {cat.name}
+            </Link>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function SearchForm({ className, value, onChange, onSubmit, onClear }) {
   return (
@@ -104,6 +137,7 @@ export default function Navbar() {
   const { itemCount } = useCart();
   const { itemCount: wishlistCount } = useWishlist();
   const { company } = useCompanySettings();
+  const { categories } = useCategories();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -192,18 +226,26 @@ export default function Navbar() {
 
         {/* Mobile dropdown panel */}
         {menuOpen && (
-          <div className="sm:hidden mt-3 pt-3 border-t border-secondary-contrast/10 flex flex-col gap-3 text-sm">
-            <Link to="/orders" className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
-              Track Order
-            </Link>
-            <Link to={accountTarget} className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
-              Account
-            </Link>
-            {isAdminViewer && (
-              <Link to="/admin" className="text-brand-500 hover:text-brand-400 font-medium" onClick={() => setMenuOpen(false)}>
-                Admin
-              </Link>
+          <div className="sm:hidden mt-3 pt-3 border-t border-secondary-contrast/10 text-sm">
+            {categories.length > 0 && (
+              <div className="mb-3 pb-3 border-b border-secondary-contrast/10">
+                <p className="text-xs font-semibold uppercase tracking-wide text-secondary-contrast/50 mb-1.5">Categories</p>
+                <MobileCategoryTree items={categories} onNavigate={() => setMenuOpen(false)} />
+              </div>
             )}
+            <div className="flex flex-col gap-3">
+              <Link to="/orders" className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
+                Track Order
+              </Link>
+              <Link to={accountTarget} className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
+                Account
+              </Link>
+              {isAdminViewer && (
+                <Link to="/admin" className="text-brand-500 hover:text-brand-400 font-medium" onClick={() => setMenuOpen(false)}>
+                  Admin
+                </Link>
+              )}
+            </div>
           </div>
         )}
       </div>

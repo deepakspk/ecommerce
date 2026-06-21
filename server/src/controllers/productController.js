@@ -22,6 +22,24 @@ async function attachRatings(products) {
   });
 }
 
+// Lets the storefront know whether "Add to Cart" can safely auto-pick a variant
+// (0 or 1 total variants) or must send the shopper to the product page to choose.
+async function attachVariantCounts(products) {
+  const ids = products.map((p) => p._id);
+  const agg = await ProductVariant.aggregate([
+    { $match: { productId: { $in: ids } } },
+    { $group: { _id: "$productId", count: { $sum: 1 } } },
+  ]);
+  const byId = new Map(agg.map((r) => [String(r._id), r.count]));
+  return products.map((p) => ({ ...p, variantCount: byId.get(String(p._id)) || 0 }));
+}
+
+const SORT_OPTIONS = {
+  newest: { createdAt: -1 },
+  "price-asc": { basePrice: 1 },
+  "price-desc": { basePrice: -1 },
+};
+
 export async function getAvailableFilters(req, res) {
   const [sizes, colors, priceRange] = await Promise.all([
     ProductVariant.distinct("size"),
@@ -42,7 +60,7 @@ export async function getAvailableFilters(req, res) {
 }
 
 export async function listProducts(req, res) {
-  const { category, search, size, color, minPrice, maxPrice, page = 1, limit = 20 } = req.query;
+  const { category, search, size, color, minPrice, maxPrice, sort, page = 1, limit = 20 } = req.query;
 
   const filter = { isActive: true };
 
@@ -80,13 +98,19 @@ export async function listProducts(req, res) {
   const [products, total] = await Promise.all([
     Product.find(filter)
       .populate("categories", "name slug")
-      .sort({ createdAt: -1 })
+      .sort(SORT_OPTIONS[sort] || SORT_OPTIONS.newest)
       .skip(skip)
       .limit(limitNum),
     Product.countDocuments(filter),
   ]);
 
-  res.json({ products: await attachRatings(products), total, page: pageNum, pages: Math.ceil(total / limitNum) });
+  const withRatings = await attachRatings(products);
+  res.json({
+    products: await attachVariantCounts(withRatings),
+    total,
+    page: pageNum,
+    pages: Math.ceil(total / limitNum),
+  });
 }
 
 export async function getProduct(req, res) {
@@ -99,23 +123,43 @@ export async function getProduct(req, res) {
   const variants = await ProductVariant.find({ productId: product._id }).sort({ size: 1, color: 1 });
   const [withRating] = await attachRatings([product]);
 
+  async function inStockOnly(candidates) {
+    if (candidates.length === 0) return [];
+    const ids = (
+      await ProductVariant.find({
+        productId: { $in: candidates.map((p) => p._id) },
+        stockQuantity: { $gt: 0 },
+      }).distinct("productId")
+    ).map(String);
+    const idSet = new Set(ids);
+    return candidates.filter((p) => idSet.has(String(p._id)));
+  }
+
+  const RELATED_LIMIT = 8;
   const sameCategoryProducts = await Product.find({
     _id: { $ne: product._id },
     categories: { $in: product.categories.map((c) => c._id) },
     isActive: true,
   }).populate("categories", "name slug");
 
-  const inStockIds = new Set(
-    (
-      await ProductVariant.find({
-        productId: { $in: sameCategoryProducts.map((p) => p._id) },
-        stockQuantity: { $gt: 0 },
-      }).distinct("productId")
-    ).map(String)
-  );
-  const relatedProducts = await attachRatings(
-    sameCategoryProducts.filter((p) => inStockIds.has(String(p._id))).slice(0, 8)
-  );
+  let related = await inStockOnly(sameCategoryProducts);
+
+  // Same-category pool is thin (a niche subcategory, or most of it out of stock) —
+  // top up with other in-stock active products so the rail isn't sparse/empty.
+  if (related.length < 4) {
+    const excludeIds = [product._id, ...related.map((p) => p._id)];
+    const fallbackCandidates = await Product.find({
+      _id: { $nin: excludeIds },
+      isActive: true,
+    })
+      .populate("categories", "name slug")
+      .sort({ createdAt: -1 })
+      .limit(RELATED_LIMIT * 2);
+    const fallbackInStock = await inStockOnly(fallbackCandidates);
+    related = [...related, ...fallbackInStock.slice(0, RELATED_LIMIT - related.length)];
+  }
+
+  const relatedProducts = await attachRatings(related.slice(0, RELATED_LIMIT));
 
   res.json({ product: withRating, variants, relatedProducts });
 }

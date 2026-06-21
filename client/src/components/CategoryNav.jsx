@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import * as categoriesApi from "../api/categories";
+import { useCategories } from "../hooks/useCategories";
 import { CONTAINER_CLASS } from "../utils/ui";
 
 const SKELETON_WIDTHS = ["w-16", "w-20", "w-14", "w-24", "w-16", "w-20"];
@@ -42,15 +41,7 @@ function CategorySubmenu({ items, align = "right" }) {
 }
 
 export default function CategoryNav() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    categoriesApi.getCategoryTree()
-      .then((d) => setCategories(d.tree))
-      .catch(() => setCategories([]))
-      .finally(() => setLoading(false));
-  }, []);
+  const { categories, loading } = useCategories();
 
   if (loading) {
     return (

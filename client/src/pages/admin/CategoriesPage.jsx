@@ -451,7 +451,7 @@ function Modal({ title, onClose, children }) {
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-gray-700">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700">×</button>
+          <button onClick={onClose} aria-label="Close dialog" className="text-gray-400 hover:text-gray-700">×</button>
         </div>
         {children}
       </div>
@@ -469,14 +469,18 @@ function CategoryRow({ cat, depth, byParent, expanded, toggleExpand, onAddChild,
         <td className="px-5 py-3 font-medium text-gray-900">
           <div className="flex items-center gap-1" style={{ paddingLeft: depth * 20 }}>
             {children.length > 0 ? (
-              <button onClick={() => toggleExpand(cat._id)} className="w-4 text-gray-400 hover:text-gray-700">
+              <button
+                onClick={() => toggleExpand(cat._id)}
+                aria-label={isExpanded ? `Collapse ${cat.name}` : `Expand ${cat.name}`}
+                className="w-4 text-gray-400 hover:text-gray-700"
+              >
                 {isExpanded ? "▾" : "▸"}
               </button>
             ) : (
               <span className="w-4" />
             )}
-            <button onClick={() => onMove(cat, "up")} className="text-gray-300 hover:text-gray-600 text-xs" title="Move up">▲</button>
-            <button onClick={() => onMove(cat, "down")} className="text-gray-300 hover:text-gray-600 text-xs" title="Move down">▼</button>
+            <button onClick={() => onMove(cat, "up")} aria-label={`Move ${cat.name} up`} className="text-gray-300 hover:text-gray-600 text-xs" title="Move up">▲</button>
+            <button onClick={() => onMove(cat, "down")} aria-label={`Move ${cat.name} down`} className="text-gray-300 hover:text-gray-600 text-xs" title="Move down">▼</button>
             <span className="ml-1">{cat.name}</span>
           </div>
         </td>

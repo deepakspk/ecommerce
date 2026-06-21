@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import * as categoriesApi from "../api/categories";
+import { useCategories } from "../hooks/useCategories";
 import { useCompanySettings } from "../hooks/useCompanySettings";
 import { CONTAINER_CLASS } from "../utils/ui";
 
@@ -90,14 +89,9 @@ function IconCircle({ children }) {
 const PAYMENT_METHODS = ["Cash on Delivery", "eSewa", "Khalti"];
 
 export default function Footer() {
-  const [categories, setCategories] = useState([]);
+  const { categories: allCategories } = useCategories();
+  const categories = allCategories.slice(0, 5);
   const { company } = useCompanySettings();
-
-  useEffect(() => {
-    categoriesApi.getCategoryTree()
-      .then((d) => setCategories(d.tree.slice(0, 5)))
-      .catch(() => setCategories([]));
-  }, []);
 
   const companyName = company.companyName || "Ecommerce Nepal";
   const socialEntries = Object.entries(company.social || {}).filter(([, value]) => value?.trim());
