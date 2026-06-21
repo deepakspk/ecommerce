@@ -1,5 +1,6 @@
 import Order from "../../models/Order.js";
 import ProductVariant from "../../models/ProductVariant.js";
+import Shipment from "../../models/Shipment.js";
 import User from "../../models/User.js";
 import { sendOrderStatusEmail } from "../../utils/orderEmails.js";
 import { logAudit } from "../../utils/auditLog.js";
@@ -51,7 +52,14 @@ export async function listOrders(req, res) {
     Order.countDocuments(filter),
   ]);
 
-  res.json({ orders, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+  // Lets the orders list show/hide the "create shipment" action per row without an
+  // extra request per order.
+  const shippedIds = new Set(
+    (await Shipment.find({ orderId: { $in: orders.map((o) => o._id) } }).distinct("orderId")).map(String)
+  );
+  const ordersWithShipment = orders.map((o) => ({ ...o.toObject(), hasShipment: shippedIds.has(String(o._id)) }));
+
+  res.json({ orders: ordersWithShipment, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
 }
 
 export async function getOrder(req, res) {

@@ -4,7 +4,10 @@ import * as adminApi from "../../api/admin";
 import Badge from "../../components/Badge";
 import Pagination from "../../components/Pagination";
 import EmptyState from "../../components/EmptyState";
+import ShipmentQuickCreate from "../../components/admin/ShipmentQuickCreate";
 import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
+
+const SHIPPABLE_STATUSES = new Set(["PENDING", "CONFIRMED", "PACKED"]);
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -23,6 +26,7 @@ export default function AdminOrdersPage() {
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [logisticsProviders, setLogisticsProviders] = useState([]);
 
   async function load(p = 1) {
     setLoading(true);
@@ -40,6 +44,16 @@ export default function AdminOrdersPage() {
   }
 
   useEffect(() => { load(1); }, [statusFilter]);
+
+  useEffect(() => {
+    adminApi.listLogisticsProviders()
+      .then(({ providers }) => setLogisticsProviders(providers))
+      .catch(() => setLogisticsProviders([]));
+  }, []);
+
+  function handleShipmentCreated(orderId) {
+    setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, hasShipment: true } : o)));
+  }
 
   function setFilter(status) {
     if (status) setSearchParams({ status });
@@ -81,6 +95,7 @@ export default function AdminOrdersPage() {
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Payment</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Shipment</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -103,6 +118,20 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-5 py-3">
                       <Badge kind="payment" status={o.paymentStatus} />
+                    </td>
+                    <td className="px-5 py-3">
+                      {o.hasShipment ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                          Created
+                        </span>
+                      ) : SHIPPABLE_STATUSES.has(o.status) ? (
+                        <ShipmentQuickCreate order={o} providers={logisticsProviders} onCreated={handleShipmentCreated} />
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3 text-right">
                       <Link to={`/admin/orders/${o._id}`} className="text-brand-600 hover:underline text-xs font-medium">
