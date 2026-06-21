@@ -5,6 +5,7 @@ import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import { useCompanySettings } from "../hooks/useCompanySettings";
 import { useCategories } from "../hooks/useCategories";
+import { useThemeSettings } from "../hooks/useThemeSettings";
 import { CONTAINER_CLASS } from "../utils/ui";
 
 // Mobile has no hover, so nested categories expand via native <details> instead of
@@ -138,10 +139,35 @@ export default function Navbar() {
   const { itemCount: wishlistCount } = useWishlist();
   const { company } = useCompanySettings();
   const { categories } = useCategories();
+  const { loading: themeLoading } = useThemeSettings();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const isAdminViewer = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+
+  if (themeLoading) {
+    return (
+      <nav className="bg-gray-100 border-b border-gray-200 py-5">
+        <div className={CONTAINER_CLASS}>
+          <div className="flex items-center gap-4">
+            <div className="h-8 w-32 bg-gray-200 rounded animate-pulse flex-shrink-0" />
+            <div className="hidden sm:flex flex-1 h-10 bg-gray-200 rounded-full animate-pulse" />
+            <div className="hidden sm:flex items-center gap-6 flex-shrink-0">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="w-5 h-5 bg-gray-200 rounded animate-pulse" />
+              ))}
+            </div>
+            <div className="flex sm:hidden items-center gap-4 ml-auto flex-shrink-0">
+              <div className="w-5 h-5 bg-gray-200 rounded animate-pulse" />
+              <div className="w-5 h-5 bg-gray-200 rounded animate-pulse" />
+              <div className="w-6 h-6 bg-gray-200 rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="sm:hidden mt-3 h-10 bg-gray-200 rounded-full animate-pulse" />
+        </div>
+      </nav>
+    );
+  }
 
   function handleSearchSubmit(e) {
     e.preventDefault();

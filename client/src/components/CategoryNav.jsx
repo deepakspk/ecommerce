@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCategories } from "../hooks/useCategories";
+import { useThemeSettings } from "../hooks/useThemeSettings";
 import { CONTAINER_CLASS } from "../utils/ui";
 
 const SKELETON_WIDTHS = ["w-16", "w-20", "w-14", "w-24", "w-16", "w-20"];
@@ -41,9 +42,10 @@ function CategorySubmenu({ items, align = "right" }) {
 }
 
 export default function CategoryNav() {
-  const { categories, loading } = useCategories();
+  const { categories, loading: categoriesLoading } = useCategories();
+  const { loading: themeLoading } = useThemeSettings();
 
-  if (loading) {
+  if (categoriesLoading || themeLoading) {
     return (
       <nav className="hidden sm:block border-b border-gray-200 bg-white relative z-20">
         <ul className={`${CONTAINER_CLASS} flex items-stretch flex-wrap gap-1`}>

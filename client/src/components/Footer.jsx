@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCategories } from "../hooks/useCategories";
 import { useCompanySettings } from "../hooks/useCompanySettings";
+import { useThemeSettings } from "../hooks/useThemeSettings";
 import { CONTAINER_CLASS } from "../utils/ui";
 
 const SOCIAL_LABELS = {
@@ -92,6 +93,41 @@ export default function Footer() {
   const { categories: allCategories } = useCategories();
   const categories = allCategories.slice(0, 5);
   const { company } = useCompanySettings();
+  const { loading: themeLoading } = useThemeSettings();
+
+  if (themeLoading) {
+    return (
+      <footer className="border-t border-gray-200 bg-gray-100 mt-12">
+        <div className={`${CONTAINER_CLASS} py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10`}>
+          <div className="space-y-3">
+            <div className="h-7 w-36 bg-gray-200 rounded animate-pulse" />
+            <div className="h-3 w-full bg-gray-200 rounded animate-pulse" />
+            <div className="h-3 w-5/6 bg-gray-200 rounded animate-pulse" />
+          </div>
+          {Array.from({ length: 3 }).map((_, col) => (
+            <div key={col} className="space-y-2.5">
+              <div className="h-3 w-24 bg-gray-200 rounded animate-pulse mb-1.5" />
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-3 w-20 bg-gray-200 rounded animate-pulse" />
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-gray-200">
+          <div className={`${CONTAINER_CLASS} py-6 flex flex-wrap gap-2`}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+            ))}
+          </div>
+        </div>
+        <div className="border-t border-gray-200">
+          <div className={`${CONTAINER_CLASS} py-4`}>
+            <div className="h-3 w-48 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   const companyName = company.companyName || "Ecommerce Nepal";
   const socialEntries = Object.entries(company.social || {}).filter(([, value]) => value?.trim());
