@@ -44,6 +44,18 @@ function hslToHex(h, s, l) {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
+// Picks white or near-black text depending on which gives better contrast against
+// the given background hex (WCAG relative luminance), so any admin-picked color works.
+export function getContrastColor(hex) {
+  if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return "#ffffff";
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255);
+  const lin = (c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  const luminance = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  return luminance > 0.45 ? "#111827" : "#ffffff";
+}
+
 // Treats the given hex as the "600" shade (the one already used for buttons/links
 // throughout this codebase) and derives the rest of the scale by adjusting lightness only.
 export function deriveBrandScale(primaryHex) {

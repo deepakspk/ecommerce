@@ -9,13 +9,13 @@ import { CONTAINER_CLASS } from "../utils/ui";
 function SearchForm({ className, value, onChange, onSubmit, onClear }) {
   return (
     <form onSubmit={onSubmit} className={`${className} flex items-stretch`}>
-      <div className="relative flex-1 flex items-center border border-gray-300 rounded-l-full overflow-hidden focus-within:ring-2 focus-within:ring-brand-500">
+      <div className="relative flex-1 flex items-center bg-white border border-gray-300 rounded-l-full overflow-hidden focus-within:ring-2 focus-within:ring-brand-500">
         <input
           type="text"
           value={value}
           onChange={onChange}
           placeholder="Search for products…"
-          className="w-full pl-4 pr-8 py-2.5 text-sm focus:outline-none"
+          className="w-full pl-4 pr-8 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none"
         />
         {value && (
           <button
@@ -48,7 +48,7 @@ function NavIconLink({ to, label, icon, badge, onClick }) {
     <Link
       to={to}
       onClick={onClick}
-      className="flex flex-col items-center gap-0.5 text-gray-700 hover:text-brand-600 flex-shrink-0"
+      className="flex flex-col items-center gap-0.5 text-secondary-contrast/80 hover:text-secondary-contrast flex-shrink-0"
     >
       <span className="relative">
         {icon}
@@ -119,12 +119,12 @@ export default function Navbar() {
   const accountTarget = user ? "/account" : "/login";
 
   return (
-    <nav className="border-b border-gray-200 py-3">
+    <nav className="bg-secondary border-b border-secondary-contrast/10 py-5">
       <div className={CONTAINER_CLASS}>
         <div className="flex items-center gap-4">
-          <Link to="/" className="font-semibold text-lg text-gray-900 flex-shrink-0 flex items-center gap-2">
+          <Link to="/" className="font-semibold text-lg text-secondary-contrast flex-shrink-0 flex items-center gap-2">
             {company?.logoUrl ? (
-              <img src={company.logoUrl} alt={company.companyName || "Ecommerce Nepal"} className="h-8 w-auto" />
+              <img src={company.logoUrl} alt={company.companyName || "Ecommerce Nepal"} className="h-12 w-auto" />
             ) : (
               company?.companyName || "Ecommerce Nepal"
             )}
@@ -150,7 +150,7 @@ export default function Navbar() {
 
           {/* Mobile: brand row icons + hamburger */}
           <div className="flex sm:hidden items-center gap-4 ml-auto flex-shrink-0">
-            <Link to="/wishlist" className="relative text-gray-600 hover:text-gray-900" aria-label="Wishlist" onClick={() => setMenuOpen(false)}>
+            <Link to="/wishlist" className="relative text-secondary-contrast/80 hover:text-secondary-contrast" aria-label="Wishlist" onClick={() => setMenuOpen(false)}>
               {WishlistIcon}
               {wishlistCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-brand-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
@@ -158,7 +158,7 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            <Link to="/cart" className="relative text-gray-600 hover:text-gray-900" aria-label="Cart" onClick={() => setMenuOpen(false)}>
+            <Link to="/cart" className="relative text-secondary-contrast/80 hover:text-secondary-contrast" aria-label="Cart" onClick={() => setMenuOpen(false)}>
               {CartIcon}
               {itemCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-brand-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
@@ -169,7 +169,7 @@ export default function Navbar() {
             <button
               onClick={() => setMenuOpen(o => !o)}
               aria-label="Toggle menu"
-              className="text-gray-600 hover:text-gray-900"
+              className="text-secondary-contrast/80 hover:text-secondary-contrast"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 {menuOpen ? (
@@ -192,15 +192,15 @@ export default function Navbar() {
 
         {/* Mobile dropdown panel */}
         {menuOpen && (
-          <div className="sm:hidden mt-3 pt-3 border-t border-gray-100 flex flex-col gap-3 text-sm">
-            <Link to="/orders" className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
+          <div className="sm:hidden mt-3 pt-3 border-t border-secondary-contrast/10 flex flex-col gap-3 text-sm">
+            <Link to="/orders" className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
               Track Order
             </Link>
-            <Link to={accountTarget} className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
+            <Link to={accountTarget} className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
               Account
             </Link>
             {isAdminViewer && (
-              <Link to="/admin" className="text-brand-600 hover:text-brand-800 font-medium" onClick={() => setMenuOpen(false)}>
+              <Link to="/admin" className="text-brand-500 hover:text-brand-400 font-medium" onClick={() => setMenuOpen(false)}>
                 Admin
               </Link>
             )}

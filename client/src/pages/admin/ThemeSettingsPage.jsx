@@ -5,7 +5,7 @@ import { H1_CLASS, CARD_CLASS, INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY } from "
 
 const FIELDS = [
   { key: "primaryColor", label: "Primary Color", live: true },
-  { key: "secondaryColor", label: "Secondary Color", live: false },
+  { key: "secondaryColor", label: "Secondary Color", live: true },
   { key: "accentColor", label: "Accent Color", live: false },
   { key: "buttonColor", label: "Button Color", live: false },
   { key: "textColor", label: "Text Color", live: false },
@@ -81,7 +81,7 @@ export default function ThemeSettingsPage() {
     setSaveSuccess("");
     try {
       await adminApi.updateThemeSettings(form);
-      setSaveSuccess("Theme settings saved. Reload the storefront to see the new primary color.");
+      setSaveSuccess("Theme settings saved. Reload the storefront to see the new colors.");
     } catch (e) {
       setSaveError(e.response?.data?.message || "Failed to save theme settings");
     } finally {
@@ -98,8 +98,8 @@ export default function ThemeSettingsPage() {
     <div className="p-4 sm:p-8 max-w-2xl">
       <h1 className={`${H1_CLASS} mb-2`}>Theme Settings</h1>
       <p className="text-sm text-gray-500 mb-6">
-        Only Primary Color is currently applied to the storefront (buttons, nav, links, badges, footer).
-        The other fields are saved for future use.
+        Primary Color drives buttons, links, and badges. Secondary Color drives the Navbar
+        and Footer background. The other fields are saved for future use.
       </p>
 
       <form onSubmit={handleSave} className={`${CARD_CLASS} p-6 space-y-5`}>
