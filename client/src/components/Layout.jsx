@@ -16,8 +16,10 @@ export default function Layout({ children }) {
       <Navbar />
       <CategoryNav />
       <main id="main-content" className="flex-1">{children}</main>
-      <div className={`${CONTAINER_CLASS} py-8 border-t border-gray-200`}>
-        <TrustBadges />
+      <div className="border-t border-gray-200">
+        <div className={CONTAINER_CLASS}>
+          <TrustBadges />
+        </div>
       </div>
       <Footer />
     </div>

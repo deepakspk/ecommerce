@@ -400,7 +400,7 @@ export default function ProductsPage() {
           {!isHome && !loading && !error && (
             <div className="flex items-center justify-between gap-3 mb-4">
               <p className="text-sm text-gray-500">
-                {total > 0 ? `Showing ${products.length} of ${total} product${total === 1 ? "" : "s"}` : ""}
+                {/* {total > 0 ? `Showing ${products.length} of ${total} product${total === 1 ? "" : "s"}` : ""} */}
               </p>
               <select
                 value={sort}

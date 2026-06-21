@@ -87,7 +87,40 @@ function IconCircle({ children }) {
   );
 }
 
-const PAYMENT_METHODS = ["Cash on Delivery", "eSewa", "Khalti"];
+function CodBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-white border border-gray-200 text-gray-700">
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <rect x="3" y="7" width="18" height="10" rx="1.5" />
+        <circle cx="12" cy="12" r="2.25" />
+        <path strokeLinecap="round" d="M6.5 9.5h-.01M17.5 14.5h.01" />
+      </svg>
+      <span className="text-xs font-semibold">Cash on Delivery</span>
+    </span>
+  );
+}
+
+function EsewaBadge() {
+  return (
+    <svg className="h-8 w-auto" viewBox="0 0 96 32" role="img" aria-label="eSewa">
+      <rect width="96" height="32" rx="6" fill="#60BB46" />
+      <text x="48" y="21" textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif" fontStyle="italic" fontWeight="700" fontSize="15" fill="#ffffff">
+        eSewa
+      </text>
+    </svg>
+  );
+}
+
+function KhaltiBadge() {
+  return (
+    <svg className="h-8 w-auto" viewBox="0 0 96 32" role="img" aria-label="Khalti">
+      <rect width="96" height="32" rx="6" fill="#5C2D91" />
+      <text x="48" y="21" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="14" fill="#ffffff">
+        Khalti
+      </text>
+    </svg>
+  );
+}
 
 export default function Footer() {
   const { categories: allCategories } = useCategories();
@@ -137,9 +170,12 @@ export default function Footer() {
       <div className={`${CONTAINER_CLASS} py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10`}>
         {/* Brand */}
         <div>
-          <Link to="/" className="text-lg font-bold text-secondary-contrast flex items-center gap-2">
-            {company.logoUrl && <img src={company.logoUrl} alt={companyName} className="h-11 w-auto" />}
-            {companyName}
+          <Link to="/" className="flex items-center gap-2">
+            {company.logoUrl ? (
+              <img src={company.logoUrl} alt={companyName} className="h-[88px] w-auto" />
+            ) : (
+              <span className="text-lg font-bold text-secondary-contrast">{companyName}</span>
+            )}
           </Link>
           <p className="text-sm text-secondary-contrast/70 mt-3 leading-relaxed">
             {company.description || "Bringing quality products to your doorstep, anywhere in Nepal."}
@@ -233,15 +269,10 @@ export default function Footer() {
 
           <div>
             <FooterHeading>We Accept</FooterHeading>
-            <div className="flex flex-wrap gap-2 sm:justify-end">
-              {PAYMENT_METHODS.map((method) => (
-                <span
-                  key={method}
-                  className="inline-block text-xs font-medium px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600"
-                >
-                  {method}
-                </span>
-              ))}
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              <CodBadge />
+              <EsewaBadge />
+              <KhaltiBadge />
             </div>
           </div>
         </div>
