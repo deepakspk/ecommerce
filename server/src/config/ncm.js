@@ -41,7 +41,11 @@ export const getShippingRate = ({ creation, destination, type }) =>
 
 export const getOrderStatus = (id) => ncmRequest(`/order/status?${new URLSearchParams({ id })}`);
 
+export const getOrderDetail = (id) => ncmRequest(`/order?${new URLSearchParams({ id })}`);
+
 export const createOrder = (payload) => ncmRequest("/order/create", { method: "POST", body: payload });
+
+export const getOrderComments = (id) => ncmRequest(`/order/comment?${new URLSearchParams({ id })}`);
 
 export const createComment = (orderid, comments) =>
   ncmRequest("/comment", { method: "POST", body: { orderid, comments } });

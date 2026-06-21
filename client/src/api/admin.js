@@ -105,3 +105,9 @@ export const markShipmentReturn = (shipmentId, reason) =>
   api.post(`/admin/shipments/${shipmentId}/return`, { reason }).then(r => r.data);
 export const getShipmentLabel = (shipmentId) =>
   api.get(`/admin/shipments/${shipmentId}/label`).then(r => r.data);
+export const getShipmentDetails = (shipmentId) =>
+  api.get(`/admin/shipments/${shipmentId}/details`).then(r => r.data);
+export const getShipmentComments = (shipmentId) =>
+  api.get(`/admin/shipments/${shipmentId}/comments`).then(r => r.data);
+export const addShipmentComment = (shipmentId, message) =>
+  api.post(`/admin/shipments/${shipmentId}/comments`, { message }).then(r => r.data);

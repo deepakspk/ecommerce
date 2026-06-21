@@ -59,6 +59,9 @@ import {
   getShipmentLabel,
   refreshShipment,
   returnShipment,
+  getShipmentDetails,
+  getShipmentComments,
+  addShipmentComment,
 } from "../controllers/admin/logisticsController.js";
 import { listUsers, updateUserRole, updateUserStatus } from "../controllers/admin/userController.js";
 import { listAuditLog } from "../controllers/admin/auditLogController.js";
@@ -435,6 +438,14 @@ router.post(
   [mongoIdParam("id"), body("reason").optional().trim()],
   validate,
   returnShipment
+);
+router.get("/shipments/:id/details", [mongoIdParam("id")], validate, getShipmentDetails);
+router.get("/shipments/:id/comments", [mongoIdParam("id")], validate, getShipmentComments);
+router.post(
+  "/shipments/:id/comments",
+  [mongoIdParam("id"), body("message").trim().notEmpty().withMessage("message is required")],
+  validate,
+  addShipmentComment
 );
 
 export default router;

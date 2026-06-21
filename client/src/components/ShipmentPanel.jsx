@@ -35,8 +35,6 @@ export default function ShipmentPanel({ orderId, order }) {
   const [createError, setCreateError] = useState("");
   const [debugParams, setDebugParams] = useState(null);
 
-  const [refreshing, setRefreshing] = useState(false);
-  const [refreshError, setRefreshError] = useState("");
   const [returnReason, setReturnReason] = useState("");
   const [returning, setReturning] = useState(false);
   const [returnError, setReturnError] = useState("");
@@ -97,19 +95,6 @@ export default function ShipmentPanel({ orderId, order }) {
       setDebugParams(e.response?.data?.debugParams || null);
     } finally {
       setCreating(false);
-    }
-  }
-
-  async function handleRefresh() {
-    setRefreshError("");
-    setRefreshing(true);
-    try {
-      const { shipment: updated } = await adminApi.refreshShipmentTracking(shipment._id);
-      setShipment(updated);
-    } catch (e) {
-      setRefreshError(getErrorMessage(e));
-    } finally {
-      setRefreshing(false);
     }
   }
 
@@ -256,30 +241,12 @@ export default function ShipmentPanel({ orderId, order }) {
         {shipmentProvider?.label || shipment.provider} ·{" "}
         <span className="font-mono text-gray-500">{shipment.providerShipmentId}</span>
       </p>
-
-      {shipment.trackingEvents.length > 0 && (
-        <ul className="mt-3 space-y-2 border-l border-gray-200 pl-3">
-          {shipment.trackingEvents.map((event, i) => (
-            <li key={i} className="text-xs">
-              <p className="font-medium text-gray-700">{event.rawStatus || event.status}</p>
-              <p className="text-gray-400">{fmtDate(event.occurredAt)}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {refreshError && <p className="text-xs text-red-600 mt-2">{refreshError}</p>}
-
-      <button
-        onClick={handleRefresh}
-        disabled={refreshing}
-        className="w-full mt-3 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 disabled:opacity-50 transition-colors"
-      >
-        {refreshing ? "Refreshing…" : "Refresh tracking"}
-      </button>
+      <p className="text-xs text-gray-400 mt-1">
+        Full tracking history and live status are in the shipment section below.
+      </p>
 
       {shipmentProvider?.capabilities.labelPrinting && (
-        <div className="mt-2">
+        <div className="mt-3">
           {labelError && <p className="text-xs text-red-600 mb-2">{labelError}</p>}
           <button
             onClick={handlePrintLabel}
