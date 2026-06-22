@@ -13,7 +13,7 @@ services:
       - key: PORT
         value: 5000
       - key: CLIENT_URL
-        value: https://ecommerce-client.onrender.com
+        value: https://ecommerce-client-rohj.onrender.com
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
@@ -65,7 +65,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        value: https://ecommerce-server.onrender.com/api
+        value: https://ecommerce-server-8ryb.onrender.com/api
     routes:
       - type: rewrite
         source: /*
