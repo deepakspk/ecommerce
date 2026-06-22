@@ -44,7 +44,7 @@ async function createShipment(shipment) {
     fbranch: fromBranch,
     branch: toBranch,
     package: packageLabel,
-    vref_id: vendorRef,
+    vref_id: "VEN_REF001",
     instruction,
     delivery_type: CREATE_TYPE_MAP[deliveryType] || CREATE_TYPE_MAP.DOOR_TO_DOOR,
     weight: weight ? String(weight) : undefined,
