@@ -31,8 +31,29 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const stripTrailingSlash = (url) => url.trim().replace(/\/+$/, "");
+
+const allowedOrigins = [
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",") : []),
+  "http://localhost:5173",
+].map(stripTrailingSlash);
+
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      // no Origin header (e.g. server-to-server, curl) — allow
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(stripTrailingSlash(origin))) {
+        return callback(null, true);
+      }
+
+      console.warn(`[cors] rejected origin "${origin}" — allowed: ${allowedOrigins.join(", ")}`);
+      return callback(new Error("Not allowed by CORS"));
+    },
+  })
+);
 app.use(express.json());
 app.use(passport.initialize());
 app.use("/api", apiLimiter);
