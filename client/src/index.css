@@ -7,8 +7,39 @@
   --color-brand-600: #2563eb;
   --color-brand-700: #1d4ed8;
   --color-brand-800: #1e40af;
+
+  --color-secondary: #1e293b;
+  --color-secondary-contrast: #ffffff;
 }
 
 body {
   margin: 0;
+}
+
+/* Recursive hover-flyout for nested category menus (CategoryNav) — scoped by actual
+   DOM containment (direct child), so it works at any nesting depth without needing
+   a uniquely-named Tailwind group per level. */
+.cat-trigger {
+  position: relative;
+}
+.cat-flyout {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1), visibility 180ms;
+  pointer-events: none;
+}
+.cat-flyout.cat-flyout-right {
+  transform: translateX(-6px);
+}
+.cat-trigger:hover > .cat-flyout,
+.cat-trigger:focus-within > .cat-flyout {
+  visibility: visible;
+  opacity: 1;
+  transform: translate(0, 0);
+  pointer-events: auto;
+}
+.cat-trigger:hover > a > .cat-chevron-below,
+.cat-trigger:focus-within > a > .cat-chevron-below {
+  transform: rotate(90deg);
 }

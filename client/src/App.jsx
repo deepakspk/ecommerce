@@ -4,6 +4,7 @@ import CartProvider from "./context/CartProvider";
 import WishlistProvider from "./context/WishlistProvider";
 import CompanySettingsProvider from "./context/CompanySettingsProvider";
 import ThemeSettingsProvider from "./context/ThemeSettingsProvider";
+import CategoriesProvider from "./context/CategoriesProvider";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminSection from "./pages/admin/AdminSection";
@@ -39,6 +40,7 @@ export default function App() {
   return (
     <ThemeSettingsProvider>
       <CompanySettingsProvider>
+        <CategoriesProvider>
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
@@ -96,6 +98,7 @@ export default function App() {
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
+        </CategoriesProvider>
       </CompanySettingsProvider>
     </ThemeSettingsProvider>
   );

@@ -4,18 +4,52 @@ import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import { useCompanySettings } from "../hooks/useCompanySettings";
+import { useCategories } from "../hooks/useCategories";
+import { useThemeSettings } from "../hooks/useThemeSettings";
 import { CONTAINER_CLASS } from "../utils/ui";
+
+// Mobile has no hover, so nested categories expand via native <details> instead of
+// the desktop CategoryNav's hover-flyout — works at any depth with zero extra state.
+function MobileCategoryTree({ items, onNavigate }) {
+  return (
+    <ul className="space-y-0.5">
+      {items.map((cat) => (
+        <li key={cat.id}>
+          {cat.children.length > 0 ? (
+            <details className="group">
+              <summary className="flex items-center justify-between py-1.5 cursor-pointer list-none marker:content-none">
+                <Link to={`/products?category=${cat.slug}`} onClick={onNavigate} className="flex-1 text-secondary-contrast/90 hover:text-secondary-contrast">
+                  {cat.name}
+                </Link>
+                <svg className="w-3.5 h-3.5 text-secondary-contrast/40 transition-transform duration-200 group-open:rotate-90 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </summary>
+              <div className="pl-3 ml-1 border-l border-secondary-contrast/10">
+                <MobileCategoryTree items={cat.children} onNavigate={onNavigate} />
+              </div>
+            </details>
+          ) : (
+            <Link to={`/products?category=${cat.slug}`} onClick={onNavigate} className="block py-1.5 text-secondary-contrast/80 hover:text-secondary-contrast">
+              {cat.name}
+            </Link>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function SearchForm({ className, value, onChange, onSubmit, onClear }) {
   return (
     <form onSubmit={onSubmit} className={`${className} flex items-stretch`}>
-      <div className="relative flex-1 flex items-center border border-gray-300 rounded-l-full overflow-hidden focus-within:ring-2 focus-within:ring-brand-500">
+      <div className="relative flex-1 flex items-center bg-white border border-gray-300 rounded-l-full overflow-hidden focus-within:ring-2 focus-within:ring-brand-500">
         <input
           type="text"
           value={value}
           onChange={onChange}
           placeholder="Search for products…"
-          className="w-full pl-4 pr-8 py-2.5 text-sm focus:outline-none"
+          className="w-full pl-4 pr-8 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 bg-transparent focus:outline-none"
         />
         {value && (
           <button
@@ -48,7 +82,7 @@ function NavIconLink({ to, label, icon, badge, onClick }) {
     <Link
       to={to}
       onClick={onClick}
-      className="flex flex-col items-center gap-0.5 text-gray-700 hover:text-brand-600 flex-shrink-0"
+      className="flex flex-col items-center gap-0.5 text-secondary-contrast/80 hover:text-secondary-contrast flex-shrink-0"
     >
       <span className="relative">
         {icon}
@@ -104,10 +138,36 @@ export default function Navbar() {
   const { itemCount } = useCart();
   const { itemCount: wishlistCount } = useWishlist();
   const { company } = useCompanySettings();
+  const { categories } = useCategories();
+  const { loading: themeLoading } = useThemeSettings();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const isAdminViewer = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+
+  if (themeLoading) {
+    return (
+      <nav className="bg-gray-100 border-b border-gray-200 py-5">
+        <div className={CONTAINER_CLASS}>
+          <div className="flex items-center gap-4">
+            <div className="h-8 w-32 bg-gray-200 rounded animate-pulse flex-shrink-0" />
+            <div className="hidden sm:flex flex-1 h-10 bg-gray-200 rounded-full animate-pulse" />
+            <div className="hidden sm:flex items-center gap-6 flex-shrink-0">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="w-5 h-5 bg-gray-200 rounded animate-pulse" />
+              ))}
+            </div>
+            <div className="flex sm:hidden items-center gap-4 ml-auto flex-shrink-0">
+              <div className="w-5 h-5 bg-gray-200 rounded animate-pulse" />
+              <div className="w-5 h-5 bg-gray-200 rounded animate-pulse" />
+              <div className="w-6 h-6 bg-gray-200 rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="sm:hidden mt-3 h-10 bg-gray-200 rounded-full animate-pulse" />
+        </div>
+      </nav>
+    );
+  }
 
   function handleSearchSubmit(e) {
     e.preventDefault();
@@ -119,12 +179,12 @@ export default function Navbar() {
   const accountTarget = user ? "/account" : "/login";
 
   return (
-    <nav className="border-b border-gray-200 py-3">
+    <nav className="bg-secondary border-b border-secondary-contrast/10 py-5">
       <div className={CONTAINER_CLASS}>
         <div className="flex items-center gap-4">
-          <Link to="/" className="font-semibold text-lg text-gray-900 flex-shrink-0 flex items-center gap-2">
+          <Link to="/" className="font-semibold text-lg text-secondary-contrast flex-shrink-0 flex items-center gap-2">
             {company?.logoUrl ? (
-              <img src={company.logoUrl} alt={company.companyName || "Ecommerce Nepal"} className="h-8 w-auto" />
+              <img src={company.logoUrl} alt={company.companyName || "Ecommerce Nepal"} className="h-12 w-auto" />
             ) : (
               company?.companyName || "Ecommerce Nepal"
             )}
@@ -150,7 +210,7 @@ export default function Navbar() {
 
           {/* Mobile: brand row icons + hamburger */}
           <div className="flex sm:hidden items-center gap-4 ml-auto flex-shrink-0">
-            <Link to="/wishlist" className="relative text-gray-600 hover:text-gray-900" aria-label="Wishlist" onClick={() => setMenuOpen(false)}>
+            <Link to="/wishlist" className="relative text-secondary-contrast/80 hover:text-secondary-contrast" aria-label="Wishlist" onClick={() => setMenuOpen(false)}>
               {WishlistIcon}
               {wishlistCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-brand-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
@@ -158,7 +218,7 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            <Link to="/cart" className="relative text-gray-600 hover:text-gray-900" aria-label="Cart" onClick={() => setMenuOpen(false)}>
+            <Link to="/cart" className="relative text-secondary-contrast/80 hover:text-secondary-contrast" aria-label="Cart" onClick={() => setMenuOpen(false)}>
               {CartIcon}
               {itemCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-brand-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
@@ -169,7 +229,7 @@ export default function Navbar() {
             <button
               onClick={() => setMenuOpen(o => !o)}
               aria-label="Toggle menu"
-              className="text-gray-600 hover:text-gray-900"
+              className="text-secondary-contrast/80 hover:text-secondary-contrast"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 {menuOpen ? (
@@ -192,18 +252,26 @@ export default function Navbar() {
 
         {/* Mobile dropdown panel */}
         {menuOpen && (
-          <div className="sm:hidden mt-3 pt-3 border-t border-gray-100 flex flex-col gap-3 text-sm">
-            <Link to="/orders" className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
-              Track Order
-            </Link>
-            <Link to={accountTarget} className="text-gray-600 hover:text-gray-900" onClick={() => setMenuOpen(false)}>
-              Account
-            </Link>
-            {isAdminViewer && (
-              <Link to="/admin" className="text-brand-600 hover:text-brand-800 font-medium" onClick={() => setMenuOpen(false)}>
-                Admin
-              </Link>
+          <div className="sm:hidden mt-3 pt-3 border-t border-secondary-contrast/10 text-sm">
+            {categories.length > 0 && (
+              <div className="mb-3 pb-3 border-b border-secondary-contrast/10">
+                <p className="text-xs font-semibold uppercase tracking-wide text-secondary-contrast/50 mb-1.5">Categories</p>
+                <MobileCategoryTree items={categories} onNavigate={() => setMenuOpen(false)} />
+              </div>
             )}
+            <div className="flex flex-col gap-3">
+              <Link to="/orders" className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
+                Track Order
+              </Link>
+              <Link to={accountTarget} className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
+                Account
+              </Link>
+              {isAdminViewer && (
+                <Link to="/admin" className="text-brand-500 hover:text-brand-400 font-medium" onClick={() => setMenuOpen(false)}>
+                  Admin
+                </Link>
+              )}
+            </div>
           </div>
         )}
       </div>

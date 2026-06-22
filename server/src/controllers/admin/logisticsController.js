@@ -122,3 +122,45 @@ export async function returnShipment(req, res) {
 
   res.json({ shipment });
 }
+
+export async function getShipmentDetails(req, res) {
+  const shipment = await Shipment.findById(req.params.id);
+  if (!shipment) return res.status(404).json({ message: "Shipment not found" });
+
+  const provider = getProvider(shipment.provider);
+
+  const [summary, label] = await Promise.allSettled([
+    provider.getOrderSummary ? provider.getOrderSummary(shipment.providerShipmentId) : Promise.reject(new Error("not supported")),
+    provider.capabilities.labelPrinting ? provider.getLabel(shipment.providerShipmentId) : Promise.reject(new Error("not supported")),
+  ]);
+
+  res.json({
+    summary: summary.status === "fulfilled" ? summary.value : null,
+    label: label.status === "fulfilled" ? label.value : null,
+    labelError: label.status === "rejected" ? label.reason.message : null,
+  });
+}
+
+export async function getShipmentComments(req, res) {
+  const shipment = await Shipment.findById(req.params.id);
+  if (!shipment) return res.status(404).json({ message: "Shipment not found" });
+
+  const provider = getProvider(shipment.provider);
+  requireCapability(provider, "comments");
+
+  const comments = await provider.getComments(shipment.providerShipmentId);
+  res.json({ comments });
+}
+
+export async function addShipmentComment(req, res) {
+  const { message } = req.body;
+  const shipment = await Shipment.findById(req.params.id);
+  if (!shipment) return res.status(404).json({ message: "Shipment not found" });
+
+  const provider = getProvider(shipment.provider);
+  requireCapability(provider, "comments");
+
+  await provider.addComment(shipment.providerShipmentId, message);
+  const comments = await provider.getComments(shipment.providerShipmentId);
+  res.json({ comments });
+}

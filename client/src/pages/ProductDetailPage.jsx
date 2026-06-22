@@ -10,11 +10,17 @@ import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import Seo from "../components/Seo";
 import WishlistButton from "../components/WishlistButton";
 import StarRating from "../components/StarRating";
+import ColorSwatch from "../components/ColorSwatch";
+import TrustBadges from "../components/TrustBadges";
 import ProductReviews from "../components/ProductReviews";
 import ProductRail from "../components/ProductRail";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import { addRecentlyViewed } from "../utils/recentlyViewed";
 import { PAGE_CLASS, H1_CLASS } from "../utils/ui";
+
+const SHIPPING_RETURNS_TEXT =
+  "Orders are delivered across Nepal within 3–5 business days. Cash on Delivery, eSewa, and Khalti are all accepted at checkout. " +
+  "Not happy with your order? Items can be returned within 7 days of delivery, as long as they're unused and in their original packaging — contact support to start a return.";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
@@ -38,6 +44,8 @@ export default function ProductDetailPage() {
   const [failedThumbs, setFailedThumbs] = useState(() => new Set());
   const [notifyState, setNotifyState] = useState("idle"); // idle | pending | done | error
   const [notifyMessage, setNotifyMessage] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState("description");
 
   useEffect(() => {
     let ignore = false;
@@ -54,6 +62,8 @@ export default function ProductDetailPage() {
           setSelectedColor("");
           setMainImageFailed(false);
           setFailedThumbs(new Set());
+          setQuantity(1);
+          setActiveTab("description");
           setError("");
           addRecentlyViewed(data.product.slug);
         }
@@ -118,6 +128,7 @@ export default function ProductDetailPage() {
   function handleSizeClick(size) {
     setSelectedSize(size);
     setSelectedColor("");
+    setQuantity(1);
     setCartFeedback(false);
     setCartError("");
     setNotifyState("idle");
@@ -125,6 +136,7 @@ export default function ProductDetailPage() {
 
   function handleColorClick(color) {
     setSelectedColor(color);
+    setQuantity(1);
     setCartFeedback(false);
     setCartError("");
     setNotifyState("idle");
@@ -147,7 +159,7 @@ export default function ProductDetailPage() {
     if (!selectedVariant) return;
     setCartError("");
     try {
-      await addItem(selectedVariant._id, 1, selectedVariant, product);
+      await addItem(selectedVariant._id, quantity, selectedVariant, product);
       if (isWishlisted(product._id)) await removeFromWishlist(product._id);
       setCartFeedback(true);
       setTimeout(() => setCartFeedback(false), 3000);
@@ -183,14 +195,14 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* ── Images ────────────────────────────────────────────── */}
         <div>
-          <div className="aspect-[4/5] bg-gray-100 rounded-xl overflow-hidden mb-3">
+          <div className="group aspect-[4/5] bg-gray-100 rounded-xl overflow-hidden mb-3 cursor-zoom-in">
             {product.images.length > 0 && !mainImageFailed ? (
               <img
                 src={cloudinaryUrl(product.images[selectedImage].url, 800)}
                 alt={product.images[selectedImage].altText || product.name}
                 loading="eager"
                 onError={() => setMainImageFailed(true)}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-125"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
@@ -208,6 +220,8 @@ export default function ProductDetailPage() {
                     setSelectedImage(i);
                     setMainImageFailed(false);
                   }}
+                  aria-label={`View image ${i + 1} of ${product.images.length}`}
+                  aria-current={i === selectedImage ? "true" : undefined}
                   className={`flex-shrink-0 w-16 h-20 rounded-lg border overflow-hidden transition-colors ${
                     i === selectedImage ? "border-brand-500" : "border-gray-200 hover:border-gray-400"
                   }`}
@@ -258,9 +272,9 @@ export default function ProductDetailPage() {
             {formatPrice(displayPrice)}
           </p>
 
-          {/* Description */}
+          {/* Description teaser */}
           {product.description && (
-            <p className="text-gray-600 text-sm leading-relaxed mb-6">{product.description}</p>
+            <p className="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-3">{product.description}</p>
           )}
 
           {/* Size selection */}
@@ -304,12 +318,13 @@ export default function ProductDetailPage() {
                   <button
                     key={color}
                     onClick={() => handleColorClick(color)}
-                    className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-2 px-3 py-2 border rounded-md text-sm font-medium transition-colors ${
                       selectedColor === color
                         ? "border-brand-600 bg-brand-50 text-brand-700"
                         : "border-gray-300 text-gray-700 hover:border-gray-500"
                     }`}
                   >
+                    <ColorSwatch color={color} />
                     {color}
                   </button>
                 ))}
@@ -353,6 +368,34 @@ export default function ProductDetailPage() {
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Quantity — only meaningful once a purchasable variant is selected */}
+          {canAddToCart && (
+            <div className="mb-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">Quantity</p>
+              <div className="inline-flex items-center border border-gray-300 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  disabled={quantity <= 1}
+                  aria-label="Decrease quantity"
+                  className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  −
+                </button>
+                <span className="w-10 text-center text-sm font-medium">{quantity}</span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.min(stockQty ?? q + 1, q + 1))}
+                  disabled={stockQty != null && quantity >= stockQty}
+                  aria-label="Increase quantity"
+                  className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  +
+                </button>
+              </div>
             </div>
           )}
 
@@ -400,6 +443,37 @@ export default function ProductDetailPage() {
           {selectedVariant && (
             <p className="text-xs text-gray-400 mt-3 text-right">SKU: {selectedVariant.sku}</p>
           )}
+
+          {/* <TrustBadges className="mt-6 pt-6 border-t border-gray-100" compact /> */}
+        </div>
+      </div>
+
+      {/* Description / Shipping & Returns */}
+      <div className="mt-10 border border-gray-200 rounded-xl overflow-hidden">
+        <div className="flex border-b border-gray-200">
+          <button
+            type="button"
+            onClick={() => setActiveTab("description")}
+            className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "description" ? "border-brand-600 text-brand-700" : "border-transparent text-gray-500 hover:text-gray-800"
+            }`}
+          >
+            Description
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("shipping")}
+            className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "shipping" ? "border-brand-600 text-brand-700" : "border-transparent text-gray-500 hover:text-gray-800"
+            }`}
+          >
+            Shipping & Returns
+          </button>
+        </div>
+        <div className="p-5 text-sm text-gray-600 leading-relaxed">
+          {activeTab === "description"
+            ? product.description || "No description available for this product."
+            : SHIPPING_RETURNS_TEXT}
         </div>
       </div>
 

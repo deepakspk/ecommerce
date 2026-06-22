@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import ShipmentPanel from "../../components/ShipmentPanel";
+import NcmOrderInsights from "../../components/admin/NcmOrderInsights";
 import Badge from "../../components/Badge";
 import { H1_CLASS } from "../../utils/ui";
 import { downloadBlob } from "../../utils/downloadBlob";
@@ -180,19 +181,23 @@ export default function AdminOrderDetailPage() {
   const canMarkPaid = order.paymentMethod === "COD" && order.paymentStatus !== "PAID";
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 sm:p-8 max-w-[1600px]">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-wrap items-start justify-between gap-4 pb-6 mb-6 border-b border-gray-200">
         <div>
-          <Link to="/admin/orders" className="text-gray-400 hover:text-gray-700 text-sm">← Orders</Link>
-          <h1 className={`${H1_CLASS} mt-1`}>
-            Order <span className="font-mono text-gray-500">#{order._id.slice(-8).toUpperCase()}</span>
-          </h1>
-          <p className="text-sm text-gray-400 mt-0.5">{fmtDate(order.createdAt)}</p>
+          <Link to="/admin/orders" className="text-gray-400 hover:text-gray-700 text-sm inline-flex items-center gap-1">
+            ← Orders
+          </Link>
+          <div className="flex items-center gap-3 mt-1.5">
+            <h1 className={H1_CLASS}>
+              Order <span className="font-mono text-gray-500">#{order._id.slice(-8).toUpperCase()}</span>
+            </h1>
+            <Badge kind="order" status={order.status} />
+            <Badge kind="payment" status={order.paymentStatus} />
+          </div>
+          <p className="text-sm text-gray-400 mt-1">Placed {fmtDate(order.createdAt)}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge kind="order" status={order.status} />
-          <Badge kind="payment" status={order.paymentStatus} />
           <button
             onClick={handleDownloadInvoice}
             disabled={downloadingInvoice}
@@ -236,7 +241,8 @@ export default function AdminOrderDetailPage() {
 
       {/* Status timeline */}
       {!isCancelled && (
-        <div className="bg-white border border-gray-200 rounded-lg p-5 mb-5">
+        <div className="bg-white border border-gray-200 rounded-lg p-5 mb-6">
+          <h2 className="text-sm font-semibold text-gray-800 mb-4">Order Status</h2>
           <div className="flex items-center gap-0">
             {STATUS_ORDER.map((s, i) => {
               const reached = STATUS_ORDER.indexOf(order.status) >= i;
@@ -265,14 +271,17 @@ export default function AdminOrderDetailPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
         {/* Left */}
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Items */}
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-800">
-                Items ({editing ? editItems.length : order.items.length})
+                Order Information
+                <span className="text-gray-400 font-normal ml-1.5">
+                  · {editing ? editItems.length : order.items.length} item{(editing ? editItems.length : order.items.length) !== 1 ? "s" : ""}
+                </span>
               </h2>
               {editing && (
                 <button
@@ -444,7 +453,7 @@ export default function AdminOrderDetailPage() {
 
           {/* Customer */}
           <div className="bg-white border border-gray-200 rounded-lg p-5">
-            <h2 className="text-sm font-semibold text-gray-800 mb-2">Customer</h2>
+            <h2 className="text-sm font-semibold text-gray-800 mb-2">Customer Information</h2>
             {editing ? (
               <div className="space-y-2">
                 <input
@@ -477,7 +486,7 @@ export default function AdminOrderDetailPage() {
         </div>
 
         {/* Right — actions */}
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Status update */}
           <div className="bg-white border border-gray-200 rounded-lg p-5">
             <h2 className="text-sm font-semibold text-gray-800 mb-3">Update Status</h2>
@@ -549,6 +558,8 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
       </div>
+
+      <NcmOrderInsights orderId={order._id} />
     </div>
   );
 }

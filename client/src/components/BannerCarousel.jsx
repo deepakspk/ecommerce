@@ -31,6 +31,7 @@ function BannerSlide({ banner }) {
 
 export default function BannerCarousel() {
   const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef();
@@ -38,7 +39,8 @@ export default function BannerCarousel() {
   useEffect(() => {
     bannersApi.getBanners()
       .then((d) => setBanners(d.banners))
-      .catch(() => setBanners([]));
+      .catch(() => setBanners([]))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -48,6 +50,12 @@ export default function BannerCarousel() {
     }, AUTO_ADVANCE_MS);
     return () => clearInterval(timerRef.current);
   }, [banners.length, paused]);
+
+  if (loading) {
+    return (
+      <div className="relative w-full aspect-[32/9] sm:aspect-[42/9] rounded-xl overflow-hidden bg-gray-200 animate-pulse" />
+    );
+  }
 
   if (banners.length === 0) return null;
 
@@ -97,8 +105,11 @@ export default function BannerCarousel() {
                 key={banner._id}
                 type="button"
                 aria-label={`Go to banner ${i + 1}`}
+                aria-current={i === index ? "true" : undefined}
                 onClick={() => goTo(i)}
-                className={`w-2 h-2 rounded-full transition-colors ${i === index ? "bg-white" : "bg-white/50"}`}
+                className={`rounded-full transition-all shadow-sm ring-1 ring-black/10 ${
+                  i === index ? "w-6 h-2.5 bg-white" : "w-2.5 h-2.5 bg-white/70 hover:bg-white/90"
+                }`}
               />
             ))}
           </div>

@@ -44,7 +44,7 @@ async function createShipment(shipment) {
     fbranch: fromBranch,
     branch: toBranch,
     package: packageLabel,
-    vref_id: "ecommerceREF",
+    vref_id: vendorRef,
     instruction,
     delivery_type: CREATE_TYPE_MAP[deliveryType] || CREATE_TYPE_MAP.DOOR_TO_DOOR,
     weight: weight ? String(weight) : undefined,
@@ -109,6 +109,16 @@ async function addComment(providerShipmentId, message) {
   return ncm.createComment(providerShipmentId, message);
 }
 
+async function getComments(providerShipmentId) {
+  const comments = await ncm.getOrderComments(providerShipmentId);
+  if (!Array.isArray(comments)) return [];
+  return comments.slice().sort((a, b) => new Date(b.added_time) - new Date(a.added_time));
+}
+
+async function getOrderSummary(providerShipmentId) {
+  return ncm.getOrderDetail(providerShipmentId);
+}
+
 function isConfigured() {
   return Boolean(settingsService.get("LOGISTICS_API_TOKEN"));
 }
@@ -133,6 +143,8 @@ export default {
   calculateRate,
   listBranches,
   addComment,
+  getComments,
+  getOrderSummary,
   getLabel,
   normalizeStatus,
 };

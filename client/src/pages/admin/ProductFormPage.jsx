@@ -280,6 +280,7 @@ export default function ProductFormPage() {
                   <button
                     type="button"
                     onClick={() => setExistingImages(imgs => imgs.filter(i => i.url !== img.url))}
+                    aria-label="Remove image"
                     className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"
                   >
                     ×
@@ -301,6 +302,7 @@ export default function ProductFormPage() {
                   <button
                     type="button"
                     onClick={() => setNewFiles(files => files.filter((_, idx) => idx !== i))}
+                    aria-label="Remove image"
                     className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"
                   >
                     ×

@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSearchParams, useLocation, Link } from "react-router-dom";
 import * as productsApi from "../api/products";
-import * as categoriesApi from "../api/categories";
+import { useCategories } from "../hooks/useCategories";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { getErrorMessage } from "../utils/errorHelpers";
 import Seo from "../components/Seo";
 import Pagination from "../components/Pagination";
@@ -10,18 +11,41 @@ import ProductCard from "../components/ProductCard";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
-import { INPUT_CLASS, BUTTON_GHOST, CARD_CLASS, PAGE_CLASS } from "../utils/ui";
+import { INPUT_CLASS, BUTTON_GHOST, CARD_CLASS, PAGE_CLASS, H1_CLASS, SECTION_HEADING_CLASS } from "../utils/ui";
+
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
+];
+
+function flattenCategories(nodes, depth = 0) {
+  const out = [];
+  for (const node of nodes) {
+    out.push({ slug: node.slug, name: node.name, depth });
+    out.push(...flattenCategories(node.children, depth + 1));
+  }
+  return out;
+}
+
+function pillClass(active) {
+  return `px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+    active ? "border-brand-600 bg-brand-50 text-brand-700" : "border-gray-300 text-gray-600 hover:border-gray-500"
+  }`;
+}
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const gridRef = useRef(null);
 
-  const [categories, setCategories] = useState([]);
+  const { categories, loading: categoriesLoading } = useCategories();
   const [availableFilters, setAvailableFilters] = useState({ sizes: [], colors: [] });
+  const [filtersLoading, setFiltersLoading] = useState(true);
   const [products, setProducts] = useState([]);
+  const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(0);
-  const [metaLoading, setMetaLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -34,9 +58,20 @@ export default function ProductsPage() {
   const search = searchParams.get("search") || "";
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
+  const [minPriceInput, setMinPriceInput] = useState("");
+  const [maxPriceInput, setMaxPriceInput] = useState("");
+  const minPrice = useDebouncedValue(minPriceInput, 400);
+  const maxPrice = useDebouncedValue(maxPriceInput, 400);
+  const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
+
+  const metaLoading = categoriesLoading || filtersLoading;
+  const flatCategories = useMemo(() => flattenCategories(categories), [categories]);
+  const selectedCategoryObj = flatCategories.find((c) => c.slug === selectedCategory);
+
+  function scrollToGrid() {
+    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   function selectCategory(slug) {
     setSearchParams((prev) => {
@@ -46,6 +81,7 @@ export default function ProductsPage() {
       return next;
     });
     setPage(1);
+    scrollToGrid();
   }
 
   // Uses { replace: true } so live typing doesn't push a new history entry per keystroke.
@@ -59,36 +95,31 @@ export default function ProductsPage() {
     setPage(1);
   }
 
-  // Load categories + available filter values once on mount
+  // Load available filter values (sizes/colors/price range) once on mount.
+  // Categories come from the shared CategoriesProvider instead of a local fetch.
   useEffect(() => {
     let ignore = false;
-    async function loadMeta() {
+    async function loadFilters() {
       try {
-        const [catsData, filtersData] = await Promise.all([
-          categoriesApi.getCategoryTree(),
-          productsApi.getAvailableFilters(),
-        ]);
-        if (!ignore) {
-          setCategories(catsData.tree);
-          setAvailableFilters(filtersData);
-        }
+        const filtersData = await productsApi.getAvailableFilters();
+        if (!ignore) setAvailableFilters(filtersData);
       } catch (err) {
         if (!ignore) setError(getErrorMessage(err));
       } finally {
-        if (!ignore) setMetaLoading(false);
+        if (!ignore) setFiltersLoading(false);
       }
     }
-    loadMeta();
+    loadFilters();
     return () => { ignore = true; };
   }, []);
 
-  // Reload products whenever any filter or page changes
+  // Reload products whenever any filter, sort, or page changes
   useEffect(() => {
     let ignore = false;
     async function loadProducts() {
       setLoading(true);
       try {
-        const params = { page };
+        const params = { page, sort };
         if (selectedCategory) params.category = selectedCategory;
         if (search.trim()) params.search = search.trim();
         if (selectedSize) params.size = selectedSize;
@@ -99,6 +130,7 @@ export default function ProductsPage() {
         const data = await productsApi.getProducts(params);
         if (!ignore) {
           setProducts(data.products);
+          setTotal(data.total);
           setPages(data.pages);
           setError("");
         }
@@ -110,11 +142,28 @@ export default function ProductsPage() {
     }
     loadProducts();
     return () => { ignore = true; };
-  }, [selectedCategory, search, selectedSize, selectedColor, minPrice, maxPrice, page]);
+  }, [selectedCategory, search, selectedSize, selectedColor, minPrice, maxPrice, sort, page]);
+
+  // Debounced price changes should reset to page 1, same as every other filter.
+  useEffect(() => {
+    setPage(1);
+  }, [minPrice, maxPrice]);
 
   function changeFilter(setter, value) {
     setter(value);
     setPage(1);
+    scrollToGrid();
+  }
+
+  function changeSort(value) {
+    setSort(value);
+    setPage(1);
+    scrollToGrid();
+  }
+
+  function goToPage(p) {
+    setPage(p);
+    scrollToGrid();
   }
 
   function clearFilters() {
@@ -122,14 +171,33 @@ export default function ProductsPage() {
     updateSearch("");
     setSelectedSize("");
     setSelectedColor("");
-    setMinPrice("");
-    setMaxPrice("");
+    setMinPriceInput("");
+    setMaxPriceInput("");
     setPage(1);
   }
 
-  const hasActiveFilters = selectedCategory || search || selectedSize || selectedColor || minPrice || maxPrice;
+  const hasActiveFilters =
+    selectedCategory || search || selectedSize || selectedColor || minPriceInput || maxPriceInput;
+
+  const chips = [];
+  if (selectedCategoryObj) chips.push({ key: "category", label: selectedCategoryObj.name, onRemove: () => selectCategory("") });
+  if (search) chips.push({ key: "search", label: `"${search}"`, onRemove: () => updateSearch("") });
+  if (selectedSize) chips.push({ key: "size", label: `Size: ${selectedSize}`, onRemove: () => changeFilter(setSelectedSize, "") });
+  if (selectedColor) chips.push({ key: "color", label: `Color: ${selectedColor}`, onRemove: () => changeFilter(setSelectedColor, "") });
+  if (minPriceInput || maxPriceInput) {
+    chips.push({
+      key: "price",
+      label: `Rs. ${minPriceInput || 0}–${maxPriceInput || "∞"}`,
+      onRemove: () => { setMinPriceInput(""); setMaxPriceInput(""); },
+    });
+  }
 
   const showHero = isHome && !hasActiveFilters;
+  const pageHeading = selectedCategoryObj
+    ? selectedCategoryObj.name
+    : search
+    ? `Results for "${search}"`
+    : "All Products";
 
   return (
     <div className={PAGE_CLASS}>
@@ -139,8 +207,23 @@ export default function ProductsPage() {
         <div className="mb-8 space-y-8">
           <BannerCarousel />
 
-          {!metaLoading && categories.length > 0 && (
-            <div>
+          <div>
+            {/* <h2 className={`${SECTION_HEADING_CLASS} mb-4`}>Shop by Category</h2> */}
+
+            {metaLoading && (
+              <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-4">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <div key={i} className="rounded-xl border border-gray-200 bg-white overflow-hidden animate-pulse">
+                    <div className="aspect-square bg-gray-200" />
+                    <div className="px-3 py-2">
+                      <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!metaLoading && categories.length > 0 && (
               <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-4">
                 {categories.map((cat) => (
                   <Link
@@ -168,8 +251,39 @@ export default function ProductsPage() {
                   </Link>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        </div>
+      )}
+
+      {!isHome && (
+        <div className="mb-6">
+          <nav className="text-sm text-gray-500 mb-2 flex items-center gap-1.5">
+            <Link to="/" className="hover:text-gray-900">Home</Link>
+            <span>/</span>
+            <span className="text-gray-800">{pageHeading}</span>
+          </nav>
+          <h1 className={H1_CLASS}>{pageHeading}</h1>
+        </div>
+      )}
+
+      {!isHome && chips.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-5">
+          {chips.map((chip) => (
+            <button
+              key={chip.key}
+              onClick={chip.onRemove}
+              className="inline-flex items-center gap-1.5 text-xs font-medium pl-3 pr-2 py-1.5 rounded-full bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
+            >
+              {chip.label}
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          ))}
+          <button onClick={clearFilters} className="text-xs text-gray-500 hover:text-gray-700 underline">
+            Clear all
+          </button>
         </div>
       )}
 
@@ -189,13 +303,29 @@ export default function ProductsPage() {
               </div>
 
               <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Category</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => selectCategory(e.target.value)}
+                  className={`${INPUT_CLASS} w-full`}
+                >
+                  <option value="">All categories</option>
+                  {flatCategories.map((c) => (
+                    <option key={c.slug} value={c.slug}>
+                      {"  ".repeat(c.depth)}{c.depth > 0 ? "– " : ""}{c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Price (Rs.)</label>
                 <div className="flex items-center gap-1">
                   <input
                     type="number"
                     placeholder="Min"
-                    value={minPrice}
-                    onChange={(e) => changeFilter(setMinPrice, e.target.value)}
+                    value={minPriceInput}
+                    onChange={(e) => setMinPriceInput(e.target.value)}
                     min={0}
                     className={`${INPUT_CLASS} w-full`}
                   />
@@ -203,8 +333,8 @@ export default function ProductsPage() {
                   <input
                     type="number"
                     placeholder="Max"
-                    value={maxPrice}
-                    onChange={(e) => changeFilter(setMaxPrice, e.target.value)}
+                    value={maxPriceInput}
+                    onChange={(e) => setMaxPriceInput(e.target.value)}
                     min={0}
                     className={`${INPUT_CLASS} w-full`}
                   />
@@ -214,39 +344,76 @@ export default function ProductsPage() {
               {availableFilters.sizes.length > 0 && (
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Size</label>
-                  <select
-                    value={selectedSize}
-                    onChange={(e) => changeFilter(setSelectedSize, e.target.value)}
-                    className={`${INPUT_CLASS} w-full`}
-                  >
-                    <option value="">All sizes</option>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button type="button" onClick={() => changeFilter(setSelectedSize, "")} className={pillClass(selectedSize === "")}>
+                      All
+                    </button>
                     {availableFilters.sizes.map((s) => (
-                      <option key={s} value={s}>{s}</option>
+                      <button key={s} type="button" onClick={() => changeFilter(setSelectedSize, s)} className={pillClass(selectedSize === s)}>
+                        {s}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
               )}
 
               {availableFilters.colors.length > 0 && (
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Color</label>
-                  <select
-                    value={selectedColor}
-                    onChange={(e) => changeFilter(setSelectedColor, e.target.value)}
-                    className={`${INPUT_CLASS} w-full`}
-                  >
-                    <option value="">All colors</option>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => changeFilter(setSelectedColor, "")}
+                      title="All colors"
+                      aria-label="All colors"
+                      aria-pressed={selectedColor === ""}
+                      className={`w-7 h-7 rounded-full border-2 flex-shrink-0 flex items-center justify-center text-[9px] text-gray-400 transition-colors ${
+                        selectedColor === "" ? "border-brand-600 ring-2 ring-brand-100" : "border-gray-300 hover:border-gray-400"
+                      }`}
+                    >
+                      All
+                    </button>
                     {availableFilters.colors.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => changeFilter(setSelectedColor, c)}
+                        title={c}
+                        aria-label={c}
+                        aria-pressed={selectedColor === c}
+                        style={{ backgroundColor: c }}
+                        className={`w-7 h-7 rounded-full border-2 flex-shrink-0 transition-colors ${
+                          selectedColor === c ? "border-brand-600 ring-2 ring-brand-100" : "border-gray-300 hover:border-gray-400"
+                        }`}
+                      />
                     ))}
-                  </select>
+                  </div>
                 </div>
               )}
             </div>
           </aside>
         )}
 
-        <div className={!isHome ? "flex-1 min-w-0" : undefined}>
+        <div ref={gridRef} className={!isHome ? "flex-1 min-w-0" : undefined}>
+          {/* {isHome && <h2 className={`${SECTION_HEADING_CLASS} mb-4`}>All Products</h2>} */}
+
+          {!isHome && !loading && !error && (
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <p className="text-sm text-gray-500">
+                {/* {total > 0 ? `Showing ${products.length} of ${total} product${total === 1 ? "" : "s"}` : ""} */}
+              </p>
+              <select
+                value={sort}
+                onChange={(e) => changeSort(e.target.value)}
+                className="border border-gray-300 rounded-md px-2.5 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Error */}
           {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
@@ -267,21 +434,28 @@ export default function ProductsPage() {
           ) : products.length === 0 ? (
             <EmptyState
               title="No products match your filters"
-              action={hasActiveFilters && (
-                <button onClick={clearFilters} className="text-sm text-brand-600 hover:underline">
-                  Clear all filters
-                </button>
-              )}
+              message={hasActiveFilters ? "Try removing a filter or searching for something else." : undefined}
+              action={
+                hasActiveFilters ? (
+                  <button onClick={clearFilters} className="text-sm text-brand-600 hover:underline font-medium">
+                    Clear all filters
+                  </button>
+                ) : (
+                  <Link to="/products" className="text-sm text-brand-600 hover:underline font-medium">
+                    Browse all products
+                  </Link>
+                )
+              }
             />
           ) : (
             <div className={`grid ${isHome ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4`}>
               {products.map((product) => (
-                <ProductCard key={product._id} product={product} />
+                <ProductCard key={product._id} product={product} hideCategorySlug={selectedCategory} />
               ))}
             </div>
           )}
 
-          <Pagination page={page} pages={pages} onChange={setPage} />
+          <Pagination page={page} pages={pages} onChange={goToPage} />
         </div>
       </div>
 
