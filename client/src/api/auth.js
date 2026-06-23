@@ -32,6 +32,14 @@ export function getMe() {
   return api.get("/auth/me").then((res) => res.data);
 }
 
+export function updateProfile(formData) {
+  return api.put("/auth/profile", formData).then((res) => res.data);
+}
+
+export function changePassword(data) {
+  return api.post("/auth/change-password", data).then((res) => res.data);
+}
+
 export function getGoogleAuthUrl() {
   const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
   return `${baseURL}/auth/google`;

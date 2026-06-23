@@ -7,6 +7,9 @@ import { useCompanySettings } from "../hooks/useCompanySettings";
 import { useCategories } from "../hooks/useCategories";
 import { useThemeSettings } from "../hooks/useThemeSettings";
 import { CONTAINER_CLASS } from "../utils/ui";
+import { getAccountMenuItems } from "../utils/accountMenu";
+import UserMenu, { ACCOUNT_ICONS } from "./UserMenu";
+import Avatar from "./Avatar";
 
 // Mobile has no hover, so nested categories expand via native <details> instead of
 // the desktop CategoryNav's hover-flyout — works at any depth with zero extra state.
@@ -125,16 +128,8 @@ const AccountIcon = (
   </svg>
 );
 
-const AdminIcon = (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round"
-      d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a7.48 7.48 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-  </svg>
-);
-
 export default function Navbar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { itemCount } = useCart();
   const { itemCount: wishlistCount } = useWishlist();
   const { company } = useCompanySettings();
@@ -143,7 +138,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const isAdminViewer = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   if (themeLoading) {
     return (
@@ -176,7 +170,11 @@ export default function Navbar() {
     navigate(q ? `/products?search=${encodeURIComponent(q)}` : "/products");
   }
 
-  const accountTarget = user ? "/account" : "/login";
+  function handleMobileLogout() {
+    setMenuOpen(false);
+    logout();
+    navigate("/login");
+  }
 
   return (
     <nav className="bg-secondary border-b border-secondary-contrast/10 py-5">
@@ -199,13 +197,14 @@ export default function Navbar() {
           />
 
           <div className="hidden sm:flex items-center gap-6 flex-shrink-0">
-            {isAdminViewer && (
-              <NavIconLink to="/admin" label="Admin" icon={AdminIcon} />
-            )}
             <NavIconLink to="/orders" label="Track Order" icon={TrackOrderIcon} />
             <NavIconLink to="/wishlist" label="Wishlist" icon={WishlistIcon} badge={wishlistCount} />
             <NavIconLink to="/cart" label="Cart" icon={CartIcon} badge={itemCount} />
-            <NavIconLink to={accountTarget} label="Account" icon={AccountIcon} />
+            {user ? (
+              <UserMenu />
+            ) : (
+              <NavIconLink to="/login" label="Account" icon={AccountIcon} />
+            )}
           </div>
 
           {/* Mobile: brand row icons + hamburger */}
@@ -263,12 +262,39 @@ export default function Navbar() {
               <Link to="/orders" className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
                 Track Order
               </Link>
-              <Link to={accountTarget} className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
-                Account
-              </Link>
-              {isAdminViewer && (
-                <Link to="/admin" className="text-brand-500 hover:text-brand-400 font-medium" onClick={() => setMenuOpen(false)}>
-                  Admin
+
+              {user ? (
+                <div className="pt-3 mt-1 border-t border-secondary-contrast/10">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <Avatar user={user} size="sm" />
+                    <div className="min-w-0">
+                      <p className="text-secondary-contrast text-sm font-medium truncate">{user.name}</p>
+                      <p className="text-secondary-contrast/50 text-xs truncate">{user.email || user.phone}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    {getAccountMenuItems(user).map((item) => (
+                      <Link
+                        key={item.key}
+                        to={item.to}
+                        className="flex items-center gap-2.5 text-secondary-contrast/80 hover:text-secondary-contrast"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <span className="text-secondary-contrast/40">{ACCOUNT_ICONS[item.key]}</span>
+                        {item.label}
+                      </Link>
+                    ))}
+                    <button
+                      onClick={handleMobileLogout}
+                      className="text-left text-red-400 hover:text-red-300"
+                    >
+                      Log out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Link to="/login" className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
+                  Account
                 </Link>
               )}
             </div>

@@ -3,6 +3,7 @@ import { body, param } from "express-validator";
 import passport from "../config/passport.js";
 import { validate } from "../middleware/validate.js";
 import { protect } from "../middleware/auth.js";
+import { upload } from "../middleware/upload.js";
 import { loginLimiter, otpRequestLimiter } from "../middleware/rateLimiter.js";
 import { isValidNepaliPhone } from "../utils/otp.js";
 import {
@@ -14,6 +15,8 @@ import {
   requestOtp,
   verifyOtp,
   getMe,
+  updateProfile,
+  changePassword,
   googleCallback,
 } from "../controllers/authController.js";
 
@@ -99,5 +102,29 @@ router.get(
 );
 
 router.get("/me", protect, getMe);
+
+router.put(
+  "/profile",
+  protect,
+  upload.single("avatar"),
+  [
+    body("name").optional().trim().notEmpty().withMessage("Name cannot be empty"),
+    body("email").optional({ values: "falsy" }).isEmail().withMessage("A valid email is required"),
+    body("phone")
+      .optional({ values: "falsy" })
+      .custom((value) => isValidNepaliPhone(value))
+      .withMessage("Phone must be a valid Nepali number (+977 98/97XXXXXXXX)"),
+  ],
+  validate,
+  updateProfile
+);
+
+router.post(
+  "/change-password",
+  protect,
+  [body("newPassword").isLength({ min: 8 }).withMessage("Password must be at least 8 characters")],
+  validate,
+  changePassword
+);
 
 export default router;

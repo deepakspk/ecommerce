@@ -4,6 +4,7 @@ import { signAccessToken, generateRawToken, hashRawToken } from "../utils/token.
 import { generateOtp } from "../utils/otp.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import * as settingsService from "../services/settingsService.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCK_DURATION_MS = 15 * 60 * 1000;
@@ -18,6 +19,7 @@ function toPublicUser(user) {
     email: user.email,
     phone: user.phone,
     role: user.role,
+    avatarUrl: user.avatarUrl,
     emailVerified: user.emailVerified,
     phoneVerified: user.phoneVerified,
   };
@@ -199,6 +201,52 @@ export async function verifyOtp(req, res) {
 
 export async function getMe(req, res) {
   res.json({ user: toPublicUser(req.user) });
+}
+
+export async function updateProfile(req, res) {
+  const { name, email, phone } = req.body;
+  const user = req.user;
+
+  if (name !== undefined) user.name = name;
+  if (email !== undefined) user.email = email ? email.toLowerCase() : undefined;
+  if (phone !== undefined) user.phone = phone || undefined;
+  if (req.file) {
+    const result = await uploadToCloudinary(req.file.buffer, "ecommerce-nepal/avatars");
+    user.avatarUrl = result.secure_url;
+  }
+
+  try {
+    await user.save();
+  } catch (e) {
+    if (e.code === 11000) {
+      const field = Object.keys(e.keyPattern || {})[0] || "field";
+      return res.status(400).json({ message: `That ${field} is already in use by another account` });
+    }
+    throw e;
+  }
+
+  res.json({ user: toPublicUser(user) });
+}
+
+export async function changePassword(req, res) {
+  const { currentPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user._id).select("+passwordHash");
+
+  if (user.passwordHash) {
+    if (!currentPassword) {
+      return res.status(400).json({ message: "Current password is required" });
+    }
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+  }
+
+  user.passwordHash = await bcrypt.hash(newPassword, 12);
+  await user.save();
+
+  res.json({ message: "Password updated successfully" });
 }
 
 export function googleCallback(req, res) {
