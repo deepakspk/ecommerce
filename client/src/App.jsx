@@ -22,6 +22,7 @@ import CartPage from "./pages/CartPage";
 import WishlistPage from "./pages/WishlistPage";
 import AddressesPage from "./pages/AddressesPage";
 import SettingsPage from "./pages/SettingsPage";
+import TermsPage from "./pages/TermsPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import KhaltiCallbackPage from "./pages/KhaltiCallbackPage";
 import EsewaCallbackPage from "./pages/EsewaCallbackPage";
@@ -96,6 +97,7 @@ export default function App() {
                       path="/orders/:id"
                       element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>}
                     />
+                    <Route path="/terms" element={<TermsPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Route>
                 </Routes>

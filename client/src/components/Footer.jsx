@@ -282,7 +282,7 @@ export default function Footer() {
       <div className="border-t border-secondary-contrast/10">
         <div className={`${CONTAINER_CLASS} py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-secondary-contrast/50`}>
           <p>© {new Date().getFullYear()} {companyName}. All rights reserved.</p>
-          <span>Terms of Service</span>
+          <Link to="/terms" className="hover:text-secondary-contrast">Terms & Conditions</Link>
         </div>
       </div>
     </footer>
