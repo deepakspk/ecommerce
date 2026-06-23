@@ -22,6 +22,7 @@ const STATUS_MAP = {
   "Drop off Order Created": "BOOKED",
   "Sent for Pickup": "BOOKED",
   "Pickup Complete": "PICKED_UP",
+  Dispatched: "IN_TRANSIT",
   Arrived: "IN_TRANSIT",
   "Sent for Delivery": "OUT_FOR_DELIVERY",
   Delivered: "DELIVERED",

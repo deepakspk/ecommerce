@@ -149,6 +149,14 @@ export const SETTINGS_SCHEMA = {
       envFallback: "NCM_PICKUP_BRANCH",
       default: "TINKUNE",
     },
+    {
+      key: "LOGISTICS_WEBHOOK_SECRET",
+      label: "Webhook Secret",
+      isSecret: true,
+      validate: text(),
+      envFallback: "NCM_WEBHOOK_SECRET",
+      default: "",
+    },
   ],
   APPLICATION: [
     { key: "BASE_URL", label: "Base URL", isSecret: false, validate: url, envFallback: "", default: "" },
