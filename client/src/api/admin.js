@@ -63,6 +63,7 @@ export const updateReturnStatus = (id, data) => api.patch(`/admin/returns/${id}/
 
 // Users
 export const listUsers = (params) => api.get("/admin/users", { params }).then(r => r.data);
+export const updateUser = (id, data) => api.put(`/admin/users/${id}`, data).then(r => r.data);
 export const updateUserRole = (id, role) => api.patch(`/admin/users/${id}/role`, { role }).then(r => r.data);
 export const updateUserStatus = (id, status) => api.patch(`/admin/users/${id}/status`, { status }).then(r => r.data);
 

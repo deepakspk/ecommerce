@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import User from "../../models/User.js";
 import { logAudit } from "../../utils/auditLog.js";
 
@@ -44,6 +45,49 @@ export async function updateUserRole(req, res) {
     targetType: "User",
     targetId: user._id,
     meta: { previousRole, newRole: role, targetEmail: user.email, targetName: user.name },
+  });
+
+  res.json({ user });
+}
+
+export async function updateUser(req, res) {
+  const { name, email, password } = req.body;
+
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  // Mirrors the role-change rule: a plain ADMIN cannot rewrite a Super Admin's profile/password.
+  if (user.role === "SUPER_ADMIN" && req.user.role !== "SUPER_ADMIN") {
+    return res.status(403).json({ message: "Only a Super Admin can edit another Super Admin's profile" });
+  }
+
+  const previousName = user.name;
+  const previousEmail = user.email;
+  let passwordChanged = false;
+
+  if (name !== undefined) user.name = name;
+  if (email !== undefined) user.email = email;
+  if (password) {
+    user.passwordHash = await bcrypt.hash(password, 12);
+    passwordChanged = true;
+  }
+
+  try {
+    await user.save();
+  } catch (e) {
+    if (e.code === 11000) {
+      const field = Object.keys(e.keyPattern || {})[0] || "field";
+      return res.status(400).json({ message: `That ${field} is already in use by another account` });
+    }
+    throw e;
+  }
+
+  logAudit({
+    adminUserId: req.user._id,
+    action: "USER_PROFILE_UPDATE",
+    targetType: "User",
+    targetId: user._id,
+    meta: { previousName, newName: user.name, previousEmail, newEmail: user.email, passwordChanged },
   });
 
   res.json({ user });

@@ -10,6 +10,28 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString("en-NP", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+function EyeToggleButton({ visible, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      tabIndex={-1}
+      className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600"
+    >
+      {visible ? (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
 
@@ -27,6 +49,13 @@ export default function UsersPage() {
   const [confirmAction, setConfirmAction] = useState(null);
   const [acting, setActing] = useState(false);
   const [actionError, setActionError] = useState("");
+
+  const [editUser, setEditUser] = useState(null);
+  const [editForm, setEditForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -87,6 +116,47 @@ export default function UsersPage() {
           : `${u.name} will be able to log in again.`,
       danger: newStatus === "DISABLED",
     });
+  }
+
+  function openEdit(u) {
+    setEditError("");
+    setEditForm({ name: u.name || "", email: u.email || "", password: "", confirmPassword: "" });
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setEditUser(u);
+  }
+
+  function closeEdit() {
+    setEditUser(null);
+  }
+
+  async function handleEditSubmit(e) {
+    e.preventDefault();
+    if (!editForm.name.trim()) {
+      setEditError("Name is required");
+      return;
+    }
+    if (editForm.password && editForm.password.length < 8) {
+      setEditError("Password must be at least 8 characters");
+      return;
+    }
+    if (editForm.password && editForm.password !== editForm.confirmPassword) {
+      setEditError("Passwords do not match");
+      return;
+    }
+    setSaving(true);
+    setEditError("");
+    try {
+      const payload = { name: editForm.name.trim(), email: editForm.email.trim() };
+      if (editForm.password) payload.password = editForm.password;
+      const { user: updated } = await adminApi.updateUser(editUser._id, payload);
+      setUsers(list => list.map(u => (u._id === updated._id ? updated : u)));
+      closeEdit();
+    } catch (e) {
+      setEditError(e.response?.data?.message || "Error updating user");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleConfirm() {
@@ -183,6 +253,11 @@ export default function UsersPage() {
                         <td className="px-5 py-3"><Badge kind="userStatus" status={u.status} /></td>
                         <td className="px-5 py-3 text-gray-500 text-xs whitespace-nowrap">{fmtDate(u.createdAt)}</td>
                         <td className="px-5 py-3 text-right whitespace-nowrap">
+                          {canManageRole(u) && (
+                            <button onClick={() => openEdit(u)} className="text-brand-600 hover:underline text-xs mr-3">
+                              Edit
+                            </button>
+                          )}
                           {!isSelf && canManageRole(u) && (
                             <select
                               value={u.role}
@@ -212,6 +287,84 @@ export default function UsersPage() {
 
           <Pagination page={page} pages={pages} onChange={setPage} />
         </>
+      )}
+
+      {editUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => !saving && closeEdit()}>
+          <div
+            className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-bold text-gray-900 mb-4">Edit {editUser.name}</h3>
+            <form onSubmit={handleEditSubmit} className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))}
+                  className={INPUT_CLASS}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm(f => ({ ...f, email: e.target.value }))}
+                  className={INPUT_CLASS}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={editForm.password}
+                    onChange={(e) => setEditForm(f => ({ ...f, password: e.target.value }))}
+                    placeholder="Leave blank to keep current password"
+                    className={`${INPUT_CLASS} pr-9`}
+                  />
+                  <EyeToggleButton visible={showPassword} onClick={() => setShowPassword(v => !v)} />
+                </div>
+              </div>
+              {editForm.password && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={editForm.confirmPassword}
+                      onChange={(e) => setEditForm(f => ({ ...f, confirmPassword: e.target.value }))}
+                      className={`${INPUT_CLASS} pr-9`}
+                    />
+                    <EyeToggleButton visible={showConfirmPassword} onClick={() => setShowConfirmPassword(v => !v)} />
+                  </div>
+                </div>
+              )}
+
+              {editError && <p className="text-red-600 text-xs">{editError}</p>}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 bg-brand-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                >
+                  {saving ? "Saving…" : "Save Changes"}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeEdit}
+                  disabled={saving}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {confirmAction && (

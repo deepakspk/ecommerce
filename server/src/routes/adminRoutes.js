@@ -63,7 +63,7 @@ import {
   getShipmentComments,
   addShipmentComment,
 } from "../controllers/admin/logisticsController.js";
-import { listUsers, updateUserRole, updateUserStatus } from "../controllers/admin/userController.js";
+import { listUsers, updateUser, updateUserRole, updateUserStatus } from "../controllers/admin/userController.js";
 import { listAuditLog } from "../controllers/admin/auditLogController.js";
 import { getReportSummary, exportOrdersCsv } from "../controllers/admin/reportsController.js";
 import { listSettings, updateGroup, exportSettings } from "../controllers/admin/settingsController.js";
@@ -339,6 +339,17 @@ router.patch(
 
 // Users
 router.get("/users", listUsers);
+router.put(
+  "/users/:id",
+  [
+    mongoIdParam("id"),
+    body("name").optional().trim().notEmpty().withMessage("name cannot be empty"),
+    body("email").optional().trim().isEmail().withMessage("email must be valid"),
+    body("password").optional().isLength({ min: 8 }).withMessage("password must be at least 8 characters"),
+  ],
+  validate,
+  updateUser
+);
 router.patch(
   "/users/:id/role",
   [mongoIdParam("id"), body("role").isIn(["CUSTOMER", "ADMIN", "SUPER_ADMIN"]).withMessage("Invalid role")],
