@@ -141,43 +141,6 @@ function CreateShipmentModal({ order, provider, onClose, onCreated }) {
             )}
           </div>
 
-          <div>
-            <label className={LABEL_CLASS}>Delivery Type</label>
-            <select value={deliveryType} onChange={(e) => setDeliveryType(e.target.value)} className={INPUT_CLASS}>
-              {DELIVERY_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className={LABEL_CLASS}>
-              Weight (kg) <span className="text-gray-400 font-normal">— optional</span>
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="0.1"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              placeholder="e.g. 1.5"
-              className={INPUT_CLASS}
-            />
-          </div>
-
-          <div>
-            <label className={LABEL_CLASS}>
-              Description <span className="text-gray-400 font-normal">— optional</span>
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={2}
-              placeholder="Note for the courier…"
-              className={`${INPUT_CLASS} resize-none`}
-            />
-          </div>
-
           {resolvingBranch && <p className="text-xs text-gray-400">Resolving destination branch…</p>}
           {loadError && <p className="text-xs text-red-600">{loadError}</p>}
 
@@ -222,6 +185,43 @@ function CreateShipmentModal({ order, provider, onClose, onCreated }) {
               )}
             </div>
           )}
+
+          <div>
+            <label className={LABEL_CLASS}>Delivery Type</label>
+            <select value={deliveryType} onChange={(e) => setDeliveryType(e.target.value)} className={INPUT_CLASS}>
+              {DELIVERY_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className={LABEL_CLASS}>
+              Weight (kg) <span className="text-gray-400 font-normal">— optional</span>
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              placeholder="e.g. 1.5"
+              className={INPUT_CLASS}
+            />
+          </div>
+
+          <div>
+            <label className={LABEL_CLASS}>
+              Description <span className="text-gray-400 font-normal">— optional</span>
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+              placeholder="Note for the courier…"
+              className={`${INPUT_CLASS} resize-none`}
+            />
+          </div>
 
           {submitError && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{submitError}</p>
