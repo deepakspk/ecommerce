@@ -7,6 +7,7 @@ const orderAddressSchema = new mongoose.Schema(
     province: { type: String, required: true },
     district: { type: String, required: true },
     city: { type: String, required: true },
+    branchName: { type: String, default: "" },
     area: { type: String },
     street: { type: String },
     landmark: { type: String },

@@ -5,12 +5,9 @@ import Address from "../models/Address.js";
 import ProductVariant from "../models/ProductVariant.js";
 import InventoryLog from "../models/InventoryLog.js";
 import { validateCoupon, redeemCoupon } from "../services/couponService.js";
+import { resolveDeliveryFee } from "../services/deliveryFeeService.js";
 import { sendOrderConfirmedEmail } from "../utils/orderEmails.js";
 import { streamInvoicePdf } from "../utils/invoice.js";
-
-function calcDeliveryFee(province) {
-  return province.toLowerCase().trim() === "bagmati" ? 100 : 200;
-}
 
 export async function createOrder(req, res) {
   const { addressId, paymentMethod = "COD", couponCode } = req.body;
@@ -49,7 +46,7 @@ export async function createOrder(req, res) {
     subtotal += unitPrice * cartItem.quantity;
   }
 
-  const deliveryFee = calcDeliveryFee(address.province);
+  const deliveryFee = await resolveDeliveryFee(address);
 
   const addressSnapshot = {
     recipientName: address.recipientName,
@@ -57,6 +54,7 @@ export async function createOrder(req, res) {
     province: address.province,
     district: address.district,
     city: address.city,
+    branchName: address.branchName,
     area: address.area,
     street: address.street,
     landmark: address.landmark,

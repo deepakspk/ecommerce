@@ -41,16 +41,22 @@ function CreateShipmentModal({ order, provider, onClose, onCreated }) {
   const [description, setDescription] = useState("");
   const [toBranch, setToBranch] = useState("");
   const [branches, setBranches] = useState([]);
-  const [needsManualBranch, setNeedsManualBranch] = useState(false);
   const [resolvingBranch, setResolvingBranch] = useState(true);
-  const [branchError, setBranchError] = useState("");
+  const [loadError, setLoadError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  // The user only picks delivery type / weight / description — the destination branch
-  // is resolved silently from the order's district, same as ShipmentPanel's auto-suggest.
-  // If nothing matches, we don't guess: surface a manual picker instead of risking a
-  // shipment routed to the wrong branch.
+  const district = order.address.district;
+  const districtMatches = branches.filter((b) => b.district_name?.toUpperCase() === district?.toUpperCase());
+  const otherBranches = branches.filter((b) => !districtMatches.includes(b));
+  const selectedBranch = branches.find((b) => b.name === toBranch);
+  const branchFromAddress = Boolean(order.address.branchName) && branches.some((b) => b.name === order.address.branchName);
+
+  // The customer's saved address already pins down the exact branch (chosen at checkout
+  // time) — use it directly when present. Only fall back to district-guessing for older
+  // orders or districts where NCM had no coverage when the address was saved. Multiple NCM
+  // branches can share a district (e.g. Kathmandu has both TINKUNE and SANKHU), so even the
+  // fallback only pre-fills when there's exactly one match, leaving the rest for the admin.
   useEffect(() => {
     let ignore = false;
     if (!provider.capabilities.branchResolution) {
@@ -61,20 +67,18 @@ function CreateShipmentModal({ order, provider, onClose, onCreated }) {
       .then(({ branches: list }) => {
         if (ignore) return;
         setBranches(list);
-        const match = list.find((b) => b.district?.toUpperCase() === order.address.district?.toUpperCase());
-        if (match) {
-          setToBranch(match.name);
-        } else if (list.length > 0) {
-          setNeedsManualBranch(true);
-          setBranchError(`No ${provider.label} branch found for district "${order.address.district}" — choose one manually below.`);
+        if (order.address.branchName && list.some((b) => b.name === order.address.branchName)) {
+          setToBranch(order.address.branchName);
         } else {
-          setBranchError(`${provider.label} returned no destination branches.`);
+          const matches = list.filter((b) => b.district_name?.toUpperCase() === district?.toUpperCase());
+          if (matches.length === 1) setToBranch(matches[0].name);
         }
+        if (list.length === 0) setLoadError(`${provider.label} returned no destination branches.`);
       })
-      .catch(() => { if (!ignore) setBranchError(`Couldn't load destination branches for ${provider.label}.`); })
+      .catch(() => { if (!ignore) setLoadError(`Couldn't load destination branches for ${provider.label}.`); })
       .finally(() => { if (!ignore) setResolvingBranch(false); });
     return () => { ignore = true; };
-  }, [provider, order.address.district]);
+  }, [provider, district, order.address.branchName]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -123,6 +127,20 @@ function CreateShipmentModal({ order, provider, onClose, onCreated }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Delivery Address</p>
+            <p className="text-sm font-medium text-gray-900">{order.address.recipientName}</p>
+            <p className="text-sm text-gray-600">{order.address.phone}</p>
+            <p className="text-sm text-gray-600">
+              {[order.address.area, order.address.street, order.address.city, order.address.district, order.address.province]
+                .filter(Boolean)
+                .join(", ")}
+            </p>
+            {order.address.landmark && (
+              <p className="text-xs text-gray-400 mt-0.5">Near: {order.address.landmark}</p>
+            )}
+          </div>
+
           <div>
             <label className={LABEL_CLASS}>Delivery Type</label>
             <select value={deliveryType} onChange={(e) => setDeliveryType(e.target.value)} className={INPUT_CLASS}>
@@ -161,21 +179,47 @@ function CreateShipmentModal({ order, provider, onClose, onCreated }) {
           </div>
 
           {resolvingBranch && <p className="text-xs text-gray-400">Resolving destination branch…</p>}
-          {branchError && <p className="text-xs text-red-600">{branchError}</p>}
+          {loadError && <p className="text-xs text-red-600">{loadError}</p>}
 
-          {needsManualBranch && (
+          {!resolvingBranch && !loadError && branches.length > 0 && (
             <div>
               <label className={LABEL_CLASS}>Destination Branch</label>
+              {branchFromAddress && (
+                <p className="text-xs text-gray-500 mb-1">Pre-filled from the customer's saved delivery branch.</p>
+              )}
+              {!branchFromAddress && districtMatches.length > 1 && (
+                <p className="text-xs text-gray-500 mb-1">
+                  {districtMatches.length} {provider.label} branches found in {district} — please confirm the right one.
+                </p>
+              )}
+              {!branchFromAddress && districtMatches.length === 0 && (
+                <p className="text-xs text-gray-500 mb-1">
+                  No {provider.label} branch found for "{district}" — please choose manually.
+                </p>
+              )}
               <select
                 value={toBranch}
                 onChange={(e) => setToBranch(e.target.value)}
+                required
                 className={INPUT_CLASS}
               >
                 <option value="">Select branch…</option>
-                {branches.map((b) => (
-                  <option key={b.name} value={b.name}>{b.name} ({b.district})</option>
-                ))}
+                {districtMatches.length > 0 && (
+                  <optgroup label={`Branches in ${district}`}>
+                    {districtMatches.map((b) => (
+                      <option key={b.name} value={b.name}>{b.name} ({b.district_name})</option>
+                    ))}
+                  </optgroup>
+                )}
+                <optgroup label={districtMatches.length > 0 ? "All other branches" : "All branches"}>
+                  {otherBranches.map((b) => (
+                    <option key={b.name} value={b.name}>{b.name} ({b.district_name})</option>
+                  ))}
+                </optgroup>
               </select>
+              {selectedBranch?.areas_covered && (
+                <p className="text-xs text-gray-400 mt-1">Covers: {selectedBranch.areas_covered}</p>
+              )}
             </div>
           )}
 

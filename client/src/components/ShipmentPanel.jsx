@@ -63,12 +63,20 @@ export default function ShipmentPanel({ orderId, order }) {
     }
     adminApi.getProviderBranches(code).then(({ branches: list }) => {
       setBranches(list);
-      const suggested = list.find(
-        (b) => b.district?.toUpperCase() === order.address.district?.toUpperCase()
+      // The customer's saved address already pins down the exact branch chosen at checkout
+      // time — use it directly when present. Otherwise fall back to district-guessing, and
+      // only pre-fill there when exactly one branch covers the district (multiple NCM
+      // branches can share one, e.g. Kathmandu has both TINKUNE and SANKHU).
+      if (order.address.branchName && list.some((b) => b.name === order.address.branchName)) {
+        setToBranch(order.address.branchName);
+        return;
+      }
+      const matches = list.filter(
+        (b) => b.district_name?.toUpperCase() === order.address.district?.toUpperCase()
       );
-      if (suggested) setToBranch(suggested.name);
+      if (matches.length === 1) setToBranch(matches[0].name);
     }).catch(() => setBranches([]));
-  }, [providers, order.address.district]);
+  }, [providers, order.address.district, order.address.branchName]);
 
   function handleProviderChange(code) {
     setProviderCode(code);
@@ -145,6 +153,12 @@ export default function ShipmentPanel({ orderId, order }) {
 
   if (!shipment) {
     const provider = providers.find((p) => p.code === providerCode);
+    const districtMatches = branches.filter(
+      (b) => b.district_name?.toUpperCase() === order.address.district?.toUpperCase()
+    );
+    const otherBranches = branches.filter((b) => !districtMatches.includes(b));
+    const selectedBranch = branches.find((b) => b.name === toBranch);
+    const branchFromAddress = Boolean(order.address.branchName) && branches.some((b) => b.name === order.address.branchName);
     return (
       <div className={`${CARD_CLASS} p-5`}>
         <h2 className="text-sm font-semibold text-gray-800 mb-3">Create Shipment</h2>
@@ -162,17 +176,34 @@ export default function ShipmentPanel({ orderId, order }) {
           </select>
 
           {provider?.capabilities.branchResolution && (
-            <select
-              value={toBranch}
-              onChange={(e) => setToBranch(e.target.value)}
-              required
-              className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
-            >
-              <option value="">Select destination branch…</option>
-              {branches.map((b) => (
-                <option key={b.name} value={b.name}>{b.name} ({b.district})</option>
-              ))}
-            </select>
+            <div>
+              {branchFromAddress && (
+                <p className="text-xs text-gray-500 mb-1">Pre-filled from the customer's saved delivery branch.</p>
+              )}
+              <select
+                value={toBranch}
+                onChange={(e) => setToBranch(e.target.value)}
+                required
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+              >
+                <option value="">Select destination branch…</option>
+                {districtMatches.length > 0 && (
+                  <optgroup label={`Branches in ${order.address.district}`}>
+                    {districtMatches.map((b) => (
+                      <option key={b.name} value={b.name}>{b.name} ({b.district_name})</option>
+                    ))}
+                  </optgroup>
+                )}
+                <optgroup label={districtMatches.length > 0 ? "All other branches" : "All branches"}>
+                  {otherBranches.map((b) => (
+                    <option key={b.name} value={b.name}>{b.name} ({b.district_name})</option>
+                  ))}
+                </optgroup>
+              </select>
+              {selectedBranch?.areas_covered && (
+                <p className="text-xs text-gray-400 mt-1">Covers: {selectedBranch.areas_covered}</p>
+              )}
+            </div>
           )}
 
           <select

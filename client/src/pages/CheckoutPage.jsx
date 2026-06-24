@@ -5,6 +5,7 @@ import * as addressApi from "../api/addresses";
 import * as ordersApi from "../api/orders";
 import * as paymentsApi from "../api/payments";
 import * as cartApi from "../api/cart";
+import * as logisticsApi from "../api/logistics";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { submitEsewaForm } from "../utils/esewaForm";
 import ItemThumb from "../components/ItemThumb";
@@ -70,6 +71,9 @@ export default function CheckoutPage() {
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
 
+  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [deliveryFeeLoading, setDeliveryFeeLoading] = useState(false);
+
   useEffect(() => {
     addressApi.getAddresses().then(data => {
       setAddresses(data.addresses);
@@ -77,6 +81,22 @@ export default function CheckoutPage() {
       if (def) setSelectedAddrId(def._id);
     }).catch(() => {}).finally(() => setAddrLoading(false));
   }, []);
+
+  // Real NCM-quoted rate when the address has a confirmed delivery branch; otherwise the
+  // flat province-based estimate, same as before this feature existed.
+  useEffect(() => {
+    const address = addresses.find(a => a._id === selectedAddrId);
+    if (!address) { setDeliveryFee(0); return; }
+    if (!address.branchName) { setDeliveryFee(calcDeliveryFee(address.province)); return; }
+
+    let ignore = false;
+    setDeliveryFeeLoading(true);
+    logisticsApi.getDeliveryRate(address.branchName)
+      .then(({ charge }) => { if (!ignore) setDeliveryFee(charge); })
+      .catch(() => { if (!ignore) setDeliveryFee(calcDeliveryFee(address.province)); })
+      .finally(() => { if (!ignore) setDeliveryFeeLoading(false); });
+    return () => { ignore = true; };
+  }, [selectedAddrId, addresses]);
 
   if (items.length === 0) {
     return (
@@ -88,7 +108,6 @@ export default function CheckoutPage() {
   }
 
   const selectedAddress = addresses.find(a => a._id === selectedAddrId);
-  const deliveryFee = selectedAddress ? calcDeliveryFee(selectedAddress.province) : 0;
   const couponStale = appliedCoupon && appliedCoupon.subtotal !== subtotal;
   const discountAmount = appliedCoupon && !couponStale ? appliedCoupon.discountAmount : 0;
   const total = subtotal - discountAmount + deliveryFee;
@@ -252,9 +271,14 @@ export default function CheckoutPage() {
               )}
               <div className="flex justify-between text-gray-600">
                 <span>Delivery fee</span>
-                <span>{selectedAddress ? fmt(deliveryFee) : "—"}</span>
+                <span>
+                  {!selectedAddress ? "—" : deliveryFeeLoading ? "Calculating…" : fmt(deliveryFee)}
+                </span>
               </div>
-              {selectedAddress && selectedAddress.province.toLowerCase() === "bagmati" && (
+              {selectedAddress?.branchName && !deliveryFeeLoading && (
+                <p className="text-xs text-gray-400">Courier rate to {selectedAddress.branchName}</p>
+              )}
+              {selectedAddress && !selectedAddress.branchName && selectedAddress.province.toLowerCase() === "bagmati" && (
                 <p className="text-xs text-green-600">Kathmandu valley discount applied</p>
               )}
               <div className="flex justify-between font-semibold text-gray-900 text-base border-t border-gray-100 pt-2 mt-1">
@@ -294,7 +318,7 @@ export default function CheckoutPage() {
 
             <button
               onClick={handlePlaceOrder}
-              disabled={placing || !selectedAddrId || addresses.length === 0}
+              disabled={placing || deliveryFeeLoading || !selectedAddrId || addresses.length === 0}
               className="w-full mt-5 bg-brand-600 text-white py-3 rounded-lg font-semibold text-sm hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {placing ? "Placing order…" : PLACE_ORDER_LABELS[paymentMethod]}

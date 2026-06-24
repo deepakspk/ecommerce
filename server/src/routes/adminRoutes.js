@@ -213,6 +213,7 @@ const orderUpdateBodyValidators = [
   body("address.province").optional().trim().notEmpty().withMessage("province cannot be empty"),
   body("address.district").optional().trim().notEmpty().withMessage("district cannot be empty"),
   body("address.city").optional().trim().notEmpty().withMessage("city cannot be empty"),
+  body("address.branchName").optional().trim(),
   body("address.area").optional().trim(),
   body("address.street").optional().trim(),
   body("address.landmark").optional().trim(),

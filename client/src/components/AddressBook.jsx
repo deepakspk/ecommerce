@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import * as addressApi from "../api/addresses";
+import * as logisticsApi from "../api/logistics";
 import { getErrorMessage } from "../utils/errorHelpers";
 import NEPAL_GEO, { getDistricts, getMunicipalities } from "../data/nepalGeoData";
 
@@ -7,7 +8,7 @@ const PROVINCES = Object.keys(NEPAL_GEO);
 
 const EMPTY_FORM = {
   label: "", recipientName: "", phone: "",
-  province: "", district: "", city: "",
+  province: "", district: "", city: "", branchName: "",
   area: "", street: "", landmark: "",
   isDefault: false,
 };
@@ -52,18 +53,33 @@ function TextInput({ label, required, value, onChange, placeholder }) {
 function AddressForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
   const [form, setForm] = useState({ ...EMPTY_FORM, ...initial });
   const [err, setErr] = useState("");
+  const [branches, setBranches] = useState([]);
+  const [loadingBranches, setLoadingBranches] = useState(false);
 
   const districts = form.province ? getDistricts(form.province) : [];
   const municipalities = form.province && form.district
     ? getMunicipalities(form.province, form.district)
     : [];
 
+  // The branch field only matters where our courier partner actually has a branch — most
+  // districts have none, in which case the field simply doesn't appear (it's optional).
+  useEffect(() => {
+    if (!form.district) { setBranches([]); return; }
+    let ignore = false;
+    setLoadingBranches(true);
+    logisticsApi.getDistrictBranches(form.district)
+      .then(({ branches: list }) => { if (!ignore) setBranches(list); })
+      .catch(() => { if (!ignore) setBranches([]); })
+      .finally(() => { if (!ignore) setLoadingBranches(false); });
+    return () => { ignore = true; };
+  }, [form.district]);
+
   function set(field, val) {
     setForm(f => {
       const next = { ...f, [field]: val };
       // Reset downstream fields when a parent changes
-      if (field === "province") { next.district = ""; next.city = ""; }
-      if (field === "district") { next.city = ""; }
+      if (field === "province") { next.district = ""; next.city = ""; next.branchName = ""; }
+      if (field === "district") { next.city = ""; next.branchName = ""; }
       return next;
     });
   }
@@ -117,6 +133,20 @@ function AddressForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
           placeholder={form.district ? "Select municipality" : "Select district first"}
           disabled={!form.district}
         />
+
+        {loadingBranches && (
+          <p className="text-xs text-gray-400 sm:col-span-2">Checking for a courier branch in this district…</p>
+        )}
+        {!loadingBranches && branches.length > 0 && (
+          <Select
+            label="Delivery Branch"
+            required
+            value={form.branchName}
+            onChange={v => set("branchName", v)}
+            options={branches.map(b => b.name)}
+            placeholder="Select delivery branch"
+          />
+        )}
 
         <TextInput label="Area / Tole" value={form.area} onChange={v => set("area", v)} placeholder="e.g. Thamel" />
         <TextInput label="Street" value={form.street} onChange={v => set("street", v)} placeholder="Street or road name" />

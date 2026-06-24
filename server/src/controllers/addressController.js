@@ -1,9 +1,10 @@
 import Address from "../models/Address.js";
+import { listBranchesForDistrict } from "../logistics/logisticsManager.js";
 
 export const VALID_PROVINCES = ["koshi", "madhesh", "bagmati", "gandaki", "lumbini", "karnali", "sudurpashchim"];
 
-function validateBody(body) {
-  const { recipientName, phone, province, district, city } = body;
+async function validateBody(body) {
+  const { recipientName, phone, province, district, city, branchName } = body;
   const errors = [];
   if (!recipientName?.trim()) errors.push("recipientName is required");
   if (!phone?.trim()) errors.push("phone is required");
@@ -11,6 +12,14 @@ function validateBody(body) {
   else if (!VALID_PROVINCES.includes(province.toLowerCase().trim())) errors.push("Invalid province");
   if (!district?.trim()) errors.push("district is required");
   if (!city?.trim()) errors.push("city is required");
+
+  // The branch field is only mandatory when our logistics partner actually covers this
+  // district — most districts have no coverage at all, so it stays optional for those.
+  if (district?.trim() && !branchName?.trim()) {
+    const branches = await listBranchesForDistrict(district.trim());
+    if (branches.length > 0) errors.push("branchName is required for this district");
+  }
+
   return errors;
 }
 
@@ -20,10 +29,10 @@ export async function listAddresses(req, res) {
 }
 
 export async function createAddress(req, res) {
-  const errors = validateBody(req.body);
+  const errors = await validateBody(req.body);
   if (errors.length) return res.status(400).json({ message: errors[0] });
 
-  const { label, recipientName, phone, province, district, city, area, street, landmark, isDefault } = req.body;
+  const { label, recipientName, phone, province, district, city, branchName, area, street, landmark, isDefault } = req.body;
   const count = await Address.countDocuments({ userId: req.user._id });
   const makeDefault = isDefault || count === 0;
 
@@ -39,6 +48,7 @@ export async function createAddress(req, res) {
     province: province.trim(),
     district: district.trim(),
     city: city.trim(),
+    branchName: branchName?.trim() || "",
     area: area?.trim() || "",
     street: street?.trim() || "",
     landmark: landmark?.trim() || "",
@@ -52,10 +62,10 @@ export async function updateAddress(req, res) {
   const address = await Address.findOne({ _id: req.params.id, userId: req.user._id });
   if (!address) return res.status(404).json({ message: "Address not found" });
 
-  const errors = validateBody(req.body);
+  const errors = await validateBody(req.body);
   if (errors.length) return res.status(400).json({ message: errors[0] });
 
-  const { label, recipientName, phone, province, district, city, area, street, landmark, isDefault } = req.body;
+  const { label, recipientName, phone, province, district, city, branchName, area, street, landmark, isDefault } = req.body;
 
   if (isDefault && !address.isDefault) {
     await Address.updateMany({ userId: req.user._id }, { isDefault: false });
@@ -68,6 +78,7 @@ export async function updateAddress(req, res) {
   address.province = province.trim();
   address.district = district.trim();
   address.city = city.trim();
+  address.branchName = branchName?.trim() || "";
   address.area = area?.trim() || "";
   address.street = street?.trim() || "";
   address.landmark = landmark?.trim() || "";

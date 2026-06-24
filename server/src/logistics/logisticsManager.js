@@ -33,3 +33,20 @@ export function listProviders() {
     .filter((provider) => provider.isConfigured())
     .map(({ code, label, capabilities }) => ({ code, label, capabilities }));
 }
+
+// Used by customer-facing flows (address branch selection, checkout delivery rate) that don't
+// know or care which specific carrier is active — just "whichever configured one can do this."
+export function getDefaultProvider(capability) {
+  return (
+    [...registry.values()].find(
+      (provider) => provider.isConfigured() && (!capability || provider.capabilities[capability])
+    ) || null
+  );
+}
+
+export async function listBranchesForDistrict(district) {
+  const provider = getDefaultProvider("branchResolution");
+  if (!provider || !district) return [];
+  const branches = await provider.listBranches();
+  return branches.filter((b) => b.district_name?.toUpperCase() === district.toUpperCase());
+}

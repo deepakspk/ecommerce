@@ -8,6 +8,7 @@ const addressSchema = new mongoose.Schema({
   province: { type: String, required: true, trim: true },
   district: { type: String, required: true, trim: true },
   city: { type: String, required: true, trim: true },
+  branchName: { type: String, trim: true, default: "" },
   area: { type: String, trim: true },
   street: { type: String, trim: true },
   landmark: { type: String, trim: true },
