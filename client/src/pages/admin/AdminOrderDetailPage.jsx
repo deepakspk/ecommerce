@@ -10,15 +10,27 @@ import { downloadBlob } from "../../utils/downloadBlob";
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
 const STATUS_TRANSITIONS = {
-  PENDING:   ["CONFIRMED", "CANCELLED"],
-  CONFIRMED: ["PACKED",    "CANCELLED"],
-  PACKED:    ["SHIPPED",   "CANCELLED"],
-  SHIPPED:   ["DELIVERED"],
-  DELIVERED: [],
-  CANCELLED: [],
+  PENDING:          ["CONFIRMED", "CANCELLED"],
+  CONFIRMED:        ["PACKED",    "CANCELLED"],
+  PACKED:           ["PICKED",    "CANCELLED"],
+  PICKED:           ["SHIPPED",   "CANCELLED"],
+  SHIPPED:          ["ARRIVED",   "CANCELLED"],
+  ARRIVED:          ["OUT_FOR_DELIVERY", "CANCELLED"],
+  OUT_FOR_DELIVERY: ["DELIVERED"],
+  DELIVERED:        [],
+  CANCELLED:        [],
 };
 
-const STATUS_ORDER = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED"];
+const STATUS_ORDER = [
+  "PENDING",
+  "CONFIRMED",
+  "PACKED",
+  "PICKED",
+  "SHIPPED",
+  "ARRIVED",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+];
 
 function fmtDate(d) {
   return new Date(d).toLocaleString("en-NP", {

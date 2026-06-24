@@ -28,7 +28,13 @@ export function sendPaymentFailedEmail(order, email) {
   );
 }
 
-const ORDER_STATUS_TEXT = { SHIPPED: "shipped", DELIVERED: "delivered" };
+const ORDER_STATUS_TEXT = {
+  PICKED: "picked up by the courier",
+  SHIPPED: "shipped",
+  ARRIVED: "received at a branch near you",
+  OUT_FOR_DELIVERY: "sent out for delivery",
+  DELIVERED: "delivered",
+};
 
 export function sendOrderStatusEmail(order, email, status) {
   const statusText = ORDER_STATUS_TEXT[status];

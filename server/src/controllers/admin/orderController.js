@@ -7,12 +7,15 @@ import { logAudit } from "../../utils/auditLog.js";
 import { streamInvoicePdf } from "../../utils/invoice.js";
 
 const STATUS_TRANSITIONS = {
-  PENDING:   ["CONFIRMED", "CANCELLED"],
-  CONFIRMED: ["PACKED",    "CANCELLED"],
-  PACKED:    ["SHIPPED",   "CANCELLED"],
-  SHIPPED:   ["DELIVERED"],
-  DELIVERED: [],
-  CANCELLED: [],
+  PENDING:          ["CONFIRMED", "CANCELLED"],
+  CONFIRMED:        ["PACKED",    "CANCELLED"],
+  PACKED:           ["PICKED",    "CANCELLED"],
+  PICKED:           ["SHIPPED",   "CANCELLED"],
+  SHIPPED:          ["ARRIVED",   "CANCELLED"],
+  ARRIVED:          ["OUT_FOR_DELIVERY", "CANCELLED"],
+  OUT_FOR_DELIVERY: ["DELIVERED"],
+  DELIVERED:        [],
+  CANCELLED:        [],
 };
 
 export async function getDashboardStats(req, res) {

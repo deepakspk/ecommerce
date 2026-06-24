@@ -290,7 +290,7 @@ router.patch(
   [
     mongoIdParam("id"),
     body("status")
-      .isIn(["CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "CANCELLED"])
+      .isIn(["CONFIRMED", "PACKED", "PICKED", "SHIPPED", "ARRIVED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"])
       .withMessage("Invalid status"),
   ],
   validate,

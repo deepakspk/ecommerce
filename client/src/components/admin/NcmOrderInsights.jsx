@@ -4,10 +4,12 @@ import { getErrorMessage } from "../../utils/errorHelpers";
 import Badge from "../Badge";
 import { CARD_CLASS } from "../../utils/ui";
 
-const HAPPY_PATH = ["BOOKED", "PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"];
+const HAPPY_PATH = ["BOOKED", "PICKED_UP", "DISPATCHED", "ARRIVED", "OUT_FOR_DELIVERY", "DELIVERED"];
 const STEP_LABELS = {
   BOOKED: "Booked",
   PICKED_UP: "Picked Up",
+  DISPATCHED: "Dispatched",
+  ARRIVED: "Arrived",
   IN_TRANSIT: "In Transit",
   OUT_FOR_DELIVERY: "Out for Delivery",
   DELIVERED: "Delivered",

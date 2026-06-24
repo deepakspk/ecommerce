@@ -11,7 +11,17 @@ const SHIPPABLE_STATUSES = new Set(["PENDING", "CONFIRMED", "PACKED"]);
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
-const ALL_STATUSES = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "CANCELLED"];
+const ALL_STATUSES = [
+  "PENDING",
+  "CONFIRMED",
+  "PACKED",
+  "PICKED",
+  "SHIPPED",
+  "ARRIVED",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+  "CANCELLED",
+];
 
 function fmtDate(d) {
   return new Date(d).toLocaleDateString("en-NP", { day: "2-digit", month: "short", year: "numeric" });

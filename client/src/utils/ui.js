@@ -33,7 +33,10 @@ export const ORDER_STATUS_COLORS = {
   PENDING: "bg-amber-100 text-amber-700",
   CONFIRMED: "bg-indigo-100 text-indigo-700",
   PACKED: "bg-indigo-100 text-indigo-700",
+  PICKED: "bg-cyan-100 text-cyan-700",
   SHIPPED: "bg-brand-100 text-brand-700",
+  ARRIVED: "bg-purple-100 text-purple-700",
+  OUT_FOR_DELIVERY: "bg-teal-100 text-teal-700",
   DELIVERED: "bg-green-100 text-green-700",
   CANCELLED: "bg-red-100 text-red-600",
 };
@@ -67,7 +70,9 @@ export const USER_STATUS_COLORS = {
 export const SHIPMENT_STATUS_COLORS = {
   BOOKED: "bg-amber-100 text-amber-700",
   PICKED_UP: "bg-brand-100 text-brand-700",
-  IN_TRANSIT: "bg-indigo-100 text-indigo-700",
+  DISPATCHED: "bg-indigo-100 text-indigo-700",
+  ARRIVED: "bg-cyan-100 text-cyan-700",
+  IN_TRANSIT: "bg-slate-100 text-slate-600",
   OUT_FOR_DELIVERY: "bg-purple-100 text-purple-700",
   DELIVERED: "bg-green-100 text-green-700",
   RETURNED: "bg-orange-100 text-orange-700",

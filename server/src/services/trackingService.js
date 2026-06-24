@@ -3,11 +3,23 @@ import { getProvider } from "../logistics/logisticsManager.js";
 import { sendOrderStatusEmail } from "../utils/orderEmails.js";
 
 const SHIPMENT_TO_ORDER_STATUS = {
-  OUT_FOR_DELIVERY: "SHIPPED",
+  PICKED_UP: "PICKED",
+  DISPATCHED: "SHIPPED",
+  ARRIVED: "ARRIVED",
+  OUT_FOR_DELIVERY: "OUT_FOR_DELIVERY",
   DELIVERED: "DELIVERED",
 };
 
-const ORDER_STATUS_SEQUENCE = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED"];
+const ORDER_STATUS_SEQUENCE = [
+  "PENDING",
+  "CONFIRMED",
+  "PACKED",
+  "PICKED",
+  "SHIPPED",
+  "ARRIVED",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+];
 
 function isForwardMove(fromStatus, toStatus) {
   const fromIndex = ORDER_STATUS_SEQUENCE.indexOf(fromStatus);
