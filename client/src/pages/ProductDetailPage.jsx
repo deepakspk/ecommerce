@@ -162,7 +162,6 @@ export default function ProductDetailPage() {
       await addItem(selectedVariant._id, quantity, selectedVariant, product);
       if (isWishlisted(product._id)) await removeFromWishlist(product._id);
       setCartFeedback(true);
-      setTimeout(() => setCartFeedback(false), 3000);
     } catch (e) {
       setCartError(e.response ? getErrorMessage(e) : e.message);
     }
