@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import ShipmentPanel from "../../components/ShipmentPanel";
@@ -51,6 +51,8 @@ export default function AdminOrderDetailPage() {
   const [updating, setUpdating] = useState(false);
   const [markingPaid, setMarkingPaid] = useState(false);
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const editingRef = useRef(false);
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -60,11 +62,29 @@ export default function AdminOrderDetailPage() {
   const [editCustomer, setEditCustomer] = useState(null);
 
   useEffect(() => {
+    editingRef.current = editing;
+  }, [editing]);
+
+  const refreshOrder = useCallback(({ showSpinner } = {}) => {
+    if (editingRef.current) return Promise.resolve();
+    if (showSpinner) setRefreshing(true);
+    return adminApi.getAdminOrder(id)
+      .then(d => setOrder(d.order))
+      .catch(() => {})
+      .finally(() => { if (showSpinner) setRefreshing(false); });
+  }, [id]);
+
+  useEffect(() => {
     adminApi.getAdminOrder(id)
       .then(d => setOrder(d.order))
       .catch(() => setOrder(null))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    const interval = setInterval(() => refreshOrder(), 20000);
+    return () => clearInterval(interval);
+  }, [refreshOrder]);
 
   function startEditing() {
     setSaveError("");
@@ -210,6 +230,13 @@ export default function AdminOrderDetailPage() {
           <p className="text-sm text-gray-400 mt-1">Placed {fmtDate(order.createdAt)}</p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => refreshOrder({ showSpinner: true })}
+            disabled={refreshing}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </button>
           <button
             onClick={handleDownloadInvoice}
             disabled={downloadingInvoice}
