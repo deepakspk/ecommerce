@@ -47,7 +47,7 @@ function Section({ title, children }) {
   );
 }
 
-export default function NcmOrderInsights({ orderId }) {
+export default function NcmOrderInsights({ orderId, refreshSignal }) {
   const [loading, setLoading] = useState(true);
   const [shipment, setShipment] = useState(null);
   const [provider, setProvider] = useState(null);
@@ -73,36 +73,48 @@ export default function NcmOrderInsights({ orderId }) {
       .finally(() => setCommentsLoading(false));
   }, []);
 
+  // Loads everything tied to a newly-found shipment (details, comments, live carrier status).
+  // Shared by the initial mount, the parent-triggered refresh after "Create Shipment", and the
+  // background poll picking up a shipment that didn't exist yet on the last fetch.
+  const loadShipmentExtras = useCallback((s, { ignoreRef, skipProvider } = {}) => {
+    if (!skipProvider) {
+      adminApi.listLogisticsProviders()
+        .then(({ providers }) => { if (!ignoreRef?.current) setProvider(providers.find((p) => p.code === s.provider) || null); })
+        .catch(() => {});
+    }
+
+    setDetailsLoading(true);
+    adminApi.getShipmentDetails(s._id)
+      .then(setDetails)
+      .catch(() => setDetails(null))
+      .finally(() => setDetailsLoading(false));
+
+    loadComments(s._id);
+
+    setRefreshing(true);
+    adminApi.refreshShipmentTracking(s._id)
+      .then(({ shipment: updated }) => { if (!ignoreRef?.current) setShipment(updated); })
+      .catch(() => { if (!ignoreRef?.current) setRefreshNote("Couldn't fetch the latest status from the carrier — showing last known status."); })
+      .finally(() => { if (!ignoreRef?.current) setRefreshing(false); });
+  }, [loadComments]);
+
   useEffect(() => {
-    let ignore = false;
+    const ignoreRef = { current: false };
     Promise.all([
       adminApi.getShipment(orderId).catch(() => ({ shipment: null })),
       adminApi.listLogisticsProviders().catch(() => ({ providers: [] })),
     ]).then(([shipmentRes, providersRes]) => {
-      if (ignore) return;
+      if (ignoreRef.current) return;
       const s = shipmentRes.shipment;
       setShipment(s);
       setProvider(providersRes.providers.find((p) => p.code === s?.provider) || null);
       setLoading(false);
 
       if (!s) return;
-
-      setDetailsLoading(true);
-      adminApi.getShipmentDetails(s._id)
-        .then(setDetails)
-        .catch(() => setDetails(null))
-        .finally(() => setDetailsLoading(false));
-
-      loadComments(s._id);
-
-      setRefreshing(true);
-      adminApi.refreshShipmentTracking(s._id)
-        .then(({ shipment: updated }) => { if (!ignore) setShipment(updated); })
-        .catch(() => { if (!ignore) setRefreshNote("Couldn't fetch the latest status from the carrier — showing last known status."); })
-        .finally(() => { if (!ignore) setRefreshing(false); });
+      loadShipmentExtras(s, { ignoreRef, skipProvider: true });
     });
-    return () => { ignore = true; };
-  }, [orderId, loadComments]);
+    return () => { ignoreRef.current = true; };
+  }, [orderId, refreshSignal, loadShipmentExtras]);
 
   useEffect(() => {
     shipmentIdRef.current = shipment?._id || null;
@@ -110,13 +122,18 @@ export default function NcmOrderInsights({ orderId }) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!shipmentIdRef.current || refreshing) return;
+      if (refreshing) return;
       adminApi.getShipment(orderId)
-        .then(({ shipment: s }) => { if (s) setShipment(s); })
+        .then(({ shipment: s }) => {
+          if (!s) return;
+          const isNewlyFound = !shipmentIdRef.current;
+          setShipment(s);
+          if (isNewlyFound) loadShipmentExtras(s);
+        })
         .catch(() => {});
     }, 20000);
     return () => clearInterval(interval);
-  }, [orderId, refreshing]);
+  }, [orderId, refreshing, loadShipmentExtras]);
 
   async function handleManualRefresh() {
     setRefreshing(true);

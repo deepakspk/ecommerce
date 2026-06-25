@@ -20,7 +20,7 @@ function fmtDate(d) {
   });
 }
 
-export default function ShipmentPanel({ orderId, order }) {
+export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
   const [providers, setProviders] = useState([]);
   const [shipment, setShipment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -113,6 +113,7 @@ export default function ShipmentPanel({ orderId, order }) {
       });
       setDebugParams(sent || null);
       setShipment(created);
+      onShipmentChange?.(created);
     } catch (e) {
       setCreateError(getErrorMessage(e));
       setDebugParams(e.response?.data?.debugParams || null);
@@ -141,6 +142,7 @@ export default function ShipmentPanel({ orderId, order }) {
     try {
       const { shipment: updated } = await adminApi.markShipmentReturn(shipment._id, returnReason);
       setShipment(updated);
+      onShipmentChange?.(updated);
     } catch (e) {
       setReturnError(getErrorMessage(e));
     } finally {

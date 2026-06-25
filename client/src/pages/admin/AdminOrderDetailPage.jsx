@@ -52,6 +52,7 @@ export default function AdminOrderDetailPage() {
   const [markingPaid, setMarkingPaid] = useState(false);
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [shipmentRefreshKey, setShipmentRefreshKey] = useState(0);
   const editingRef = useRef(false);
 
   const [editing, setEditing] = useState(false);
@@ -561,7 +562,7 @@ export default function AdminOrderDetailPage() {
           </div>
 
           {/* Shipment */}
-          <ShipmentPanel orderId={order._id} order={order} />
+          <ShipmentPanel orderId={order._id} order={order} onShipmentChange={() => setShipmentRefreshKey(k => k + 1)} />
 
           {/* Mark as paid */}
           <div className="bg-white border border-gray-200 rounded-lg p-5">
@@ -598,7 +599,7 @@ export default function AdminOrderDetailPage() {
         </div>
       </div>
 
-      <NcmOrderInsights orderId={order._id} />
+      <NcmOrderInsights orderId={order._id} refreshSignal={shipmentRefreshKey} />
     </div>
   );
 }
