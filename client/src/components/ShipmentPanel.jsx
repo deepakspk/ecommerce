@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import * as adminApi from "../api/admin";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { printShippingLabel } from "../utils/shippingLabel";
@@ -40,6 +40,7 @@ export default function ShipmentPanel({ orderId, order }) {
   const [returnError, setReturnError] = useState("");
   const [printingLabel, setPrintingLabel] = useState(false);
   const [labelError, setLabelError] = useState("");
+  const shipmentIdRef = useRef(null);
 
   useEffect(() => {
     let ignore = false;
@@ -54,6 +55,20 @@ export default function ShipmentPanel({ orderId, order }) {
     });
     return () => { ignore = true; };
   }, [orderId]);
+
+  useEffect(() => {
+    shipmentIdRef.current = shipment?._id || null;
+  }, [shipment]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!shipmentIdRef.current || returning) return;
+      adminApi.getShipment(orderId)
+        .then(({ shipment: s }) => { if (s) setShipment(s); })
+        .catch(() => {});
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [orderId, returning]);
 
   const loadBranches = useCallback((code) => {
     const provider = providers.find((p) => p.code === code);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import Badge from "../../components/Badge";
@@ -38,8 +38,8 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [logisticsProviders, setLogisticsProviders] = useState([]);
 
-  async function load(p = 1) {
-    setLoading(true);
+  const load = useCallback(async (p = 1, { silent } = {}) => {
+    if (!silent) setLoading(true);
     try {
       const params = { page: p, limit: 25 };
       if (statusFilter) params.status = statusFilter;
@@ -49,11 +49,16 @@ export default function AdminOrdersPage() {
       setPage(data.page);
       setPages(data.pages);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  }
+  }, [statusFilter]);
 
-  useEffect(() => { load(1); }, [statusFilter]);
+  useEffect(() => { load(1); }, [load]);
+
+  useEffect(() => {
+    const interval = setInterval(() => load(page, { silent: true }), 20000);
+    return () => clearInterval(interval);
+  }, [load, page]);
 
   useEffect(() => {
     adminApi.listLogisticsProviders()

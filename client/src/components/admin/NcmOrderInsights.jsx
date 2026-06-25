@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import * as adminApi from "../../api/admin";
 import { getErrorMessage } from "../../utils/errorHelpers";
 import Badge from "../Badge";
@@ -63,6 +63,7 @@ export default function NcmOrderInsights({ orderId }) {
 
   const [refreshing, setRefreshing] = useState(false);
   const [refreshNote, setRefreshNote] = useState("");
+  const shipmentIdRef = useRef(null);
 
   const loadComments = useCallback((shipmentId) => {
     setCommentsLoading(true);
@@ -102,6 +103,20 @@ export default function NcmOrderInsights({ orderId }) {
     });
     return () => { ignore = true; };
   }, [orderId, loadComments]);
+
+  useEffect(() => {
+    shipmentIdRef.current = shipment?._id || null;
+  }, [shipment]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!shipmentIdRef.current || refreshing) return;
+      adminApi.getShipment(orderId)
+        .then(({ shipment: s }) => { if (s) setShipment(s); })
+        .catch(() => {});
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [orderId, refreshing]);
 
   async function handleManualRefresh() {
     setRefreshing(true);
