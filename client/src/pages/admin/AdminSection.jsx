@@ -8,6 +8,7 @@ import ProductFormPage from "./ProductFormPage";
 import InventoryPage from "./InventoryPage";
 import CouponsPage from "./CouponsPage";
 import AdminOrdersPage from "./AdminOrdersPage";
+import AdminOrderCreatePage from "./AdminOrderCreatePage";
 import AdminOrderDetailPage from "./AdminOrderDetailPage";
 import AdminReturnsPage from "./AdminReturnsPage";
 import AdminReturnDetailPage from "./AdminReturnDetailPage";
@@ -27,6 +28,7 @@ export default function AdminSection() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="orders" element={<AdminOrdersPage />} />
+          <Route path="orders/new" element={<AdminOrderCreatePage />} />
           <Route path="orders/:id" element={<AdminOrderDetailPage />} />
           <Route path="returns" element={<AdminReturnsPage />} />
           <Route path="returns/:id" element={<AdminReturnDetailPage />} />

@@ -3,10 +3,15 @@ import User from "../../models/User.js";
 import { logAudit } from "../../utils/auditLog.js";
 
 export async function listUsers(req, res) {
-  const { search, role, status, page = 1, limit = 25 } = req.query;
+  const { search, role, status, from, to, page = 1, limit = 10 } = req.query;
   const filter = {};
   if (role) filter.role = role;
   if (status) filter.status = status;
+  if (from || to) {
+    filter.createdAt = {};
+    if (from) filter.createdAt.$gte = new Date(from);
+    if (to) filter.createdAt.$lte = new Date(to);
+  }
   if (search?.trim()) {
     const re = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     filter.$or = [{ name: re }, { email: re }, { phone: re }];
@@ -19,6 +24,46 @@ export async function listUsers(req, res) {
   ]);
 
   res.json({ users, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+}
+
+export async function createUser(req, res) {
+  const { name, email, phone, password, role, status } = req.body;
+
+  if ((role === "SUPER_ADMIN") && req.user.role !== "SUPER_ADMIN") {
+    return res.status(403).json({ message: "Only a Super Admin can create a Super Admin account" });
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  let user;
+  try {
+    user = await User.create({
+      name: name.trim(),
+      email: email?.trim() || undefined,
+      phone: phone?.trim() || undefined,
+      passwordHash,
+      role: role || "CUSTOMER",
+      status: status || "ACTIVE",
+      emailVerified: true,
+      phoneVerified: true,
+    });
+  } catch (e) {
+    if (e.code === 11000) {
+      const field = Object.keys(e.keyPattern || {})[0] || "field";
+      return res.status(400).json({ message: `That ${field} is already in use by another account` });
+    }
+    throw e;
+  }
+
+  logAudit({
+    adminUserId: req.user._id,
+    action: "USER_CREATED",
+    targetType: "User",
+    targetId: user._id,
+    meta: { name: user.name, email: user.email, role: user.role },
+  });
+
+  res.status(201).json({ user });
 }
 
 export async function updateUserRole(req, res) {

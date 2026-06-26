@@ -4,7 +4,9 @@ import * as adminApi from "../../api/admin";
 import Badge from "../../components/Badge";
 import Pagination from "../../components/Pagination";
 import EmptyState from "../../components/EmptyState";
-import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
+import ClearFiltersButton from "../../components/admin/ClearFiltersButton";
+import TableSkeleton from "../../components/admin/TableSkeleton";
+import { H1_CLASS, CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
 
 const ALL_STATUSES = ["REQUESTED", "APPROVED", "REJECTED", "PICKED_UP", "REFUNDED"];
 
@@ -22,13 +24,26 @@ export default function AdminReturnsPage() {
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
 
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  useEffect(() => {
+    const t = setTimeout(() => { setSearch(searchInput); setPage(1); }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
   useEffect(() => {
     let active = true;
     async function load() {
       setLoading(true);
       try {
-        const params = { page, limit: 25 };
+        const params = { page, limit: 10 };
         if (statusFilter) params.status = statusFilter;
+        if (search.trim()) params.search = search.trim();
+        if (from) params.from = from;
+        if (to) params.to = to;
         const data = await adminApi.listAdminReturns(params);
         if (!active) return;
         setReturns(data.returns);
@@ -40,12 +55,22 @@ export default function AdminReturnsPage() {
     }
     load();
     return () => { active = false; };
-  }, [statusFilter, page]);
+  }, [statusFilter, search, from, to, page]);
 
   function setFilter(status) {
     if (status) setSearchParams({ status });
     else setSearchParams({});
     setPage(1);
+  }
+
+  const hasFilters = search || from || to || statusFilter;
+
+  function clearFilters() {
+    setSearchInput("");
+    setSearch("");
+    setFrom("");
+    setTo("");
+    setFilter("");
   }
 
   return (
@@ -64,10 +89,28 @@ export default function AdminReturnsPage() {
         ))}
       </div>
 
+      <div className={FILTER_BAR_CLASS}>
+        <div className={FILTER_FIELD_CLASS}>
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search by customer name or email"
+            className={INPUT_CLASS}
+          />
+        </div>
+        <div className="w-full sm:w-auto flex items-center gap-2 text-xs text-gray-500">
+          Date
+          <input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1); }} className={`${INPUT_CLASS} w-36`} />
+          <span>–</span>
+          <input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPage(1); }} className={`${INPUT_CLASS} w-36`} />
+        </div>
+        <ClearFiltersButton show={hasFilters} onClick={clearFilters} />
+      </div>
+
       {loading ? (
-        <p className="text-gray-400 text-sm">Loading…</p>
+        <TableSkeleton columns={6} />
       ) : returns.length === 0 ? (
-        <EmptyState title={`No return requests${statusFilter ? ` with status "${statusFilter}"` : ""}.`} />
+        <EmptyState title="No return requests match these filters." />
       ) : (
         <>
           <div className={`${CARD_CLASS} overflow-hidden`}>

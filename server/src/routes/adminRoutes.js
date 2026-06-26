@@ -37,6 +37,7 @@ import {
   updateStatus,
   markPaid,
   downloadInvoice,
+  createOrderManual,
 } from "../controllers/admin/orderController.js";
 import {
   listCoupons,
@@ -63,7 +64,7 @@ import {
   getShipmentComments,
   addShipmentComment,
 } from "../controllers/admin/logisticsController.js";
-import { listUsers, updateUser, updateUserRole, updateUserStatus } from "../controllers/admin/userController.js";
+import { listUsers, createUser, updateUser, updateUserRole, updateUserStatus } from "../controllers/admin/userController.js";
 import { listAuditLog } from "../controllers/admin/auditLogController.js";
 import { getReportSummary, exportOrdersCsv } from "../controllers/admin/reportsController.js";
 import { listSettings, updateGroup, exportSettings } from "../controllers/admin/settingsController.js";
@@ -222,6 +223,34 @@ const orderUpdateBodyValidators = [
   body("customer.phone").optional().trim().notEmpty().withMessage("customer phone cannot be empty"),
 ];
 
+const orderCreateBodyValidators = [
+  body("userId").isMongoId().withMessage("userId is required"),
+  body("items").isArray({ min: 1 }).withMessage("items must be a non-empty array"),
+  body("items.*.variantId").isMongoId().withMessage("each item needs a valid variantId"),
+  body("items.*.quantity").isInt({ min: 1 }).withMessage("each item needs a quantity of at least 1"),
+  body("address.recipientName").trim().notEmpty().withMessage("recipientName is required"),
+  body("address.phone").trim().notEmpty().withMessage("address phone is required"),
+  body("address.province").trim().notEmpty().withMessage("province is required"),
+  body("address.district").trim().notEmpty().withMessage("district is required"),
+  body("address.city").trim().notEmpty().withMessage("city is required"),
+  body("address.branchName").optional().trim(),
+  body("address.area").optional().trim(),
+  body("address.street").optional().trim(),
+  body("address.landmark").optional().trim(),
+  body("paymentMethod").isIn(["COD", "KHALTI", "ESEWA"]).withMessage("Invalid paymentMethod"),
+  body("couponCode").optional().trim(),
+];
+
+const userCreateBodyValidators = [
+  body("name").trim().notEmpty().withMessage("name is required"),
+  body("email").optional({ values: "falsy" }).trim().isEmail().withMessage("email must be valid"),
+  body("phone").optional({ values: "falsy" }).trim().notEmpty().withMessage("phone cannot be empty"),
+  body("password").isLength({ min: 8 }).withMessage("password must be at least 8 characters"),
+  body("role").optional().isIn(["CUSTOMER", "ADMIN", "SUPER_ADMIN"]).withMessage("Invalid role"),
+  body("status").optional().isIn(["ACTIVE", "DISABLED"]).withMessage("Invalid status"),
+  body().custom((value) => Boolean(value.email?.trim() || value.phone?.trim())).withMessage("email or phone is required"),
+];
+
 // Categories
 router.get("/categories", listCategories);
 router.get("/categories/tree", getCategoryTree);
@@ -277,6 +306,7 @@ router.get("/stats", getDashboardStats);
 
 // Orders
 router.get("/orders", listOrders);
+router.post("/orders", orderCreateBodyValidators, validate, createOrderManual);
 router.get("/orders/:id", [mongoIdParam("id")], validate, getOrder);
 router.get("/orders/:id/invoice", [mongoIdParam("id")], validate, downloadInvoice);
 router.put(
@@ -340,6 +370,7 @@ router.patch(
 
 // Users
 router.get("/users", listUsers);
+router.post("/users", userCreateBodyValidators, validate, createUser);
 router.put(
   "/users/:id",
   [

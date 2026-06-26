@@ -15,7 +15,7 @@ export const deleteCategory = (id, force = false) =>
 export const reorderCategories = (items) => api.patch("/admin/categories/reorder", { items }).then(r => r.data);
 
 // Products
-export const getProducts = () => api.get("/admin/products").then(r => r.data);
+export const getProducts = (params) => api.get("/admin/products", { params }).then(r => r.data);
 export const getProduct = (id) => api.get(`/admin/products/${id}`).then(r => r.data);
 export const createProduct = (formData) => api.post("/admin/products", formData).then(r => r.data);
 export const updateProduct = (id, formData) => api.put(`/admin/products/${id}`, formData).then(r => r.data);
@@ -41,16 +41,17 @@ export const updateOrderStatus = (id, status) =>
 export const markOrderPaid = (id) => api.patch(`/admin/orders/${id}/paid`).then(r => r.data);
 export const downloadOrderInvoice = (id) =>
   api.get(`/admin/orders/${id}/invoice`, { responseType: "blob" }).then(r => r.data);
+export const createAdminOrder = (data) => api.post("/admin/orders", data).then(r => r.data);
 
 // Coupons
-export const getCoupons = () => api.get("/admin/coupons").then(r => r.data);
+export const getCoupons = (params) => api.get("/admin/coupons", { params }).then(r => r.data);
 export const getCoupon = (id) => api.get(`/admin/coupons/${id}`).then(r => r.data);
 export const createCoupon = (data) => api.post("/admin/coupons", data).then(r => r.data);
 export const updateCoupon = (id, data) => api.put(`/admin/coupons/${id}`, data).then(r => r.data);
 export const deleteCoupon = (id) => api.delete(`/admin/coupons/${id}`).then(r => r.data);
 
 // Inventory
-export const getInventory = () => api.get("/admin/inventory").then(r => r.data);
+export const getInventory = (params) => api.get("/admin/inventory", { params }).then(r => r.data);
 export const adjustStock = (variantId, data) =>
   api.post(`/admin/inventory/${variantId}/adjust`, data).then(r => r.data);
 export const getLogs = (variantId) =>
@@ -63,6 +64,7 @@ export const updateReturnStatus = (id, data) => api.patch(`/admin/returns/${id}/
 
 // Users
 export const listUsers = (params) => api.get("/admin/users", { params }).then(r => r.data);
+export const createUser = (data) => api.post("/admin/users", data).then(r => r.data);
 export const updateUser = (id, data) => api.put(`/admin/users/${id}`, data).then(r => r.data);
 export const updateUserRole = (id, role) => api.patch(`/admin/users/${id}/role`, { role }).then(r => r.data);
 export const updateUserStatus = (id, status) => api.patch(`/admin/users/${id}/status`, { status }).then(r => r.data);

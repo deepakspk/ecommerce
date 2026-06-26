@@ -3,8 +3,10 @@ import * as adminApi from "../../api/admin";
 import Badge from "../../components/Badge";
 import Pagination from "../../components/Pagination";
 import EmptyState from "../../components/EmptyState";
+import ClearFiltersButton from "../../components/admin/ClearFiltersButton";
+import TableSkeleton from "../../components/admin/TableSkeleton";
 import { useAuth } from "../../hooks/useAuth";
-import { H1_CLASS, CARD_CLASS, INPUT_CLASS } from "../../utils/ui";
+import { H1_CLASS, CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
 
 function fmtDate(d) {
   return new Date(d).toLocaleDateString("en-NP", { day: "2-digit", month: "short", year: "numeric" });
@@ -32,6 +34,8 @@ function EyeToggleButton({ visible, onClick }) {
   );
 }
 
+const EMPTY_CREATE_FORM = { name: "", email: "", phone: "", password: "", confirmPassword: "", role: "CUSTOMER", status: "ACTIVE" };
+
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
 
@@ -42,9 +46,12 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [joinedFrom, setJoinedFrom] = useState("");
+  const [joinedTo, setJoinedTo] = useState("");
 
   const [confirmAction, setConfirmAction] = useState(null);
   const [acting, setActing] = useState(false);
@@ -57,15 +64,28 @@ export default function UsersPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState(EMPTY_CREATE_FORM);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState("");
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => { setSearch(searchInput); setPage(1); }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
   useEffect(() => {
     let active = true;
     async function load() {
       setLoading(true);
       try {
-        const params = { page, limit: 25 };
+        const params = { page, limit: 10 };
         if (search.trim()) params.search = search.trim();
         if (roleFilter) params.role = roleFilter;
         if (statusFilter) params.status = statusFilter;
+        if (joinedFrom) params.from = joinedFrom;
+        if (joinedTo) params.to = joinedTo;
         const data = await adminApi.listUsers(params);
         if (!active) return;
         setUsers(data.users);
@@ -80,7 +100,49 @@ export default function UsersPage() {
     }
     load();
     return () => { active = false; };
-  }, [page, search, roleFilter, statusFilter]);
+  }, [page, search, roleFilter, statusFilter, joinedFrom, joinedTo]);
+
+  function openCreate() {
+    setCreateForm(EMPTY_CREATE_FORM);
+    setCreateError("");
+    setShowCreatePassword(false);
+    setShowCreate(true);
+  }
+
+  async function handleCreateSubmit(e) {
+    e.preventDefault();
+    if (!createForm.name.trim()) return setCreateError("Name is required");
+    if (!createForm.email.trim() && !createForm.phone.trim()) return setCreateError("Email or phone is required");
+    if (createForm.password.length < 8) return setCreateError("Password must be at least 8 characters");
+    if (createForm.password !== createForm.confirmPassword) return setCreateError("Passwords do not match");
+
+    setCreating(true);
+    setCreateError("");
+    try {
+      await adminApi.createUser({
+        name: createForm.name.trim(),
+        email: createForm.email.trim() || undefined,
+        phone: createForm.phone.trim() || undefined,
+        password: createForm.password,
+        role: createForm.role,
+        status: createForm.status,
+      });
+      setShowCreate(false);
+      setPage(1);
+      setSearch("");
+      setSearchInput("");
+      setRoleFilter("");
+      setStatusFilter("");
+      const data = await adminApi.listUsers({ page: 1, limit: 10 });
+      setUsers(data.users);
+      setTotal(data.total);
+      setPages(data.pages);
+    } catch (e) {
+      setCreateError(e.response?.data?.message || "Error creating user");
+    } finally {
+      setCreating(false);
+    }
+  }
 
   const ROLE_LABELS = { CUSTOMER: "Customer", ADMIN: "Admin", SUPER_ADMIN: "Super Admin" };
 
@@ -179,6 +241,18 @@ export default function UsersPage() {
     }
   }
 
+  const hasFilters = search || roleFilter || statusFilter || joinedFrom || joinedTo;
+
+  function clearFilters() {
+    setSearchInput("");
+    setSearch("");
+    setRoleFilter("");
+    setStatusFilter("");
+    setJoinedFrom("");
+    setJoinedTo("");
+    setPage(1);
+  }
+
   return (
     <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
@@ -186,42 +260,61 @@ export default function UsersPage() {
           <h1 className={H1_CLASS}>Users</h1>
           {!loading && <p className="text-sm text-gray-400 mt-0.5">{total} account{total !== 1 ? "s" : ""}</p>}
         </div>
+        <button
+          onClick={openCreate}
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors"
+        >
+          + Add User
+        </button>
       </div>
 
-      <div className="flex flex-wrap gap-3 mb-5">
-        <input
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Search by name, email, or phone"
-          className={`${INPUT_CLASS} max-w-xs`}
-        />
-        <select
-          value={roleFilter}
-          onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-          className={`${INPUT_CLASS} w-auto`}
-        >
-          <option value="">All roles</option>
-          <option value="CUSTOMER">Customer</option>
-          <option value="ADMIN">Admin</option>
-          <option value="SUPER_ADMIN">Super Admin</option>
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className={`${INPUT_CLASS} w-auto`}
-        >
-          <option value="">All statuses</option>
-          <option value="ACTIVE">Active</option>
-          <option value="DISABLED">Disabled</option>
-        </select>
+      <div className={FILTER_BAR_CLASS}>
+        <div className={FILTER_FIELD_CLASS}>
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search by name, email, or phone"
+            className={INPUT_CLASS}
+          />
+        </div>
+        <div className={FILTER_FIELD_CLASS}>
+          <select
+            value={roleFilter}
+            onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
+            className={INPUT_CLASS}
+          >
+            <option value="">All roles</option>
+            <option value="CUSTOMER">Customer</option>
+            <option value="ADMIN">Admin</option>
+            <option value="SUPER_ADMIN">Super Admin</option>
+          </select>
+        </div>
+        <div className={FILTER_FIELD_CLASS}>
+          <select
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+            className={INPUT_CLASS}
+          >
+            <option value="">All statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="DISABLED">Disabled</option>
+          </select>
+        </div>
+        <div className="w-full sm:w-auto flex items-center gap-2 text-xs text-gray-500">
+          Joined
+          <input type="date" value={joinedFrom} onChange={(e) => { setJoinedFrom(e.target.value); setPage(1); }} className={`${INPUT_CLASS} w-36`} />
+          <span>–</span>
+          <input type="date" value={joinedTo} onChange={(e) => { setJoinedTo(e.target.value); setPage(1); }} className={`${INPUT_CLASS} w-36`} />
+        </div>
+        <ClearFiltersButton show={hasFilters} onClick={clearFilters} />
       </div>
 
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Loading…</p>
+        <TableSkeleton columns={6} />
       ) : users.length === 0 ? (
-        <EmptyState title="No users found." />
+        <EmptyState title="No users match these filters." />
       ) : (
         <>
           <div className={`${CARD_CLASS} overflow-hidden`}>
@@ -399,6 +492,113 @@ export default function UsersPage() {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showCreate && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => !creating && setShowCreate(false)}>
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-bold text-gray-900 mb-4">Add User</h3>
+            <form onSubmit={handleCreateSubmit} className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  value={createForm.name}
+                  onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))}
+                  className={INPUT_CLASS}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={createForm.email}
+                    onChange={(e) => setCreateForm(f => ({ ...f, email: e.target.value }))}
+                    className={INPUT_CLASS}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input
+                    value={createForm.phone}
+                    onChange={(e) => setCreateForm(f => ({ ...f, phone: e.target.value }))}
+                    className={INPUT_CLASS}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 -mt-1">At least one of email or phone is required.</p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <div className="relative">
+                  <input
+                    type={showCreatePassword ? "text" : "password"}
+                    value={createForm.password}
+                    onChange={(e) => setCreateForm(f => ({ ...f, password: e.target.value }))}
+                    className={`${INPUT_CLASS} pr-9`}
+                    required
+                  />
+                  <EyeToggleButton visible={showCreatePassword} onClick={() => setShowCreatePassword(v => !v)} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <input
+                  type={showCreatePassword ? "text" : "password"}
+                  value={createForm.confirmPassword}
+                  onChange={(e) => setCreateForm(f => ({ ...f, confirmPassword: e.target.value }))}
+                  className={INPUT_CLASS}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <select
+                    value={createForm.role}
+                    onChange={(e) => setCreateForm(f => ({ ...f, role: e.target.value }))}
+                    className={INPUT_CLASS}
+                  >
+                    <option value="CUSTOMER">Customer</option>
+                    <option value="ADMIN">Admin</option>
+                    {currentUser?.role === "SUPER_ADMIN" && <option value="SUPER_ADMIN">Super Admin</option>}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <select
+                    value={createForm.status}
+                    onChange={(e) => setCreateForm(f => ({ ...f, status: e.target.value }))}
+                    className={INPUT_CLASS}
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="DISABLED">Disabled</option>
+                  </select>
+                </div>
+              </div>
+
+              {createError && <p className="text-red-600 text-xs">{createError}</p>}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="flex-1 bg-brand-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 disabled:opacity-50 transition-colors"
+                >
+                  {creating ? "Creating…" : "Create User"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCreate(false)}
+                  disabled={creating}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

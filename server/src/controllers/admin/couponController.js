@@ -5,8 +5,37 @@ function toNullableNumber(value) {
 }
 
 export async function listCoupons(req, res) {
-  const coupons = await Coupon.find().sort({ createdAt: -1 });
-  res.json({ coupons });
+  const { search, status, type, validity, page = 1, limit = 10 } = req.query;
+  const filter = {};
+  if (search?.trim()) {
+    filter.code = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+  }
+  if (status === "active") filter.isActive = true;
+  if (status === "inactive") filter.isActive = false;
+  if (type) filter.type = type;
+
+  const now = new Date();
+  if (validity === "current") {
+    filter.$and = [
+      { $or: [{ startsAt: null }, { startsAt: { $lte: now } }] },
+      { $or: [{ expiresAt: null }, { expiresAt: { $gte: now } }] },
+    ];
+  } else if (validity === "upcoming") {
+    filter.startsAt = { $gt: now };
+  } else if (validity === "expired") {
+    filter.expiresAt = { $lt: now };
+  } else if (validity === "none") {
+    filter.startsAt = null;
+    filter.expiresAt = null;
+  }
+
+  const skip = (Number(page) - 1) * Number(limit);
+  const [coupons, total] = await Promise.all([
+    Coupon.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+    Coupon.countDocuments(filter),
+  ]);
+
+  res.json({ coupons, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
 }
 
 export async function getCoupon(req, res) {

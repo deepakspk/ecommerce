@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import Badge from "../../components/Badge";
 import Pagination from "../../components/Pagination";
 import EmptyState from "../../components/EmptyState";
 import ShipmentQuickCreate from "../../components/admin/ShipmentQuickCreate";
-import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
+import ClearFiltersButton from "../../components/admin/ClearFiltersButton";
+import TableSkeleton from "../../components/admin/TableSkeleton";
+import { H1_CLASS, CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
 
 const SHIPPABLE_STATUSES = new Set(["PENDING", "CONFIRMED", "PACKED"]);
 
@@ -28,6 +30,7 @@ function fmtDate(d) {
 }
 
 export default function AdminOrdersPage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const statusFilter = searchParams.get("status") || "";
 
@@ -38,11 +41,28 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [logisticsProviders, setLogisticsProviders] = useState([]);
 
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
   const load = useCallback(async (p = 1, { silent } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const params = { page: p, limit: 25 };
+      const params = { page: p, limit: 10 };
       if (statusFilter) params.status = statusFilter;
+      if (search.trim()) params.search = search.trim();
+      if (paymentStatus) params.paymentStatus = paymentStatus;
+      if (paymentMethod) params.paymentMethod = paymentMethod;
+      if (from) params.from = from;
+      if (to) params.to = to;
       const data = await adminApi.listAdminOrders(params);
       setOrders(data.orders);
       setTotal(data.total);
@@ -51,7 +71,7 @@ export default function AdminOrdersPage() {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [statusFilter]);
+  }, [statusFilter, search, paymentStatus, paymentMethod, from, to]);
 
   useEffect(() => { load(1); }, [load]);
 
@@ -75,6 +95,18 @@ export default function AdminOrdersPage() {
     else setSearchParams({});
   }
 
+  const hasFilters = search || paymentStatus || paymentMethod || from || to || statusFilter;
+
+  function clearFilters() {
+    setSearchInput("");
+    setSearch("");
+    setPaymentStatus("");
+    setPaymentMethod("");
+    setFrom("");
+    setTo("");
+    setFilter("");
+  }
+
   return (
     <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
@@ -82,6 +114,12 @@ export default function AdminOrdersPage() {
           <h1 className={H1_CLASS}>Orders</h1>
           {!loading && <p className="text-sm text-gray-400 mt-0.5">{total} order{total !== 1 ? "s" : ""}</p>}
         </div>
+        <button
+          onClick={() => navigate("/admin/orders/new")}
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors"
+        >
+          + New Order
+        </button>
       </div>
 
       {/* Status filter tabs */}
@@ -92,10 +130,45 @@ export default function AdminOrdersPage() {
         ))}
       </div>
 
+      <div className={FILTER_BAR_CLASS}>
+        <div className={FILTER_FIELD_CLASS}>
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search by customer name, email, or phone"
+            className={INPUT_CLASS}
+          />
+        </div>
+        <div className={FILTER_FIELD_CLASS}>
+          <select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} className={INPUT_CLASS}>
+            <option value="">All payment statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="PAID">Paid</option>
+            <option value="FAILED">Failed</option>
+            <option value="REFUNDED">Refunded</option>
+          </select>
+        </div>
+        <div className={FILTER_FIELD_CLASS}>
+          <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className={INPUT_CLASS}>
+            <option value="">All payment methods</option>
+            <option value="COD">Cash on Delivery</option>
+            <option value="ESEWA">eSewa</option>
+            <option value="KHALTI">Khalti</option>
+          </select>
+        </div>
+        <div className="w-full sm:w-auto flex items-center gap-2 text-xs text-gray-500">
+          Date
+          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={`${INPUT_CLASS} w-36`} />
+          <span>–</span>
+          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={`${INPUT_CLASS} w-36`} />
+        </div>
+        <ClearFiltersButton show={hasFilters} onClick={clearFilters} />
+      </div>
+
       {loading ? (
-        <p className="text-gray-400 text-sm">Loading…</p>
+        <TableSkeleton columns={9} />
       ) : orders.length === 0 ? (
-        <EmptyState title={`No orders${statusFilter ? ` with status "${statusFilter}"` : ""}.`} />
+        <EmptyState title={hasFilters || statusFilter ? "No orders match these filters." : "No orders."} />
       ) : (
         <>
           <div className={`${CARD_CLASS} overflow-hidden`}>

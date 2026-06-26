@@ -2,9 +2,10 @@ import AuditLog from "../../models/AuditLog.js";
 import User from "../../models/User.js";
 
 export async function listAuditLog(req, res) {
-  const { adminSearch, action, from, to, page = 1, limit = 30 } = req.query;
+  const { adminSearch, action, targetType, from, to, page = 1, limit = 10 } = req.query;
   const filter = {};
   if (action) filter.action = action;
+  if (targetType) filter.targetType = targetType;
   if (adminSearch?.trim()) {
     const re = new RegExp(adminSearch.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     const matchingAdmins = await User.find({ $or: [{ name: re }, { email: re }] }).select("_id");

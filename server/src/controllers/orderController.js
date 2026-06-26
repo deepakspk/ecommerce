@@ -4,9 +4,7 @@ import Order from "../models/Order.js";
 import Address from "../models/Address.js";
 import ProductVariant from "../models/ProductVariant.js";
 import InventoryLog from "../models/InventoryLog.js";
-import { validateCoupon, redeemCoupon } from "../services/couponService.js";
-import { resolveDeliveryFee } from "../services/deliveryFeeService.js";
-import { sendOrderConfirmedEmail } from "../utils/orderEmails.js";
+import { placeOrder } from "../services/orderService.js";
 import { streamInvoicePdf } from "../utils/invoice.js";
 
 export async function createOrder(req, res) {
@@ -28,25 +26,18 @@ export async function createOrder(req, res) {
   const address = await Address.findOne({ _id: addressId, userId: req.user._id });
   if (!address) return res.status(404).json({ message: "Address not found" });
 
-  const orderItems = [];
-  let subtotal = 0;
-
-  for (const cartItem of cart.items) {
+  const orderItems = cart.items.map((cartItem) => {
     const v = cartItem.variantId;
     const p = v.productId;
-    const unitPrice = v.price ?? p.basePrice;
-    orderItems.push({
+    return {
       variantId: v._id,
       productName: p.name,
       size: v.size,
       color: v.color,
-      unitPrice,
+      unitPrice: v.price ?? p.basePrice,
       quantity: cartItem.quantity,
-    });
-    subtotal += unitPrice * cartItem.quantity;
-  }
-
-  const deliveryFee = await resolveDeliveryFee(address);
+    };
+  });
 
   const addressSnapshot = {
     recipientName: address.recipientName,
@@ -60,76 +51,17 @@ export async function createOrder(req, res) {
     landmark: address.landmark,
   };
 
-  const session = await mongoose.startSession();
-  let order;
-
-  try {
-    session.startTransaction();
-
-    for (const item of orderItems) {
-      const variant = await ProductVariant.findById(item.variantId).session(session);
-      if (!variant || variant.stockQuantity < item.quantity) {
-        const err = new Error(`${item.productName} (${item.size}/${item.color}) has insufficient stock`);
-        err.status = 400;
-        throw err;
-      }
-    }
-
-    // Re-validate the coupon here (not just at preview time) — it could have expired
-    // or hit its usage limit between the cart preview and this checkout request.
-    let discountAmount = 0;
-    let appliedCoupon = null;
-    if (couponCode) {
-      const result = await validateCoupon({ code: couponCode, subtotal, userId: req.user._id, session });
-      appliedCoupon = result.coupon;
-      discountAmount = result.discountAmount;
-    }
-    const total = subtotal - discountAmount + deliveryFee;
-
-    [order] = await Order.create(
-      [{
-        userId: req.user._id,
-        address: addressSnapshot,
-        items: orderItems,
-        subtotal,
-        discountAmount,
-        couponCode: appliedCoupon?.code || null,
-        deliveryFee,
-        total,
-        paymentMethod,
-        paymentStatus: "PENDING",
-        status: "PENDING",
-      }],
-      { session }
-    );
-
-    for (const item of orderItems) {
-      await ProductVariant.findByIdAndUpdate(
-        item.variantId,
-        { $inc: { stockQuantity: -item.quantity } },
-        { session }
-      );
-      await InventoryLog.create(
-        [{ variantId: item.variantId, change: -item.quantity, reason: `Order ${order._id}` }],
-        { session }
-      );
-    }
-
-    if (appliedCoupon) {
-      await redeemCoupon(appliedCoupon, session);
-    }
-
-    await session.commitTransaction();
-  } catch (err) {
-    await session.abortTransaction();
-    throw err;
-  } finally {
-    await session.endSession();
-  }
+  const order = await placeOrder({
+    userId: req.user._id,
+    items: orderItems,
+    address: addressSnapshot,
+    paymentMethod,
+    couponCode,
+    source: "CUSTOMER",
+    customerEmail: req.user.email,
+  });
 
   await Cart.findOneAndUpdate({ userId: req.user._id }, { items: [] });
-
-  sendOrderConfirmedEmail(order, req.user.email);
 
   res.status(201).json({ order });
 }

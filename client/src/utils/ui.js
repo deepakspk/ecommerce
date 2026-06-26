@@ -17,6 +17,14 @@ export const BUTTON_GHOST =
 
 export const CARD_CLASS = "bg-white border border-gray-200 rounded-lg";
 
+// Admin list-page filter bars — every filter field (search/select/date) gets one
+// of these fixed widths instead of ad-hoc max-w/w-auto per page, so a row of
+// mixed field types lines up consistently instead of some fields going full
+// width and others shrinking to their content.
+export const FILTER_BAR_CLASS = `${CARD_CLASS} p-3 mb-5 flex flex-wrap items-end gap-3`;
+export const FILTER_FIELD_CLASS = "w-full sm:w-52";
+export const FILTER_FIELD_SM_CLASS = "w-full sm:w-28";
+
 // Shared horizontal container — used by Navbar, CategoryNav, Footer, and page
 // content so they all align to the same width instead of drifting (some
 // full-bleed, some capped) across the site.

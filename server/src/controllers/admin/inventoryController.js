@@ -19,11 +19,38 @@ async function notifyStockAlerts(variant) {
   }
 }
 
+const LOW_STOCK_THRESHOLD = 5;
+
+const SORT_OPTIONS = {
+  stock_asc: "stockQuantity",
+  stock_desc: "-stockQuantity",
+};
+
 export async function listInventory(req, res) {
-  const variants = await ProductVariant.find()
-    .populate({ path: "productId", select: "name isActive" })
-    .sort("stockQuantity");
-  res.json({ variants });
+  const { search, stockStatus, sort, page = 1, limit = 10 } = req.query;
+  const filter = {};
+
+  if (search?.trim()) {
+    const re = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    const matchingProducts = await Product.find({ name: re }).select("_id");
+    filter.$or = [{ sku: re }, { productId: { $in: matchingProducts.map((p) => p._id) } }];
+  }
+  if (stockStatus === "low") filter.stockQuantity = { $lt: LOW_STOCK_THRESHOLD, $gt: 0 };
+  if (stockStatus === "out") filter.stockQuantity = 0;
+  if (stockStatus === "in") filter.stockQuantity = { $gte: LOW_STOCK_THRESHOLD };
+
+  const skip = (Number(page) - 1) * Number(limit);
+  const [variants, total, lowCount] = await Promise.all([
+    ProductVariant.find(filter)
+      .populate({ path: "productId", select: "name isActive" })
+      .sort(SORT_OPTIONS[sort] || SORT_OPTIONS.stock_asc)
+      .skip(skip)
+      .limit(Number(limit)),
+    ProductVariant.countDocuments(filter),
+    ProductVariant.countDocuments({ stockQuantity: { $lt: LOW_STOCK_THRESHOLD } }),
+  ]);
+
+  res.json({ variants, total, page: Number(page), pages: Math.ceil(total / Number(limit)), lowCount });
 }
 
 export async function adjustStock(req, res) {

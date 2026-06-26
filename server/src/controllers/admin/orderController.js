@@ -5,6 +5,11 @@ import User from "../../models/User.js";
 import { sendOrderStatusEmail } from "../../utils/orderEmails.js";
 import { logAudit } from "../../utils/auditLog.js";
 import { streamInvoicePdf } from "../../utils/invoice.js";
+import { placeOrder } from "../../services/orderService.js";
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 const STATUS_TRANSITIONS = {
   PENDING:          ["CONFIRMED", "CANCELLED"],
@@ -41,9 +46,23 @@ export async function getDashboardStats(req, res) {
 }
 
 export async function listOrders(req, res) {
-  const { status, page = 1, limit = 30 } = req.query;
+  const { status, paymentStatus, paymentMethod, search, from, to, page = 1, limit = 10 } = req.query;
   const filter = {};
   if (status) filter.status = status;
+  if (paymentStatus) filter.paymentStatus = paymentStatus;
+  if (paymentMethod) filter.paymentMethod = paymentMethod;
+  if (from || to) {
+    filter.createdAt = {};
+    if (from) filter.createdAt.$gte = new Date(from);
+    if (to) filter.createdAt.$lte = new Date(to);
+  }
+  if (search?.trim()) {
+    // Two round trips (resolve matching customers, then filter orders by their ids) —
+    // simplest way to search a populated field without a text index on User.
+    const re = new RegExp(escapeRegex(search.trim()), "i");
+    const matchingUsers = await User.find({ $or: [{ name: re }, { email: re }, { phone: re }] }).select("_id");
+    filter.userId = { $in: matchingUsers.map((u) => u._id) };
+  }
 
   const skip = (Number(page) - 1) * Number(limit);
   const [orders, total] = await Promise.all([
@@ -165,4 +184,56 @@ export async function markPaid(req, res) {
   order.paymentStatus = "PAID";
   await order.save();
   res.json({ order });
+}
+
+export async function createOrderManual(req, res) {
+  const { userId, items, address, paymentMethod, couponCode } = req.body;
+
+  const customer = await User.findById(userId);
+  if (!customer) return res.status(404).json({ message: "Customer not found" });
+
+  const variantIds = items.map((i) => i.variantId);
+  const variants = await ProductVariant.find({ _id: { $in: variantIds } }).populate("productId", "name basePrice");
+  const variantsById = new Map(variants.map((v) => [String(v._id), v]));
+
+  const orderItems = [];
+  for (const { variantId, quantity } of items) {
+    const variant = variantsById.get(String(variantId));
+    if (!variant) return res.status(404).json({ message: `Variant ${variantId} not found` });
+    const product = variant.productId;
+    orderItems.push({
+      variantId: variant._id,
+      productName: product?.name || "Item",
+      size: variant.size,
+      color: variant.color,
+      unitPrice: variant.price ?? product?.basePrice ?? 0,
+      quantity: Number(quantity),
+    });
+  }
+
+  let order;
+  try {
+    order = await placeOrder({
+      userId: customer._id,
+      items: orderItems,
+      address,
+      paymentMethod,
+      couponCode,
+      source: "ADMIN_MANUAL",
+      customerEmail: customer.email,
+    });
+  } catch (err) {
+    return res.status(err.status || 400).json({ message: err.message || "Failed to create order" });
+  }
+
+  logAudit({
+    adminUserId: req.user._id,
+    action: "ORDER_CREATED_MANUAL",
+    targetType: "Order",
+    targetId: order._id,
+    meta: { customerId: customer._id, customerName: customer.name, total: order.total },
+  });
+
+  const populated = await Order.findById(order._id).populate("userId", "name email phone");
+  res.status(201).json({ order: populated });
 }

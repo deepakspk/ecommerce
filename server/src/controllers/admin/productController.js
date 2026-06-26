@@ -1,5 +1,6 @@
 import Product from "../../models/Product.js";
 import ProductVariant from "../../models/ProductVariant.js";
+import InventoryLog from "../../models/InventoryLog.js";
 import { uploadToCloudinary } from "../../config/cloudinary.js";
 import { logAudit } from "../../utils/auditLog.js";
 
@@ -7,11 +8,40 @@ function slugify(name) {
   return name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 }
 
+const SORT_OPTIONS = {
+  newest: "-createdAt",
+  oldest: "createdAt",
+  price_asc: "basePrice",
+  price_desc: "-basePrice",
+  name_asc: "name",
+};
+
 export async function listProducts(req, res) {
-  const products = await Product.find()
-    .populate("categories", "name")
-    .sort("-createdAt");
-  res.json({ products });
+  const { search, category, status, minPrice, maxPrice, sort, page = 1, limit = 10 } = req.query;
+  const filter = {};
+  if (search?.trim()) {
+    filter.name = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+  }
+  if (category) filter.categories = category;
+  if (status === "active") filter.isActive = true;
+  if (status === "inactive") filter.isActive = false;
+  if (minPrice || maxPrice) {
+    filter.basePrice = {};
+    if (minPrice) filter.basePrice.$gte = Number(minPrice);
+    if (maxPrice) filter.basePrice.$lte = Number(maxPrice);
+  }
+
+  const skip = (Number(page) - 1) * Number(limit);
+  const [products, total] = await Promise.all([
+    Product.find(filter)
+      .populate("categories", "name")
+      .sort(SORT_OPTIONS[sort] || SORT_OPTIONS.newest)
+      .skip(skip)
+      .limit(Number(limit)),
+    Product.countDocuments(filter),
+  ]);
+
+  res.json({ products, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
 }
 
 export async function getProduct(req, res) {
@@ -132,14 +162,24 @@ export async function addVariant(req, res) {
   const product = await Product.findById(req.params.id);
   if (!product) return res.status(404).json({ message: "Product not found" });
 
+  const initialStock = Number(stockQuantity ?? 0);
   const variant = await ProductVariant.create({
     productId: req.params.id,
     size: size.trim(),
     color: color.trim(),
     sku: sku.trim(),
     price: price !== undefined ? Number(price) : undefined,
-    stockQuantity: Number(stockQuantity ?? 0),
+    stockQuantity: initialStock,
   });
+
+  if (initialStock > 0) {
+    await InventoryLog.create({
+      variantId: variant._id,
+      change: initialStock,
+      reason: "Initial stock on variant creation",
+    });
+  }
+
   res.status(201).json({ variant });
 }
 

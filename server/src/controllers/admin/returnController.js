@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import ReturnRequest from "../../models/ReturnRequest.js";
 import Order from "../../models/Order.js";
 import Payment from "../../models/Payment.js";
+import User from "../../models/User.js";
 import { sendReturnStatusEmail } from "../../utils/orderEmails.js";
 
 const STATUS_TRANSITIONS = {
@@ -13,9 +14,19 @@ const STATUS_TRANSITIONS = {
 };
 
 export async function listReturns(req, res) {
-  const { status, page = 1, limit = 30 } = req.query;
+  const { status, search, from, to, page = 1, limit = 10 } = req.query;
   const filter = {};
   if (status) filter.status = status;
+  if (from || to) {
+    filter.createdAt = {};
+    if (from) filter.createdAt.$gte = new Date(from);
+    if (to) filter.createdAt.$lte = new Date(to);
+  }
+  if (search?.trim()) {
+    const re = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    const matchingUsers = await User.find({ $or: [{ name: re }, { email: re }] }).select("_id");
+    filter.userId = { $in: matchingUsers.map((u) => u._id) };
+  }
 
   const skip = (Number(page) - 1) * Number(limit);
   const [returns, total] = await Promise.all([

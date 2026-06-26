@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import * as adminApi from "../../api/admin";
 import EmptyState from "../../components/EmptyState";
-import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
+import Pagination from "../../components/Pagination";
+import ClearFiltersButton from "../../components/admin/ClearFiltersButton";
+import TableSkeleton from "../../components/admin/TableSkeleton";
+import { H1_CLASS, CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
 
 const EMPTY_FORM = {
   code: "",
@@ -21,8 +24,17 @@ const toDateInput = (iso) => (iso ? iso.slice(0, 10) : "");
 
 export default function CouponsPage() {
   const [coupons, setCoupons] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [type, setType] = useState("");
+  const [validity, setValidity] = useState("");
 
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -30,10 +42,23 @@ export default function CouponsPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
 
+  useEffect(() => {
+    const t = setTimeout(() => { setSearch(searchInput); setPage(1); }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
   async function load() {
+    setLoading(true);
     try {
-      const data = await adminApi.getCoupons();
+      const params = { page, limit: 10 };
+      if (search.trim()) params.search = search.trim();
+      if (status) params.status = status;
+      if (type) params.type = type;
+      if (validity) params.validity = validity;
+      const data = await adminApi.getCoupons(params);
       setCoupons(data.coupons);
+      setTotal(data.total);
+      setPages(data.pages);
       setError("");
     } catch (e) {
       setError(e.response?.data?.message || "Failed to load coupons");
@@ -42,11 +67,7 @@ export default function CouponsPage() {
     }
   }
 
-  useEffect(() => {
-    (async () => {
-      await load();
-    })();
-  }, []);
+  useEffect(() => { load(); }, [page, search, status, type, validity]);
 
   function openCreate() {
     setEditId(null);
@@ -135,10 +156,24 @@ export default function CouponsPage() {
     }
   }
 
+  const hasFilters = search || status || type || validity;
+
+  function clearFilters() {
+    setSearchInput("");
+    setSearch("");
+    setStatus("");
+    setType("");
+    setValidity("");
+    setPage(1);
+  }
+
   return (
     <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className={H1_CLASS}>Coupons</h1>
+        <div>
+          <h1 className={H1_CLASS}>Coupons</h1>
+          {!loading && <p className="text-sm text-gray-400 mt-0.5">{total} coupon{total !== 1 ? "s" : ""}</p>}
+        </div>
         <button
           onClick={openCreate}
           className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors"
@@ -147,13 +182,49 @@ export default function CouponsPage() {
         </button>
       </div>
 
+      <div className={FILTER_BAR_CLASS}>
+        <div className={FILTER_FIELD_CLASS}>
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search by code"
+            className={`${INPUT_CLASS} font-mono`}
+          />
+        </div>
+        <div className={FILTER_FIELD_CLASS}>
+          <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={INPUT_CLASS}>
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Disabled</option>
+          </select>
+        </div>
+        <div className={FILTER_FIELD_CLASS}>
+          <select value={type} onChange={(e) => { setType(e.target.value); setPage(1); }} className={INPUT_CLASS}>
+            <option value="">All types</option>
+            <option value="PERCENTAGE">Percentage</option>
+            <option value="FIXED">Fixed</option>
+          </select>
+        </div>
+        <div className={FILTER_FIELD_CLASS}>
+          <select value={validity} onChange={(e) => { setValidity(e.target.value); setPage(1); }} className={INPUT_CLASS}>
+            <option value="">Any validity</option>
+            <option value="current">Currently valid</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="expired">Expired</option>
+            <option value="none">No date range</option>
+          </select>
+        </div>
+        <ClearFiltersButton show={hasFilters} onClick={clearFilters} />
+      </div>
+
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Loading…</p>
+        <TableSkeleton columns={7} />
       ) : coupons.length === 0 ? (
-        <EmptyState title="No coupons yet." />
+        <EmptyState title={hasFilters ? "No coupons match these filters." : "No coupons yet."} />
       ) : (
+        <>
         <div className={`${CARD_CLASS} overflow-hidden`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -211,6 +282,8 @@ export default function CouponsPage() {
             </table>
           </div>
         </div>
+        <Pagination page={page} pages={pages} onChange={setPage} />
+        </>
       )}
 
       {showForm && (
