@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import * as settingsApi from "../../api/settings";
-import { H1_CLASS, CARD_CLASS, INPUT_CLASS } from "../../utils/ui";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import { CARD_CLASS, INPUT_CLASS } from "../../utils/ui";
 
 const GROUP_LABELS = {
   SMTP: "SMTP (Email)",
@@ -135,12 +136,14 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className={H1_CLASS}>System Settings</h1>
-        <button onClick={handleExport} className="text-xs text-gray-500 hover:text-gray-900 border border-gray-200 rounded-md px-3 py-1.5">
-          Export (non-secret) JSON
-        </button>
-      </div>
+      <AdminPageHeader
+        title="System Settings"
+        action={
+          <button onClick={handleExport} className="bg-white text-brand-700 text-xs font-semibold rounded-md px-3 py-2 hover:bg-brand-50 transition-colors shadow-sm">
+            Export (non-secret) JSON
+          </button>
+        }
+      />
       {exportError && <p className="text-red-600 text-sm mb-4">{exportError}</p>}
 
       <div className="flex flex-col sm:flex-row gap-6">

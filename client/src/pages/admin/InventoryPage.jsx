@@ -4,7 +4,8 @@ import EmptyState from "../../components/EmptyState";
 import Pagination from "../../components/Pagination";
 import ClearFiltersButton from "../../components/admin/ClearFiltersButton";
 import TableSkeleton from "../../components/admin/TableSkeleton";
-import { H1_CLASS, CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import { CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
 
 const LOW_STOCK = 5;
 
@@ -197,18 +198,19 @@ export default function InventoryPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <div className="flex items-center justify-between mb-1">
-        <div>
-          <h1 className={H1_CLASS}>Inventory</h1>
-          {!loading && <p className="text-sm text-gray-400 mt-0.5">{total} variant{total !== 1 ? "s" : ""}</p>}
-        </div>
-        <button
-          onClick={openAddVariant}
-          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors"
-        >
-          + Add Variant
-        </button>
-      </div>
+      <AdminPageHeader
+        title="Inventory"
+        loading={loading}
+        subtitle={`${total} variant${total !== 1 ? "s" : ""}`}
+        action={
+          <button
+            onClick={openAddVariant}
+            className="bg-white text-brand-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-50 transition-colors shadow-sm"
+          >
+            + Add Variant
+          </button>
+        }
+      />
       <p className="text-sm text-gray-500 mb-6">
         {lowCount > 0
           ? <span className="text-amber-700 font-medium">{lowCount} variant{lowCount > 1 ? "s" : ""} below {LOW_STOCK} units</span>

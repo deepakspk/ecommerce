@@ -20,7 +20,8 @@ import {
 import { useAuth } from "../../hooks/useAuth";
 import * as adminApi from "../../api/admin";
 import Badge from "../../components/Badge";
-import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import { CARD_CLASS } from "../../utils/ui";
 
 const fmt = (n) => `Rs. ${Number(n ?? 0).toLocaleString()}`;
 const fmtShortDate = (iso) =>
@@ -62,25 +63,28 @@ const ICONS = {
 
 function StatCard({ icon, label, value, sub, tone, to }) {
   const TONES = {
-    blue: "bg-blue-50 text-blue-700",
-    green: "bg-green-50 text-green-700",
-    amber: "bg-amber-50 text-amber-700",
-    red: "bg-red-50 text-red-700",
-    teal: "bg-teal-50 text-teal-700",
-    indigo: "bg-indigo-50 text-indigo-700",
-    purple: "bg-purple-50 text-purple-700",
-    cyan: "bg-cyan-50 text-cyan-700",
+    blue: { bg: "bg-blue-50", border: "border-blue-100", iconBg: "bg-blue-100 text-blue-600" },
+    green: { bg: "bg-green-50", border: "border-green-100", iconBg: "bg-green-100 text-green-600" },
+    amber: { bg: "bg-amber-50", border: "border-amber-100", iconBg: "bg-amber-100 text-amber-600" },
+    red: { bg: "bg-red-50", border: "border-red-100", iconBg: "bg-red-100 text-red-600" },
+    teal: { bg: "bg-teal-50", border: "border-teal-100", iconBg: "bg-teal-100 text-teal-600" },
+    indigo: { bg: "bg-indigo-50", border: "border-indigo-100", iconBg: "bg-indigo-100 text-indigo-600" },
+    purple: { bg: "bg-purple-50", border: "border-purple-100", iconBg: "bg-purple-100 text-purple-600" },
+    cyan: { bg: "bg-cyan-50", border: "border-cyan-100", iconBg: "bg-cyan-100 text-cyan-600" },
   };
+  const t = TONES[tone];
   const card = (
-    <div className={`${CARD_CLASS} p-4 hover:shadow-md transition-shadow h-full`}>
-      <div className="flex items-start justify-between mb-2">
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-        <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${TONES[tone]}`}>
-          <Icon path={ICONS[icon]} className="w-4 h-4" />
-        </span>
+    <div
+      className={`${t.bg} border ${t.border} rounded-xl p-4 h-full flex items-center gap-3 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02]`}
+    >
+      <span className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${t.iconBg}`}>
+        <Icon path={ICONS[icon]} className="w-6 h-6" />
+      </span>
+      <div>
+        <p className="text-2xl font-bold text-gray-900 leading-tight">{value}</p>
+        <p className="text-xs font-semibold text-gray-600">{label}</p>
+        {sub && <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>}
       </div>
-      <p className="text-xs font-semibold text-gray-600">{label}</p>
-      {sub && <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>}
     </div>
   );
   return to ? <Link to={to}>{card}</Link> : card;
@@ -133,8 +137,7 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <h1 className={`${H1_CLASS} mb-1`}>Dashboard</h1>
-      <p className="text-sm text-gray-500 mb-6">Welcome back, {user?.name}</p>
+      <AdminPageHeader title="Dashboard" subtitle={`Welcome back, ${user?.name || ""}`} />
 
       {error && (
         <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-6">{error}</p>

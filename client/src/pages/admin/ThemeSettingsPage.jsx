@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import * as adminApi from "../../api/admin";
 import { deriveBrandScale, getContrastColor } from "../../utils/colorShades";
-import { H1_CLASS, CARD_CLASS, INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY } from "../../utils/ui";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import { CARD_CLASS, INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY } from "../../utils/ui";
 
 const FIELDS = [
   { key: "primaryColor", label: "Primary Color", live: true },
@@ -96,7 +97,7 @@ export default function ThemeSettingsPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
-      <h1 className={`${H1_CLASS} mb-2`}>Theme Settings</h1>
+      <AdminPageHeader title="Theme Settings" />
       <p className="text-sm text-gray-500 mb-6">
         Primary Color drives buttons, links, and badges. Secondary Color drives the Navbar
         and Footer background. The other fields are saved for future use.

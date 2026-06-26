@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import * as adminApi from "../../api/admin";
 import { cloudinaryUrl } from "../../utils/cloudinaryUrl";
-import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import { CARD_CLASS } from "../../utils/ui";
 
 const EMPTY_FORM = {
   name: "",
@@ -222,15 +223,17 @@ export default function CategoriesPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className={H1_CLASS}>Categories</h1>
-        <button
-          onClick={() => openCreate(null)}
-          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors"
-        >
-          + Root Category
-        </button>
-      </div>
+      <AdminPageHeader
+        title="Categories"
+        action={
+          <button
+            onClick={() => openCreate(null)}
+            className="bg-white text-brand-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-50 transition-colors shadow-sm"
+          >
+            + Root Category
+          </button>
+        }
+      />
 
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 

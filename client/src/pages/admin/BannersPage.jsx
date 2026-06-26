@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import * as adminApi from "../../api/admin";
 import EmptyState from "../../components/EmptyState";
 import { cloudinaryUrl } from "../../utils/cloudinaryUrl";
-import { H1_CLASS, CARD_CLASS, INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER } from "../../utils/ui";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import { CARD_CLASS, INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER } from "../../utils/ui";
 
 const MAX_BANNERS = 5;
 
@@ -103,10 +104,11 @@ export default function BannersPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-3xl">
-      <div className="mb-6">
-        <h1 className={H1_CLASS}>Homepage Banners</h1>
-        <p className="text-sm text-gray-400 mt-0.5">{banners.length} / {MAX_BANNERS} banners</p>
-      </div>
+      <AdminPageHeader
+        title="Homepage Banners"
+        loading={loading}
+        subtitle={`${banners.length} / ${MAX_BANNERS} banners`}
+      />
 
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 

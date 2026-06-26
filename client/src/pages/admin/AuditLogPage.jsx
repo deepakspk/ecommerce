@@ -4,7 +4,8 @@ import EmptyState from "../../components/EmptyState";
 import Pagination from "../../components/Pagination";
 import ClearFiltersButton from "../../components/admin/ClearFiltersButton";
 import TableSkeleton from "../../components/admin/TableSkeleton";
-import { H1_CLASS, CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import { CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
 
 const ACTIONS = [
   "USER_ROLE_CHANGE",
@@ -118,12 +119,11 @@ export default function AuditLogPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className={H1_CLASS}>Audit Log</h1>
-          {!loading && <p className="text-sm text-gray-400 mt-0.5">{total} entr{total !== 1 ? "ies" : "y"}</p>}
-        </div>
-      </div>
+      <AdminPageHeader
+        title="Audit Log"
+        loading={loading}
+        subtitle={`${total} entr${total !== 1 ? "ies" : "y"}`}
+      />
 
       <div className={FILTER_BAR_CLASS}>
         <div className={FILTER_FIELD_CLASS}>

@@ -6,7 +6,8 @@ import Pagination from "../../components/Pagination";
 import EmptyState from "../../components/EmptyState";
 import ClearFiltersButton from "../../components/admin/ClearFiltersButton";
 import TableSkeleton from "../../components/admin/TableSkeleton";
-import { H1_CLASS, CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import { CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
 
 const ALL_STATUSES = ["REQUESTED", "APPROVED", "REJECTED", "PICKED_UP", "REFUNDED"];
 
@@ -75,12 +76,11 @@ export default function AdminReturnsPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className={H1_CLASS}>Returns</h1>
-          {!loading && <p className="text-sm text-gray-400 mt-0.5">{total} request{total !== 1 ? "s" : ""}</p>}
-        </div>
-      </div>
+      <AdminPageHeader
+        title="Returns"
+        loading={loading}
+        subtitle={`${total} request${total !== 1 ? "s" : ""}`}
+      />
 
       <div className="flex gap-1 mb-5 flex-wrap">
         <FilterTab label="All" active={!statusFilter} onClick={() => setFilter("")} />

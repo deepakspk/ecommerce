@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import * as adminApi from "../../api/admin";
-import { H1_CLASS, CARD_CLASS, INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY } from "../../utils/ui";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import { CARD_CLASS, INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY } from "../../utils/ui";
 
 const TEXT_FIELDS = [
   { key: "companyName", label: "Company Name" },
@@ -109,7 +110,7 @@ export default function CompanySettingsPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-3xl">
-      <h1 className={`${H1_CLASS} mb-6`}>Company Settings</h1>
+      <AdminPageHeader title="Company Settings" />
 
       <form onSubmit={handleSave} className={`${CARD_CLASS} p-6 space-y-6`}>
         <div>

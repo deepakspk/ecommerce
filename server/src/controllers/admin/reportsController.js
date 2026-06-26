@@ -18,7 +18,7 @@ export async function getReportSummary(req, res) {
   const createdAtFilter = Object.keys(range).length ? { createdAt: range } : {};
   const salesFilter = { ...createdAtFilter, status: { $ne: "CANCELLED" } };
 
-  const [salesAgg, totalOrders, newCustomers, salesOverTime, topByRevenue, topByUnits] = await Promise.all([
+  const [salesAgg, totalOrders, newCustomers, salesOverTime, topByRevenue, topByUnits, districtAgg] = await Promise.all([
     Order.aggregate([
       { $match: salesFilter },
       { $group: { _id: null, totalSales: { $sum: "$total" }, orderCount: { $sum: 1 } } },
@@ -65,6 +65,19 @@ export async function getReportSummary(req, res) {
       { $limit: 10 },
       { $project: { _id: 0, productName: "$_id", revenue: 1, units: 1 } },
     ]),
+    Order.aggregate([
+      { $match: createdAtFilter },
+      {
+        $group: {
+          _id: "$address.district",
+          totalOrders: { $sum: 1 },
+          delivered: { $sum: { $cond: [{ $eq: ["$status", "DELIVERED"] }, 1, 0] } },
+        },
+      },
+      { $sort: { totalOrders: -1 } },
+      { $limit: 10 },
+      { $project: { _id: 0, district: "$_id", totalOrders: 1, delivered: 1 } },
+    ]),
   ]);
 
   const totalSales = salesAgg[0]?.totalSales ?? 0;
@@ -80,6 +93,14 @@ export async function getReportSummary(req, res) {
     salesOverTime,
     topProductsByRevenue: topByRevenue,
     topProductsByUnits: topByUnits,
+    topDistricts: districtAgg
+      .filter((d) => d.district)
+      .map((d) => ({
+        district: d.district,
+        totalOrders: d.totalOrders,
+        delivered: d.delivered,
+        deliveredRate: d.totalOrders ? Math.round((d.delivered / d.totalOrders) * 1000) / 10 : 0,
+      })),
   });
 }
 
