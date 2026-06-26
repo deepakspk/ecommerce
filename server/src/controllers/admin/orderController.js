@@ -74,12 +74,15 @@ export async function listOrders(req, res) {
     Order.countDocuments(filter),
   ]);
 
-  // Lets the orders list show/hide the "create shipment" action per row without an
-  // extra request per order.
-  const shippedIds = new Set(
-    (await Shipment.find({ orderId: { $in: orders.map((o) => o._id) } }).distinct("orderId")).map(String)
-  );
-  const ordersWithShipment = orders.map((o) => ({ ...o.toObject(), hasShipment: shippedIds.has(String(o._id)) }));
+  // Lets the orders list show/hide the "create shipment" action — and which courier
+  // it shipped with — per row without an extra request per order.
+  const shipments = await Shipment.find({ orderId: { $in: orders.map((o) => o._id) } }).select("orderId provider");
+  const providerByOrderId = new Map(shipments.map((s) => [String(s.orderId), s.provider]));
+  const ordersWithShipment = orders.map((o) => ({
+    ...o.toObject(),
+    hasShipment: providerByOrderId.has(String(o._id)),
+    shipmentProvider: providerByOrderId.get(String(o._id)) || null,
+  }));
 
   res.json({ orders: ordersWithShipment, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
 }

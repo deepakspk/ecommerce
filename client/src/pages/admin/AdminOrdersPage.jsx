@@ -86,8 +86,14 @@ export default function AdminOrdersPage() {
       .catch(() => setLogisticsProviders([]));
   }, []);
 
-  function handleShipmentCreated(orderId) {
-    setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, hasShipment: true } : o)));
+  function handleShipmentCreated(orderId, shipment) {
+    setOrders((prev) =>
+      prev.map((o) => (o._id === orderId ? { ...o, hasShipment: true, shipmentProvider: shipment?.provider || null } : o))
+    );
+  }
+
+  function providerLabel(code) {
+    return logisticsProviders.find((p) => p.code === code)?.label || code;
   }
 
   function setFilter(status) {
@@ -209,12 +215,17 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-5 py-3">
                       {o.hasShipment ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                          </svg>
-                          Created
-                        </span>
+                        <div>
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                            Created
+                          </span>
+                          {o.shipmentProvider && (
+                            <p className="text-xs text-gray-400 mt-0.5">{providerLabel(o.shipmentProvider)}</p>
+                          )}
+                        </div>
                       ) : SHIPPABLE_STATUSES.has(o.status) ? (
                         <ShipmentQuickCreate order={o} providers={logisticsProviders} onCreated={handleShipmentCreated} />
                       ) : (
