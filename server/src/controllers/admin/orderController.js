@@ -23,28 +23,6 @@ const STATUS_TRANSITIONS = {
   CANCELLED:        [],
 };
 
-export async function getDashboardStats(req, res) {
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
-
-  const [salesAgg, todayOrders, pendingOrders, lowStockCount] = await Promise.all([
-    Order.aggregate([
-      { $match: { status: { $ne: "CANCELLED" } } },
-      { $group: { _id: null, total: { $sum: "$total" } } },
-    ]),
-    Order.countDocuments({ createdAt: { $gte: startOfToday } }),
-    Order.countDocuments({ status: "PENDING" }),
-    ProductVariant.countDocuments({ stockQuantity: { $lt: 5 } }),
-  ]);
-
-  res.json({
-    totalSales: salesAgg[0]?.total ?? 0,
-    todayOrders,
-    pendingOrders,
-    lowStockCount,
-  });
-}
-
 export async function listOrders(req, res) {
   const { status, paymentStatus, paymentMethod, search, from, to, page = 1, limit = 10 } = req.query;
   const filter = {};

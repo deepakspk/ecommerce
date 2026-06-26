@@ -30,7 +30,6 @@ import {
   listLogs,
 } from "../controllers/admin/inventoryController.js";
 import {
-  getDashboardStats,
   listOrders,
   getOrder,
   updateOrder,
@@ -39,6 +38,7 @@ import {
   downloadInvoice,
   createOrderManual,
 } from "../controllers/admin/orderController.js";
+import { getDashboardStats } from "../controllers/admin/dashboardController.js";
 import {
   listCoupons,
   getCoupon,
