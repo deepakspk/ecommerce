@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import ShipmentPanel from "../../components/ShipmentPanel";
 import NcmOrderInsights from "../../components/admin/NcmOrderInsights";
@@ -45,6 +45,8 @@ const emptyItem = () => ({
 
 export default function AdminOrderDetailPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const autoEditTriggeredRef = useRef(false);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [statusError, setStatusError] = useState("");
@@ -98,6 +100,13 @@ export default function AdminOrderDetailPage() {
     });
     setEditing(true);
   }
+
+  useEffect(() => {
+    if (order && !autoEditTriggeredRef.current && searchParams.get("edit") === "1") {
+      autoEditTriggeredRef.current = true;
+      startEditing();
+    }
+  }, [order, searchParams]);
 
   function cancelEditing() {
     setEditing(false);

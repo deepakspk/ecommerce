@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import Badge from "../../components/Badge";
 import Pagination from "../../components/Pagination";
@@ -9,6 +9,7 @@ import ClearFiltersButton from "../../components/admin/ClearFiltersButton";
 import TableSkeleton from "../../components/admin/TableSkeleton";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import { CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS } from "../../utils/ui";
+import { downloadBlob } from "../../utils/downloadBlob";
 
 const SHIPPABLE_STATUSES = new Set(["PENDING", "CONFIRMED", "PACKED"]);
 
@@ -41,6 +42,7 @@ export default function AdminOrdersPage() {
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [logisticsProviders, setLogisticsProviders] = useState([]);
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState(null);
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -95,6 +97,18 @@ export default function AdminOrdersPage() {
 
   function providerLabel(code) {
     return logisticsProviders.find((p) => p.code === code)?.label || code;
+  }
+
+  async function handleDownloadInvoice(orderId) {
+    setDownloadingInvoiceId(orderId);
+    try {
+      const blob = await adminApi.downloadOrderInvoice(orderId);
+      downloadBlob(blob, `invoice-${orderId}.pdf`);
+    } catch {
+      // ignored — admin can retry from the order detail page
+    } finally {
+      setDownloadingInvoiceId(null);
+    }
   }
 
   function setFilter(status) {
@@ -192,12 +206,16 @@ export default function AdminOrdersPage() {
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Payment</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Shipment</th>
-                  <th className="px-5 py-3" />
+                  <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {orders.map(o => (
-                  <tr key={o._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                  <tr
+                    key={o._id}
+                    onClick={() => navigate(`/admin/orders/${o._id}`)}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800/60 cursor-pointer"
+                  >
                     <td className="px-5 py-3">
                       <span className="font-mono text-xs text-gray-600 dark:text-gray-400">#{o._id.slice(-8).toUpperCase()}</span>
                     </td>
@@ -215,7 +233,7 @@ export default function AdminOrdersPage() {
                     <td className="px-5 py-3">
                       <Badge kind="payment" status={o.paymentStatus} />
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
                       {o.hasShipment ? (
                         <div>
                           <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
@@ -234,10 +252,28 @@ export default function AdminOrdersPage() {
                         <span className="text-xs text-gray-400">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-right">
-                      <Link to={`/admin/orders/${o._id}`} className="text-brand-600 hover:underline text-xs font-medium">
-                        View
-                      </Link>
+                    <td className="px-5 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1">
+                        <IconButton
+                          title="View order"
+                          onClick={() => navigate(`/admin/orders/${o._id}`)}
+                        >
+                          <EyeIcon />
+                        </IconButton>
+                        <IconButton
+                          title="Edit order"
+                          onClick={() => navigate(`/admin/orders/${o._id}?edit=1`)}
+                        >
+                          <PencilIcon />
+                        </IconButton>
+                        <IconButton
+                          title="Download invoice"
+                          disabled={downloadingInvoiceId === o._id}
+                          onClick={() => handleDownloadInvoice(o._id)}
+                        >
+                          <InvoiceIcon />
+                        </IconButton>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -250,6 +286,47 @@ export default function AdminOrdersPage() {
         </>
       )}
     </div>
+  );
+}
+
+function IconButton({ title, onClick, disabled, children }) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={onClick}
+      disabled={disabled}
+      className="p-1.5 rounded-md text-gray-500 hover:text-brand-600 hover:bg-brand-50 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
+    >
+      {children}
+    </button>
+  );
+}
+
+function EyeIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+    </svg>
+  );
+}
+
+function PencilIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5V18a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 18V6.75A2.25 2.25 0 0 1 6.75 4.5h4.5" />
+    </svg>
+  );
+}
+
+function InvoiceIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9z" />
+    </svg>
   );
 }
 
