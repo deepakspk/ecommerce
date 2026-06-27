@@ -182,33 +182,33 @@ export default function AdminOrdersPage() {
           <div className={`${CARD_CLASS} overflow-hidden`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 border-b border-gray-200 dark:bg-gray-800/60 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Order ID</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Customer</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Items</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Payment</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Shipment</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Order ID</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Customer</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Date</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Items</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Payment</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Shipment</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {orders.map(o => (
-                  <tr key={o._id} className="hover:bg-gray-50">
+                  <tr key={o._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
                     <td className="px-5 py-3">
-                      <span className="font-mono text-xs text-gray-600">#{o._id.slice(-8).toUpperCase()}</span>
+                      <span className="font-mono text-xs text-gray-600 dark:text-gray-400">#{o._id.slice(-8).toUpperCase()}</span>
                     </td>
                     <td className="px-5 py-3">
-                      <p className="font-medium text-gray-900">{o.userId?.name || "—"}</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{o.userId?.name || "—"}</p>
                       <p className="text-xs text-gray-400">{o.userId?.email}</p>
                       {o.userId?.phone && <p className="text-xs text-gray-400">{o.userId.phone}</p>}
                     </td>
-                    <td className="px-5 py-3 text-gray-500 text-xs whitespace-nowrap">{fmtDate(o.createdAt)}</td>
-                    <td className="px-5 py-3 text-gray-600">{o.items.length}</td>
-                    <td className="px-5 py-3 font-semibold text-gray-900">{fmt(o.total)}</td>
+                    <td className="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">{fmtDate(o.createdAt)}</td>
+                    <td className="px-5 py-3 text-gray-600 dark:text-gray-300">{o.items.length}</td>
+                    <td className="px-5 py-3 font-semibold text-gray-900 dark:text-gray-100">{fmt(o.total)}</td>
                     <td className="px-5 py-3">
                       <Badge kind="order" status={o.status} />
                     </td>
@@ -258,7 +258,9 @@ function FilterTab({ label, active, onClick }) {
     <button
       onClick={onClick}
       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-        active ? "bg-gray-900 text-white" : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
+        active
+          ? "bg-gray-900 text-white dark:bg-brand-600"
+          : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
       }`}
     >
       {label}

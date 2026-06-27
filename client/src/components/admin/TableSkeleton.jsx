@@ -10,12 +10,12 @@ export default function TableSkeleton({ columns = 5, rows = 10 }) {
     <div className={`${CARD_CLASS} overflow-hidden`}>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {Array.from({ length: rows }).map((_, r) => (
               <tr key={r}>
                 {Array.from({ length: columns }).map((_, c) => (
                   <td key={c} className="px-5 py-4">
-                    <div className={`h-4 ${WIDTHS[(c + r) % WIDTHS.length]} bg-gray-200 rounded animate-pulse`} />
+                    <div className={`h-4 ${WIDTHS[(c + r) % WIDTHS.length]} bg-gray-200 dark:bg-gray-700 rounded animate-pulse`} />
                   </td>
                 ))}
               </tr>

@@ -153,7 +153,7 @@ export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
   if (loading) {
     return (
       <div className={`${CARD_CLASS} p-5`}>
-        <h2 className="text-sm font-semibold text-gray-800 mb-1">Shipment</h2>
+        <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">Shipment</h2>
         <p className="text-xs text-gray-400">Loading…</p>
       </div>
     );
@@ -162,7 +162,7 @@ export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
   if (providers.length === 0) {
     return (
       <div className={`${CARD_CLASS} p-5`}>
-        <h2 className="text-sm font-semibold text-gray-800 mb-1">Shipment</h2>
+        <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">Shipment</h2>
         <p className="text-xs text-gray-400">No logistics providers are configured.</p>
       </div>
     );
@@ -178,13 +178,13 @@ export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
     const branchFromAddress = Boolean(order.address.branchName) && branches.some((b) => b.name === order.address.branchName);
     return (
       <div className={`${CARD_CLASS} p-5`}>
-        <h2 className="text-sm font-semibold text-gray-800 mb-3">Create Shipment</h2>
+        <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">Create Shipment</h2>
         <form onSubmit={handleCreateShipment} className="space-y-3">
           <select
             value={providerCode}
             onChange={(e) => handleProviderChange(e.target.value)}
             required
-            className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+            className="w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2"
           >
             <option value="">Select carrier…</option>
             {providers.map((p) => (
@@ -201,7 +201,7 @@ export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
                 value={toBranch}
                 onChange={(e) => setToBranch(e.target.value)}
                 required
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2"
               >
                 <option value="">Select destination branch…</option>
                 {districtMatches.length > 0 && (
@@ -226,7 +226,7 @@ export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
           <select
             value={deliveryType}
             onChange={(e) => setDeliveryType(e.target.value)}
-            className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+            className="w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2"
           >
             {DELIVERY_TYPES.map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
@@ -238,7 +238,7 @@ export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
             placeholder="Package description (optional)"
             value={packageLabel}
             onChange={(e) => setPackageLabel(e.target.value)}
-            className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+            className="w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2"
           />
 
           <input
@@ -248,7 +248,7 @@ export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
             placeholder="Weight in kg (optional)"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+            className="w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2"
           />
 
           {createError && <p className="text-xs text-red-600">{createError}</p>}
@@ -263,11 +263,11 @@ export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
         </form>
 
         {debugParams && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
             <p className="text-xs font-semibold text-gray-500 mb-1">
               Debug — params sent to carrier{createError ? " (failed request)" : ""}
             </p>
-            <pre className="text-[11px] bg-gray-50 border border-gray-200 rounded-lg p-2 overflow-x-auto text-gray-600 whitespace-pre-wrap break-all">
+            <pre className="text-[11px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 overflow-x-auto text-gray-600 dark:text-gray-300 whitespace-pre-wrap break-all">
               {JSON.stringify(debugParams, null, 2)}
             </pre>
           </div>
@@ -281,13 +281,13 @@ export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
   return (
     <div className={`${CARD_CLASS} p-5`}>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-gray-800">Shipment</h2>
+        <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Shipment</h2>
         <Badge kind="shipment" status={shipment.status} />
       </div>
 
-      <p className="text-sm text-gray-700">
+      <p className="text-sm text-gray-700 dark:text-gray-300">
         {shipmentProvider?.label || shipment.provider} ·{" "}
-        <span className="font-mono text-gray-500">{shipment.providerShipmentId}</span>
+        <span className="font-mono text-gray-500 dark:text-gray-400">{shipment.providerShipmentId}</span>
       </p>
       <p className="text-xs text-gray-400 mt-1">
         Full tracking history and live status are in the shipment section below.
@@ -307,13 +307,13 @@ export default function ShipmentPanel({ orderId, order, onShipmentChange }) {
       )}
 
       {shipmentProvider?.capabilities.returnShipment && shipment.status !== "RETURNED" && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
           <input
             type="text"
             placeholder="Return reason (optional)"
             value={returnReason}
             onChange={(e) => setReturnReason(e.target.value)}
-            className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 mb-2"
+            className="w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 mb-2"
           />
           {returnError && <p className="text-xs text-red-600 mb-2">{returnError}</p>}
           <button

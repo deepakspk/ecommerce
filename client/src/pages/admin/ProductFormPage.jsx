@@ -153,14 +153,14 @@ export default function ProductFormPage() {
   if (loading) {
     return (
       <div className="p-8 max-w-3xl animate-pulse">
-        <div className="h-5 bg-gray-200 rounded w-48 mb-6" />
-        <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-24" />
-          <div className="h-9 bg-gray-200 rounded" />
-          <div className="h-20 bg-gray-200 rounded" />
+        <div className="h-5 bg-gray-200 dark:bg-gray-800 rounded w-48 mb-6" />
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 space-y-4">
+          <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-24" />
+          <div className="h-9 bg-gray-200 dark:bg-gray-800 rounded" />
+          <div className="h-20 bg-gray-200 dark:bg-gray-800 rounded" />
           <div className="grid grid-cols-2 gap-4">
-            <div className="h-9 bg-gray-200 rounded" />
-            <div className="h-9 bg-gray-200 rounded" />
+            <div className="h-9 bg-gray-200 dark:bg-gray-800 rounded" />
+            <div className="h-9 bg-gray-200 dark:bg-gray-800 rounded" />
           </div>
         </div>
       </div>
@@ -172,46 +172,46 @@ export default function ProductFormPage() {
   return (
     <div className="p-8 max-w-3xl">
       <div className="flex items-center gap-3 mb-6">
-        <Link to="/admin/products" className="text-gray-400 hover:text-gray-700 text-sm">← Products</Link>
-        <span className="text-gray-300">/</span>
+        <Link to="/admin/products" className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm">← Products</Link>
+        <span className="text-gray-300 dark:text-gray-600">/</span>
         <h1 className={H1_CLASS}>{isEdit ? "Edit Product" : "New Product"}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Details */}
-        <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700 mb-1">Details</h2>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Details</h2>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
             <input
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Product name"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
             <textarea
               value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               rows={3}
               placeholder="Product description"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+              className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
-            <div className="border border-gray-300 rounded-lg px-3 py-2 max-h-40 overflow-y-auto space-y-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categories</label>
+            <div className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 max-h-40 overflow-y-auto space-y-1">
               {categories.length === 0 ? (
                 <p className="text-xs text-gray-400">No categories yet — create one first.</p>
               ) : (
                 categories.map(c => (
-                  <label key={c._id} className="flex items-center gap-2 text-sm" style={{ paddingLeft: (c.level || 0) * 16 }}>
+                  <label key={c._id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300" style={{ paddingLeft: (c.level || 0) * 16 }}>
                     <input
                       type="checkbox"
                       checked={form.categories.includes(c._id)}
@@ -221,7 +221,7 @@ export default function ProductFormPage() {
                           ? [...f.categories, c._id]
                           : f.categories.filter(id => id !== c._id),
                       }))}
-                      className="rounded"
+                      className="rounded dark:bg-gray-800 dark:border-gray-600"
                     />
                     {c.name}
                   </label>
@@ -231,7 +231,7 @@ export default function ProductFormPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Base Price (Rs.)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base Price (Rs.)</label>
             <input
               type="number"
               min="0"
@@ -239,7 +239,7 @@ export default function ProductFormPage() {
               value={form.basePrice}
               onChange={e => setForm(f => ({ ...f, basePrice: e.target.value }))}
               placeholder="0"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
           </div>
@@ -250,22 +250,22 @@ export default function ProductFormPage() {
               id="isActive"
               checked={form.isActive}
               onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
-              className="rounded"
+              className="rounded dark:bg-gray-800 dark:border-gray-600"
             />
-            <label htmlFor="isActive" className="text-sm text-gray-700">Active (visible to customers)</label>
+            <label htmlFor="isActive" className="text-sm text-gray-700 dark:text-gray-300">Active (visible to customers)</label>
           </div>
         </div>
 
         {/* Images */}
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Images</h2>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Images</h2>
 
           {isEdit && existingImages.length > 0 && (
             <div className="flex flex-wrap gap-3 mb-3">
               {existingImages.map(img => (
                 <div key={img.url} className="relative group">
                   {failedExisting.has(img.url) ? (
-                    <div className="w-20 h-20 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center text-gray-300 text-[10px]">
+                    <div className="w-20 h-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-300 dark:text-gray-600 text-[10px]">
                       No image
                     </div>
                   ) : (
@@ -274,7 +274,7 @@ export default function ProductFormPage() {
                       alt=""
                       loading="lazy"
                       onError={() => setFailedExisting(prev => new Set(prev).add(img.url))}
-                      className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                      className="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
                     />
                   )}
                   <button
@@ -315,7 +315,7 @@ export default function ProductFormPage() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="border border-dashed border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:border-gray-400 transition-colors"
+            className="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
           >
             + Add Images
           </button>
@@ -335,7 +335,7 @@ export default function ProductFormPage() {
         </div>
 
         {error && (
-          <p className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+          <p className="text-red-700 dark:text-red-400 text-sm bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">{error}</p>
         )}
 
         <button
@@ -348,8 +348,8 @@ export default function ProductFormPage() {
       </form>
 
       {/* Variants */}
-      <div className="bg-white border border-gray-200 rounded-lg p-5 mt-6">
-        <h2 className="text-sm font-semibold text-gray-700 mb-4">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mt-6">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">
           Variants
           {!isEdit && <span className="ml-2 text-xs font-normal text-gray-400">(added when you submit the form)</span>}
         </h2>
@@ -358,7 +358,7 @@ export default function ProductFormPage() {
           <div className="overflow-x-auto mb-4">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-left text-gray-500 border-b border-gray-200">
+                <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
                   <th className="pb-2 pr-3 font-medium">Size</th>
                   <th className="pb-2 pr-3 font-medium">Color</th>
                   <th className="pb-2 pr-3 font-medium">SKU</th>
@@ -367,17 +367,17 @@ export default function ProductFormPage() {
                   <th className="pb-2" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {isEdit
                   ? variants.map(v =>
                       editingVariantId === v._id ? (
-                        <tr key={v._id} className="bg-brand-50">
+                        <tr key={v._id} className="bg-brand-50 dark:bg-brand-950/40">
                           {(["size", "color", "sku", "price", "stockQuantity"]).map(k => (
                             <td key={k} className="py-1.5 pr-2">
                               <input
                                 value={editVariantForm[k]}
                                 onChange={e => setEditVariantForm(f => ({ ...f, [k]: e.target.value }))}
-                                className="w-full border border-brand-400 rounded px-2 py-1 text-xs focus:outline-none"
+                                className="w-full border border-brand-400 dark:bg-gray-800 dark:text-gray-100 rounded px-2 py-1 text-xs focus:outline-none"
                               />
                             </td>
                           ))}
@@ -389,12 +389,12 @@ export default function ProductFormPage() {
                           </td>
                         </tr>
                       ) : (
-                        <tr key={v._id} className="hover:bg-gray-50">
-                          <td className="py-2 pr-3 text-gray-800">{v.size}</td>
-                          <td className="py-2 pr-3 text-gray-800">{v.color}</td>
+                        <tr key={v._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                          <td className="py-2 pr-3 text-gray-800 dark:text-gray-100">{v.size}</td>
+                          <td className="py-2 pr-3 text-gray-800 dark:text-gray-100">{v.color}</td>
                           <td className="py-2 pr-3 text-gray-400 font-mono">{v.sku}</td>
-                          <td className="py-2 pr-3 text-gray-700">{v.price != null ? `Rs. ${v.price}` : "—"}</td>
-                          <td className="py-2 pr-3 text-gray-700">{v.stockQuantity}</td>
+                          <td className="py-2 pr-3 text-gray-700 dark:text-gray-300">{v.price != null ? `Rs. ${v.price}` : "—"}</td>
+                          <td className="py-2 pr-3 text-gray-700 dark:text-gray-300">{v.stockQuantity}</td>
                           <td className="py-2 whitespace-nowrap">
                             <button onClick={() => startEditVariant(v)}
                               className="text-brand-600 hover:underline mr-2">Edit</button>
@@ -405,12 +405,12 @@ export default function ProductFormPage() {
                       )
                     )
                   : stagedVariants.map((v, i) => (
-                      <tr key={i} className="hover:bg-gray-50">
-                        <td className="py-2 pr-3">{v.size}</td>
-                        <td className="py-2 pr-3">{v.color}</td>
+                      <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                        <td className="py-2 pr-3 text-gray-800 dark:text-gray-100">{v.size}</td>
+                        <td className="py-2 pr-3 text-gray-800 dark:text-gray-100">{v.color}</td>
                         <td className="py-2 pr-3 text-gray-400 font-mono">{v.sku}</td>
-                        <td className="py-2 pr-3">{v.price || "—"}</td>
-                        <td className="py-2 pr-3">{v.stockQuantity || "0"}</td>
+                        <td className="py-2 pr-3 text-gray-700 dark:text-gray-300">{v.price || "—"}</td>
+                        <td className="py-2 pr-3 text-gray-700 dark:text-gray-300">{v.stockQuantity || "0"}</td>
                         <td className="py-2">
                           <button onClick={() => setStagedVariants(vs => vs.filter((_, idx) => idx !== i))}
                             className="text-red-500 hover:underline">Remove</button>
@@ -431,7 +431,7 @@ export default function ProductFormPage() {
                 value={newVariant[key]}
                 onChange={e => setNewVariant(v => ({ ...v, [key]: e.target.value }))}
                 placeholder={label}
-                className="border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             )
           )}

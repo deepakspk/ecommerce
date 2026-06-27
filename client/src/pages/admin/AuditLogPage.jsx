@@ -188,24 +188,24 @@ export default function AuditLogPage() {
           <div className={`${CARD_CLASS} overflow-hidden`}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-50 border-b border-gray-200 dark:bg-gray-800/60 dark:border-gray-700">
                   <tr>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Admin</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Action</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Details</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Date</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Admin</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Action</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Details</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {logs.map(log => (
-                    <tr key={log._id} className="hover:bg-gray-50">
-                      <td className="px-5 py-3 text-gray-500 text-xs whitespace-nowrap">{fmtDateTime(log.createdAt)}</td>
+                    <tr key={log._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                      <td className="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">{fmtDateTime(log.createdAt)}</td>
                       <td className="px-5 py-3">
-                        <p className="font-medium text-gray-900">{log.adminUserId?.name || "—"}</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{log.adminUserId?.name || "—"}</p>
                         <p className="text-xs text-gray-400">{log.adminUserId?.email}</p>
                       </td>
-                      <td className="px-5 py-3 text-gray-700 text-xs font-mono">{log.action}</td>
-                      <td className="px-5 py-3 text-gray-600 text-xs">{describeMeta(log)}</td>
+                      <td className="px-5 py-3 text-gray-700 dark:text-gray-200 text-xs font-mono">{log.action}</td>
+                      <td className="px-5 py-3 text-gray-600 dark:text-gray-300 text-xs">{describeMeta(log)}</td>
                     </tr>
                   ))}
                 </tbody>

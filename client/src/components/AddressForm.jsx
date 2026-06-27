@@ -15,7 +15,7 @@ const EMPTY_ADDRESS_FORM = {
 function Select({ label, required, value, onChange, options, placeholder, disabled }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">
+      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
         {label}{required && " *"}
       </label>
       <select
@@ -23,7 +23,7 @@ function Select({ label, required, value, onChange, options, placeholder, disabl
         value={value}
         onChange={e => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white dark:bg-gray-800 dark:text-gray-100 disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-400"
       >
         <option value="">{placeholder}</option>
         {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -35,7 +35,7 @@ function Select({ label, required, value, onChange, options, placeholder, disabl
 function TextInput({ label, required, value, onChange, placeholder }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">
+      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
         {label}{required && " *"}
       </label>
       <input
@@ -43,7 +43,7 @@ function TextInput({ label, required, value, onChange, placeholder }) {
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
     </div>
   );
@@ -94,9 +94,9 @@ export function AddressForm({ initial = EMPTY_ADDRESS_FORM, onSave, onCancel, sa
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-50 border border-gray-200 rounded-xl p-5 space-y-4">
+    <form onSubmit={handleSubmit} className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
       {err && (
-        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">{err}</p>
+        <p className="text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-md px-3 py-2">{err}</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -136,7 +136,7 @@ export function AddressForm({ initial = EMPTY_ADDRESS_FORM, onSave, onCancel, sa
         />
 
         {loadingBranches && (
-          <p className="text-xs text-gray-400 sm:col-span-2">Checking for a courier branch in this district…</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 sm:col-span-2">Checking for a courier branch in this district…</p>
         )}
         {!loadingBranches && branches.length > 0 && (
           <Select
@@ -158,12 +158,12 @@ export function AddressForm({ initial = EMPTY_ADDRESS_FORM, onSave, onCancel, sa
       </div>
 
       {showLabelAndDefault && (
-        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
           <input
             type="checkbox"
             checked={form.isDefault}
             onChange={e => set("isDefault", e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500"
           />
           Set as default address
         </label>
@@ -181,7 +181,7 @@ export function AddressForm({ initial = EMPTY_ADDRESS_FORM, onSave, onCancel, sa
           <button
             type="button"
             onClick={onCancel}
-            className="px-5 py-2 border border-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50"
+            className="px-5 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             Cancel
           </button>

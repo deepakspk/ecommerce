@@ -230,36 +230,36 @@ export default function CouponsPage() {
         <div className={`${CARD_CLASS} overflow-hidden`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 border-b border-gray-200 dark:bg-gray-800/60 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Code</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Discount</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Min Order</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Usage</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Validity</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Code</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Discount</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Min Order</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Usage</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Validity</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {coupons.map((c) => (
-                  <tr key={c._id} className="hover:bg-gray-50">
-                    <td className="px-5 py-3 font-mono font-semibold text-gray-900">{c.code}</td>
-                    <td className="px-5 py-3 text-gray-700">
+                  <tr key={c._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                    <td className="px-5 py-3 font-mono font-semibold text-gray-900 dark:text-gray-100">{c.code}</td>
+                    <td className="px-5 py-3 text-gray-700 dark:text-gray-200">
                       {c.type === "PERCENTAGE" ? `${c.value}%` : fmt(c.value)}
                       {c.maxDiscountAmount != null && (
                         <span className="text-gray-400"> (max {fmt(c.maxDiscountAmount)})</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-gray-600">{c.minOrderValue ? fmt(c.minOrderValue) : "—"}</td>
-                    <td className="px-5 py-3 text-gray-600">
+                    <td className="px-5 py-3 text-gray-600 dark:text-gray-300">{c.minOrderValue ? fmt(c.minOrderValue) : "—"}</td>
+                    <td className="px-5 py-3 text-gray-600 dark:text-gray-300">
                       {c.usedCount}
                       {c.usageLimit != null ? ` / ${c.usageLimit}` : ""}
                       {c.perUserLimit != null && (
                         <span className="text-gray-400"> ({c.perUserLimit}/user)</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-gray-500 text-xs">
+                    <td className="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs">
                       {c.startsAt ? new Date(c.startsAt).toLocaleDateString() : "Anytime"}
                       {" – "}
                       {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : "No expiry"}
@@ -291,36 +291,36 @@ export default function CouponsPage() {
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeForm}>
           <div
-            className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-base font-bold text-gray-900 mb-4">{editId ? "Edit Coupon" : "New Coupon"}</h3>
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-4">{editId ? "Edit Coupon" : "New Coupon"}</h3>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Code</label>
                 <input
                   value={form.code}
                   onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
                   placeholder="e.g. WELCOME10"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
                   <select
                     value={form.type}
                     onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   >
                     <option value="PERCENTAGE">Percentage</option>
                     <option value="FIXED">Fixed Amount</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Value {form.type === "PERCENTAGE" ? "(%)" : "(Rs.)"}
                   </label>
                   <input
@@ -329,7 +329,7 @@ export default function CouponsPage() {
                     max={form.type === "PERCENTAGE" ? 100 : undefined}
                     value={form.value}
                     onChange={(e) => setForm((f) => ({ ...f, value: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                     required
                   />
                 </div>
@@ -337,71 +337,71 @@ export default function CouponsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Order Value (Rs.)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Min Order Value (Rs.)</label>
                   <input
                     type="number"
                     min="0"
                     value={form.minOrderValue}
                     onChange={(e) => setForm((f) => ({ ...f, minOrderValue: e.target.value }))}
                     placeholder="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Discount (Rs.)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Discount (Rs.)</label>
                   <input
                     type="number"
                     min="0"
                     value={form.maxDiscountAmount}
                     onChange={(e) => setForm((f) => ({ ...f, maxDiscountAmount: e.target.value }))}
                     placeholder="No cap"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Usage Limit</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Usage Limit</label>
                   <input
                     type="number"
                     min="0"
                     value={form.usageLimit}
                     onChange={(e) => setForm((f) => ({ ...f, usageLimit: e.target.value }))}
                     placeholder="Unlimited"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Per-User Limit</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Per-User Limit</label>
                   <input
                     type="number"
                     min="0"
                     value={form.perUserLimit}
                     onChange={(e) => setForm((f) => ({ ...f, perUserLimit: e.target.value }))}
                     placeholder="Unlimited"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Starts At</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Starts At</label>
                   <input
                     type="date"
                     value={form.startsAt}
                     onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Expires At</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expires At</label>
                   <input
                     type="date"
                     value={form.expiresAt}
                     onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   />
                 </div>
               </div>
@@ -414,7 +414,7 @@ export default function CouponsPage() {
                   onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
                   className="rounded"
                 />
-                <label htmlFor="couponActive" className="text-sm text-gray-700">Active</label>
+                <label htmlFor="couponActive" className="text-sm text-gray-700 dark:text-gray-300">Active</label>
               </div>
 
               {formError && <p className="text-red-600 text-xs">{formError}</p>}
@@ -430,7 +430,7 @@ export default function CouponsPage() {
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancel
                 </button>

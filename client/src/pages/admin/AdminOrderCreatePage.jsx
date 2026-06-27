@@ -11,7 +11,7 @@ function SectionCard({ step, title, children }) {
     <div className={`${CARD_CLASS} p-5`}>
       <div className="flex items-center gap-2 mb-4">
         <span className="w-6 h-6 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center">{step}</span>
-        <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
       </div>
       {children}
     </div>
@@ -38,9 +38,9 @@ function CustomerPicker({ selected, onSelect }) {
 
   if (selected) {
     return (
-      <div className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 bg-gray-50">
+      <div className="flex items-center justify-between border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 bg-gray-50 dark:bg-gray-800">
         <div>
-          <p className="font-medium text-gray-900">{selected.name}</p>
+          <p className="font-medium text-gray-900 dark:text-gray-100">{selected.name}</p>
           <p className="text-xs text-gray-400">{selected.email}{selected.email && selected.phone && " · "}{selected.phone}</p>
         </div>
         <button type="button" onClick={() => onSelect(null)} className="text-xs text-brand-600 hover:underline font-medium">
@@ -59,7 +59,7 @@ function CustomerPicker({ selected, onSelect }) {
         className={INPUT_CLASS}
       />
       {query.trim() && (
-        <div className="mt-2 border border-gray-200 rounded-lg max-h-56 overflow-y-auto divide-y divide-gray-100">
+        <div className="mt-2 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 rounded-lg max-h-56 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
           {searching ? (
             <p className="px-3 py-2 text-xs text-gray-400">Searching…</p>
           ) : results.length === 0 ? (
@@ -70,9 +70,9 @@ function CustomerPicker({ selected, onSelect }) {
                 key={u._id}
                 type="button"
                 onClick={() => { onSelect(u); setQuery(""); }}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-700"
               >
-                <p className="font-medium text-gray-900">{u.name}</p>
+                <p className="font-medium text-gray-900 dark:text-gray-100">{u.name}</p>
                 <p className="text-xs text-gray-400">{u.email}{u.email && u.phone && " · "}{u.phone}</p>
               </button>
             ))
@@ -142,7 +142,7 @@ function ItemPicker({ onAdd }) {
           className={INPUT_CLASS}
         />
         {query.trim() && (
-          <div className="mt-2 border border-gray-200 rounded-lg max-h-56 overflow-y-auto divide-y divide-gray-100">
+          <div className="mt-2 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 rounded-lg max-h-56 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
             {searching ? (
               <p className="px-3 py-2 text-xs text-gray-400">Searching…</p>
             ) : results.length === 0 ? (
@@ -153,7 +153,7 @@ function ItemPicker({ onAdd }) {
                   key={p._id}
                   type="button"
                   onClick={() => pickProduct(p)}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-700"
                 >
                   {p.name}
                 </button>
@@ -166,10 +166,10 @@ function ItemPicker({ onAdd }) {
   }
 
   return (
-    <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-sm font-medium text-gray-900">{product.name}</p>
-        <button type="button" onClick={() => setProduct(null)} className="text-xs text-gray-500 hover:underline">Cancel</button>
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{product.name}</p>
+        <button type="button" onClick={() => setProduct(null)} className="text-xs text-gray-500 dark:text-gray-400 hover:underline">Cancel</button>
       </div>
       <div className="flex flex-wrap gap-2 items-end">
         <select value={variantId} onChange={(e) => setVariantId(e.target.value)} className={`${INPUT_CLASS} w-auto`}>
@@ -247,7 +247,7 @@ export default function AdminOrderCreatePage() {
   return (
     <div className="p-4 sm:p-8 max-w-3xl">
       <div className="flex items-center gap-3 mb-6">
-        <Link to="/admin/orders" className="text-gray-400 hover:text-gray-700 text-sm">← Back</Link>
+        <Link to="/admin/orders" className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm">← Back</Link>
         <h1 className={H1_CLASS}>New Order</h1>
       </div>
 
@@ -259,11 +259,11 @@ export default function AdminOrderCreatePage() {
         <SectionCard step={2} title="Items">
           {items.length > 0 && (
             <table className="w-full text-sm mb-3">
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {items.map((i) => (
                   <tr key={i.variantId}>
                     <td className="py-2">
-                      <p className="font-medium text-gray-900">{i.productName}</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{i.productName}</p>
                       <p className="text-xs text-gray-400">{i.size} / {i.color}</p>
                     </td>
                     <td className="py-2 w-20">
@@ -276,7 +276,7 @@ export default function AdminOrderCreatePage() {
                         className={`${INPUT_CLASS} w-20`}
                       />
                     </td>
-                    <td className="py-2 text-right font-medium text-gray-700">{fmt(i.unitPrice * i.quantity)}</td>
+                    <td className="py-2 text-right font-medium text-gray-700 dark:text-gray-200">{fmt(i.unitPrice * i.quantity)}</td>
                     <td className="py-2 text-right w-10">
                       <button type="button" onClick={() => removeItem(i.variantId)} className="text-red-500 hover:underline text-xs">
                         Remove
@@ -289,15 +289,15 @@ export default function AdminOrderCreatePage() {
           )}
           <ItemPicker onAdd={(item) => setItems((list) => [...list, item])} />
           {items.length > 0 && (
-            <p className="text-right text-sm font-semibold text-gray-900 mt-3">Subtotal: {fmt(subtotal)}</p>
+            <p className="text-right text-sm font-semibold text-gray-900 dark:text-gray-100 mt-3">Subtotal: {fmt(subtotal)}</p>
           )}
         </SectionCard>
 
         <SectionCard step={3} title="Shipping Address">
           {!editingAddress && address ? (
-            <div className="flex items-start justify-between border border-gray-200 rounded-lg p-3 bg-gray-50">
-              <div className="text-sm text-gray-700">
-                <p className="font-medium text-gray-900">{address.recipientName} — {address.phone}</p>
+            <div className="flex items-start justify-between border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+              <div className="text-sm text-gray-700 dark:text-gray-300">
+                <p className="font-medium text-gray-900 dark:text-gray-100">{address.recipientName} — {address.phone}</p>
                 <p>{[address.area, address.street, address.city, address.district, address.province].filter(Boolean).join(", ")}</p>
                 {address.landmark && <p className="text-xs text-gray-400">Near: {address.landmark}</p>}
               </div>

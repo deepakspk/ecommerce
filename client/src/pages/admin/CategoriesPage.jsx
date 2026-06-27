@@ -245,16 +245,16 @@ export default function CategoriesPage() {
         <div className={`${CARD_CLASS} overflow-hidden`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 border-b border-gray-200 dark:bg-gray-800/60 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Slug</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Products</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Name</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Slug</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Products</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {roots.map((cat) => (
                   <CategoryRow
                     key={cat._id}
@@ -281,21 +281,21 @@ export default function CategoriesPage() {
         <Modal onClose={closeForm} title={editId ? "Edit Category" : "Add Category"}>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
               <input
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent Category</label>
               <select
                 value={form.parent}
                 onChange={(e) => setForm((f) => ({ ...f, parent: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
               >
                 <option value="">— None (root category) —</option>
                 {categories
@@ -310,17 +310,17 @@ export default function CategoriesPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
               <textarea
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 rows={2}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 resize-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image</label>
               <div className="flex items-center gap-3">
                 {imageFile ? (
                   <img src={URL.createObjectURL(imageFile)} alt="" className="w-16 h-16 object-cover rounded-lg border border-gray-200" />
@@ -355,12 +355,12 @@ export default function CategoriesPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort Order</label>
                 <input
                   type="number"
                   value={form.sortOrder}
                   onChange={(e) => setForm((f) => ({ ...f, sortOrder: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                 />
               </div>
               <div className="flex items-center gap-2 pt-6">
@@ -371,28 +371,28 @@ export default function CategoriesPage() {
                   onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
                   className="rounded"
                 />
-                <label htmlFor="isActive" className="text-sm text-gray-700">Active</label>
+                <label htmlFor="isActive" className="text-sm text-gray-700 dark:text-gray-300">Active</label>
               </div>
             </div>
 
-            <details className="border border-gray-200 rounded-lg p-3">
-              <summary className="text-sm font-medium text-gray-700 cursor-pointer">SEO</summary>
+            <details className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+              <summary className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">SEO</summary>
               <div className="mt-3 space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">SEO Title</label>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">SEO Title</label>
                   <input
                     value={form.seoTitle}
                     onChange={(e) => setForm((f) => ({ ...f, seoTitle: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">SEO Description</label>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">SEO Description</label>
                   <textarea
                     value={form.seoDescription}
                     onChange={(e) => setForm((f) => ({ ...f, seoDescription: e.target.value }))}
                     rows={2}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 resize-none"
                   />
                 </div>
               </div>
@@ -401,7 +401,7 @@ export default function CategoriesPage() {
             {formError && <p className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{formError}</p>}
 
             <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={closeForm} className="text-gray-600 px-4 py-2 rounded-lg text-sm border border-gray-300 hover:bg-gray-50">
+              <button type="button" onClick={closeForm} className="text-gray-600 dark:text-gray-300 px-4 py-2 rounded-lg text-sm border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800">
                 Cancel
               </button>
               <button
@@ -438,9 +438,9 @@ export default function CategoriesPage() {
 
 function Stat({ label, value }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
-      <dt className="text-xs text-gray-500">{label}</dt>
-      <dd className="text-lg font-semibold text-gray-900">{value}</dd>
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+      <dt className="text-xs text-gray-500 dark:text-gray-400">{label}</dt>
+      <dd className="text-lg font-semibold text-gray-900 dark:text-gray-100">{value}</dd>
     </div>
   );
 }
@@ -449,12 +449,12 @@ function Modal({ title, onClose, children }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <div
-        className="bg-white rounded-xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto p-5"
+        className="bg-white dark:bg-gray-900 rounded-xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-gray-700">{title}</h2>
-          <button onClick={onClose} aria-label="Close dialog" className="text-gray-400 hover:text-gray-700">×</button>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{title}</h2>
+          <button onClick={onClose} aria-label="Close dialog" className="text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200">×</button>
         </div>
         {children}
       </div>
@@ -468,27 +468,27 @@ function CategoryRow({ cat, depth, byParent, expanded, toggleExpand, onAddChild,
 
   return (
     <>
-      <tr className="hover:bg-gray-50">
-        <td className="px-5 py-3 font-medium text-gray-900">
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+        <td className="px-5 py-3 font-medium text-gray-900 dark:text-gray-100">
           <div className="flex items-center gap-1" style={{ paddingLeft: depth * 20 }}>
             {children.length > 0 ? (
               <button
                 onClick={() => toggleExpand(cat._id)}
                 aria-label={isExpanded ? `Collapse ${cat.name}` : `Expand ${cat.name}`}
-                className="w-4 text-gray-400 hover:text-gray-700"
+                className="w-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               >
                 {isExpanded ? "▾" : "▸"}
               </button>
             ) : (
               <span className="w-4" />
             )}
-            <button onClick={() => onMove(cat, "up")} aria-label={`Move ${cat.name} up`} className="text-gray-300 hover:text-gray-600 text-xs" title="Move up">▲</button>
-            <button onClick={() => onMove(cat, "down")} aria-label={`Move ${cat.name} down`} className="text-gray-300 hover:text-gray-600 text-xs" title="Move down">▼</button>
+            <button onClick={() => onMove(cat, "up")} aria-label={`Move ${cat.name} up`} className="text-gray-300 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-300 text-xs" title="Move up">▲</button>
+            <button onClick={() => onMove(cat, "down")} aria-label={`Move ${cat.name} down`} className="text-gray-300 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-300 text-xs" title="Move down">▼</button>
             <span className="ml-1">{cat.name}</span>
           </div>
         </td>
         <td className="px-5 py-3 text-gray-400 font-mono text-xs">{cat.slug}</td>
-        <td className="px-5 py-3 text-gray-600">
+        <td className="px-5 py-3 text-gray-600 dark:text-gray-300">
           {cat.productCount}
           {children.length > 0 && <span className="text-gray-400"> ({cat.childCount} subcategories)</span>}
         </td>
@@ -503,7 +503,7 @@ function CategoryRow({ cat, depth, byParent, expanded, toggleExpand, onAddChild,
           </button>
         </td>
         <td className="px-5 py-3 text-right whitespace-nowrap">
-          <button onClick={() => onStats(cat)} className="text-gray-500 hover:underline text-xs mr-3">Stats</button>
+          <button onClick={() => onStats(cat)} className="text-gray-500 dark:text-gray-400 hover:underline text-xs mr-3">Stats</button>
           <button onClick={() => onAddChild(cat._id)} className="text-brand-600 hover:underline text-xs mr-3">+ Sub</button>
           <button onClick={() => onEdit(cat)} className="text-brand-600 hover:underline text-xs mr-3">Edit</button>
           <button onClick={() => onDelete(cat)} className="text-red-600 hover:underline text-xs">Delete</button>

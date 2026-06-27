@@ -322,31 +322,31 @@ export default function UsersPage() {
           <div className={`${CARD_CLASS} overflow-hidden`}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-50 border-b border-gray-200 dark:bg-gray-800/60 dark:border-gray-700">
                   <tr>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Contact</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Role</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Joined</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Name</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Contact</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Role</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Joined</th>
                     <th className="px-5 py-3" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {users.map(u => {
                     const isSelf = u._id === currentUser?.id;
                     return (
-                      <tr key={u._id} className="hover:bg-gray-50">
+                      <tr key={u._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
                         <td className="px-5 py-3">
-                          <p className="font-medium text-gray-900">{u.name}{isSelf && <span className="text-gray-400 font-normal"> (you)</span>}</p>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{u.name}{isSelf && <span className="text-gray-400 font-normal"> (you)</span>}</p>
                         </td>
-                        <td className="px-5 py-3 text-gray-500 text-xs">
+                        <td className="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs">
                           {u.email && <p>{u.email}</p>}
                           {u.phone && <p>{u.phone}</p>}
                         </td>
                         <td className="px-5 py-3"><Badge kind="role" status={u.role} /></td>
                         <td className="px-5 py-3"><Badge kind="userStatus" status={u.status} /></td>
-                        <td className="px-5 py-3 text-gray-500 text-xs whitespace-nowrap">{fmtDate(u.createdAt)}</td>
+                        <td className="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">{fmtDate(u.createdAt)}</td>
                         <td className="px-5 py-3 text-right whitespace-nowrap">
                           {canManageRole(u) && (
                             <button onClick={() => openEdit(u)} className="text-brand-600 hover:underline text-xs mr-3">
@@ -357,7 +357,7 @@ export default function UsersPage() {
                             <select
                               value={u.role}
                               onChange={(e) => askRoleChange(u, e.target.value)}
-                              className="text-xs border border-gray-200 rounded-md px-1.5 py-1 mr-3"
+                              className="text-xs border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-1.5 py-1 mr-3"
                             >
                               <option value="CUSTOMER">Customer</option>
                               <option value="ADMIN">Admin</option>
@@ -387,13 +387,13 @@ export default function UsersPage() {
       {editUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => !saving && closeEdit()}>
           <div
-            className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm"
+            className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-base font-bold text-gray-900 mb-4">Edit {editUser.name}</h3>
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-4">Edit {editUser.name}</h3>
             <form onSubmit={handleEditSubmit} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
                 <input
                   value={editForm.name}
                   onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))}
@@ -402,7 +402,7 @@ export default function UsersPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                 <input
                   type="email"
                   value={editForm.email}
@@ -411,7 +411,7 @@ export default function UsersPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -425,7 +425,7 @@ export default function UsersPage() {
               </div>
               {editForm.password && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
                   <div className="relative">
                     <input
                       type={showConfirmPassword ? "text" : "password"}
@@ -452,7 +452,7 @@ export default function UsersPage() {
                   type="button"
                   onClick={closeEdit}
                   disabled={saving}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -465,11 +465,11 @@ export default function UsersPage() {
       {confirmAction && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => !acting && setConfirmAction(null)}>
           <div
-            className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm"
+            className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-base font-bold text-gray-900 mb-2">{confirmAction.title}</h3>
-            <p className="text-sm text-gray-600 mb-4">{confirmAction.message}</p>
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-2">{confirmAction.title}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{confirmAction.message}</p>
 
             {actionError && <p className="text-red-600 text-xs mb-3">{actionError}</p>}
 
@@ -489,7 +489,7 @@ export default function UsersPage() {
                 type="button"
                 onClick={() => setConfirmAction(null)}
                 disabled={acting}
-                className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -500,11 +500,11 @@ export default function UsersPage() {
 
       {showCreate && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => !creating && setShowCreate(false)}>
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-bold text-gray-900 mb-4">Add User</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-4">Add User</h3>
             <form onSubmit={handleCreateSubmit} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
                 <input
                   value={createForm.name}
                   onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))}
@@ -514,7 +514,7 @@ export default function UsersPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                   <input
                     type="email"
                     value={createForm.email}
@@ -523,7 +523,7 @@ export default function UsersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
                   <input
                     value={createForm.phone}
                     onChange={(e) => setCreateForm(f => ({ ...f, phone: e.target.value }))}
@@ -533,7 +533,7 @@ export default function UsersPage() {
               </div>
               <p className="text-xs text-gray-400 -mt-1">At least one of email or phone is required.</p>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
                 <div className="relative">
                   <input
                     type={showCreatePassword ? "text" : "password"}
@@ -546,7 +546,7 @@ export default function UsersPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
                 <input
                   type={showCreatePassword ? "text" : "password"}
                   value={createForm.confirmPassword}
@@ -557,7 +557,7 @@ export default function UsersPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
                   <select
                     value={createForm.role}
                     onChange={(e) => setCreateForm(f => ({ ...f, role: e.target.value }))}
@@ -569,7 +569,7 @@ export default function UsersPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                   <select
                     value={createForm.status}
                     onChange={(e) => setCreateForm(f => ({ ...f, status: e.target.value }))}
@@ -595,7 +595,7 @@ export default function UsersPage() {
                   type="button"
                   onClick={() => setShowCreate(false)}
                   disabled={creating}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

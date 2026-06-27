@@ -2,20 +2,20 @@
 // the same border/radius/color values on a new page.
 
 export const INPUT_CLASS =
-  "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500";
-export const LABEL_CLASS = "block text-sm font-medium text-gray-700 mb-1";
+  "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-500";
+export const LABEL_CLASS = "block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300";
 
 export const BUTTON_PRIMARY =
   "bg-brand-600 text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 export const BUTTON_PRIMARY_FULL = `w-full ${BUTTON_PRIMARY}`;
 export const BUTTON_SECONDARY =
-  "bg-white text-gray-700 border border-gray-300 rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+  "bg-white text-gray-700 border border-gray-300 rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700";
 export const BUTTON_DANGER =
   "bg-red-600 text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 export const BUTTON_GHOST =
-  "text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors";
+  "text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors dark:text-gray-400 dark:hover:text-white";
 
-export const CARD_CLASS = "bg-white border border-gray-200 rounded-lg";
+export const CARD_CLASS = "bg-white border border-gray-200 rounded-lg dark:bg-gray-900 dark:border-gray-700";
 
 // Admin list-page filter bars — every filter field (search/select/date) gets one
 // of these fixed widths instead of ad-hoc max-w/w-auto per page, so a row of
@@ -31,9 +31,9 @@ export const FILTER_FIELD_SM_CLASS = "w-full sm:w-28";
 export const CONTAINER_CLASS = "max-w-[1440px] mx-auto px-4 sm:px-8";
 export const PAGE_CLASS = `${CONTAINER_CLASS} py-6`;
 
-export const H1_CLASS = "text-2xl font-bold text-gray-900";
-export const SECTION_HEADING_CLASS = "text-lg font-semibold text-gray-900";
-export const MUTED_CLASS = "text-xs text-gray-500";
+export const H1_CLASS = "text-2xl font-bold text-gray-900 dark:text-white";
+export const SECTION_HEADING_CLASS = "text-lg font-semibold text-gray-900 dark:text-white";
+export const MUTED_CLASS = "text-xs text-gray-500 dark:text-gray-400";
 
 export const BADGE_BASE = "inline-block text-xs font-semibold px-2 py-0.5 rounded-full";
 

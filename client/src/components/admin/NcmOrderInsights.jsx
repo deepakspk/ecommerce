@@ -33,7 +33,7 @@ function Field({ label, value }) {
   return (
     <div>
       <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{label}</p>
-      <p className="text-sm text-gray-800 mt-0.5">{value ?? "—"}</p>
+      <p className="text-sm text-gray-800 dark:text-gray-100 mt-0.5">{value ?? "—"}</p>
     </div>
   );
 }
@@ -41,7 +41,7 @@ function Field({ label, value }) {
 function Section({ title, children }) {
   return (
     <div className={`${CARD_CLASS} p-5`}>
-      <h2 className="text-sm font-semibold text-gray-800 mb-4">{title}</h2>
+      <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">{title}</h2>
       {children}
     </div>
   );
@@ -177,16 +177,16 @@ export default function NcmOrderInsights({ orderId, refreshSignal }) {
         <h2 className="text-xs font-bold tracking-widest uppercase text-gray-400 whitespace-nowrap">
           Logistics &amp; Shipment
         </h2>
-        <div className="h-px flex-1 bg-gray-200" />
+        <div className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
       </div>
 
       <div className="space-y-6">
         {/* NCM Shipment Information */}
         <Section title="NCM Shipment Information">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               {provider?.label || shipment.provider} ·{" "}
-              <span className="font-mono text-gray-800">{shipment.providerShipmentId}</span>
+              <span className="font-mono text-gray-800 dark:text-gray-200">{shipment.providerShipmentId}</span>
             </p>
             <Badge kind="shipment" status={shipment.status} />
           </div>
@@ -214,22 +214,22 @@ export default function NcmOrderInsights({ orderId, refreshSignal }) {
           )}
 
           {label && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5 pt-5 border-t border-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5 pt-5 border-t border-gray-100 dark:border-gray-800">
               <div>
                 <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">Sender</p>
-                <p className="text-sm font-medium text-gray-800">{label.from?.name || "—"}</p>
-                <p className="text-xs text-gray-500">{[label.from?.phone, label.from?.phone2].filter(Boolean).join(" / ")}</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{label.from?.name || "—"}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{[label.from?.phone, label.from?.phone2].filter(Boolean).join(" / ")}</p>
               </div>
               <div>
                 <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">Receiver</p>
-                <p className="text-sm font-medium text-gray-800">{label.receiver?.name || "—"}</p>
-                <p className="text-xs text-gray-500">{[label.receiver?.phone, label.receiver?.phone2].filter(Boolean).join(" / ")}</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{label.receiver?.name || "—"}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{[label.receiver?.phone, label.receiver?.phone2].filter(Boolean).join(" / ")}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{label.receiver?.address}</p>
               </div>
               {(label.description?.description || label.description?.handling || label.description?.delivery_instruction) && (
                 <div>
                   <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">Package</p>
-                  {label.description?.description && <p className="text-sm text-gray-700">{label.description.description}</p>}
+                  {label.description?.description && <p className="text-sm text-gray-700 dark:text-gray-300">{label.description.description}</p>}
                   {label.description?.handling && <p className="text-xs text-gray-500 mt-0.5">Handling: {label.description.handling}</p>}
                   {label.description?.delivery_instruction && (
                     <p className="text-xs text-gray-500 mt-0.5">Instruction: {label.description.delivery_instruction}</p>
@@ -239,7 +239,7 @@ export default function NcmOrderInsights({ orderId, refreshSignal }) {
             </div>
           )}
           {!detailsLoading && !label && details?.labelError && (
-            <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">{details.labelError}</p>
+            <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">{details.labelError}</p>
           )}
         </Section>
 
@@ -261,16 +261,16 @@ export default function NcmOrderInsights({ orderId, refreshSignal }) {
                   <div key={step} className="flex items-center flex-1 min-w-0">
                     <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors ${
                       current ? "border-brand-600 bg-brand-600 text-white" :
-                      reached ? "border-brand-400 bg-brand-50 text-brand-600" :
-                      "border-gray-200 bg-white text-gray-300"
+                      reached ? "border-brand-400 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400" :
+                      "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-300 dark:text-gray-600"
                     }`}>
                       {reached && !current ? "✓" : i + 1}
                     </div>
                     <div className="flex-1 px-1 min-w-0">
-                      <p className={`text-xs font-medium truncate ${reached ? "text-gray-700" : "text-gray-300"}`}>{STEP_LABELS[step]}</p>
+                      <p className={`text-xs font-medium truncate ${reached ? "text-gray-700 dark:text-gray-300" : "text-gray-300 dark:text-gray-600"}`}>{STEP_LABELS[step]}</p>
                     </div>
                     {i < HAPPY_PATH.length - 1 && (
-                      <div className={`w-4 h-0.5 flex-shrink-0 ${currentStepIndex > i ? "bg-brand-400" : "bg-gray-200"}`} />
+                      <div className={`w-4 h-0.5 flex-shrink-0 ${currentStepIndex > i ? "bg-brand-400" : "bg-gray-200 dark:bg-gray-700"}`} />
                     )}
                   </div>
                 );
@@ -296,11 +296,11 @@ export default function NcmOrderInsights({ orderId, refreshSignal }) {
             {shipment.trackingEvents.length === 0 ? (
               <p className="text-xs text-gray-400">No tracking events yet.</p>
             ) : (
-              <ul className="space-y-3 border-l-2 border-gray-100 pl-4 max-h-80 overflow-y-auto">
+              <ul className="space-y-3 border-l-2 border-gray-100 dark:border-gray-800 pl-4 max-h-80 overflow-y-auto">
                 {shipment.trackingEvents.slice().reverse().map((event, i) => (
                   <li key={i} className="relative">
                     <span className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-brand-400" />
-                    <p className="text-sm font-medium text-gray-700">{event.rawStatus || event.status}</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{event.rawStatus || event.status}</p>
                     <p className="text-xs text-gray-400">{fmtDate(event.occurredAt)}</p>
                   </li>
                 ))}
@@ -316,7 +316,7 @@ export default function NcmOrderInsights({ orderId, refreshSignal }) {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment for the carrier…"
-                  className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2"
+                  className="flex-1 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2"
                 />
                 <button
                   type="submit"
@@ -335,12 +335,12 @@ export default function NcmOrderInsights({ orderId, refreshSignal }) {
               ) : (
                 <ul className="space-y-3 max-h-64 overflow-y-auto">
                   {comments.map((c, i) => (
-                    <li key={i} className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5">
+                    <li key={i} className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg px-3 py-2.5">
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs font-semibold text-gray-700">{c.addedBy || "Unknown"}</p>
+                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">{c.addedBy || "Unknown"}</p>
                         <p className="text-xs text-gray-400">{fmtDate(c.added_time)}</p>
                       </div>
-                      <p className="text-sm text-gray-600">{c.comments}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{c.comments}</p>
                     </li>
                   ))}
                 </ul>

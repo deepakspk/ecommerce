@@ -29,7 +29,7 @@ export default function Pagination({ page, pages, onChange }) {
       <button
         onClick={() => onChange(Math.max(1, page - 1))}
         disabled={page === 1}
-        className="px-3 py-1.5 border border-gray-300 rounded-md text-sm disabled:opacity-40 hover:border-brand-400 transition-colors"
+        className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:text-gray-200 rounded-md text-sm disabled:opacity-40 hover:border-brand-400 transition-colors"
       >
         Previous
       </button>
@@ -41,7 +41,7 @@ export default function Pagination({ page, pages, onChange }) {
             onClick={() => onChange(item)}
             aria-current={item === page ? "page" : undefined}
             className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${
-              item === page ? "bg-brand-600 text-white" : "border border-gray-300 hover:border-brand-400"
+              item === page ? "bg-brand-600 text-white" : "border border-gray-300 dark:border-gray-600 dark:text-gray-200 hover:border-brand-400"
             }`}
           >
             {item}
@@ -56,7 +56,7 @@ export default function Pagination({ page, pages, onChange }) {
       <button
         onClick={() => onChange(Math.min(pages, page + 1))}
         disabled={page === pages}
-        className="px-3 py-1.5 border border-gray-300 rounded-md text-sm disabled:opacity-40 hover:border-brand-400 transition-colors"
+        className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:text-gray-200 rounded-md text-sm disabled:opacity-40 hover:border-brand-400 transition-colors"
       >
         Next
       </button>

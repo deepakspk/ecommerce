@@ -75,7 +75,7 @@ export default function AdminReturnDetailPage() {
     <div className="p-8 max-w-3xl">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <Link to="/admin/returns" className="text-gray-400 hover:text-gray-700 text-sm">← Returns</Link>
+          <Link to="/admin/returns" className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm">← Returns</Link>
           <h1 className={`${H1_CLASS} mt-1`}>
             Return for order{" "}
             {order?._id ? (
@@ -94,23 +94,23 @@ export default function AdminReturnDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5">
         <div className="space-y-5">
           {/* Items */}
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100">
-              <h2 className="text-sm font-semibold text-gray-800">Items to return ({returnRequest.items.length})</h2>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Items to return ({returnRequest.items.length})</h2>
             </div>
             <table className="w-full text-sm">
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {returnRequest.items.map((item, i) => {
                   const orderItem = orderItemMap.get(String(item.variantId));
                   return (
                     <tr key={i}>
                       <td className="px-5 py-3">
-                        <p className="font-medium text-gray-900">{orderItem?.productName || "—"}</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{orderItem?.productName || "—"}</p>
                         {orderItem && <p className="text-xs text-gray-400 mt-0.5">{orderItem.size} · {orderItem.color}</p>}
-                        <p className="text-xs text-gray-500 mt-1">Reason: {item.reason}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Reason: {item.reason}</p>
                       </td>
-                      <td className="px-5 py-3 text-gray-500 text-xs text-center">× {item.quantity}</td>
-                      <td className="px-5 py-3 text-right font-medium text-gray-800">
+                      <td className="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs text-center">× {item.quantity}</td>
+                      <td className="px-5 py-3 text-right font-medium text-gray-800 dark:text-gray-100">
                         {orderItem ? fmt(orderItem.unitPrice * item.quantity) : "—"}
                       </td>
                     </tr>
@@ -121,29 +121,29 @@ export default function AdminReturnDetailPage() {
           </div>
 
           {/* Customer */}
-          <div className="bg-white border border-gray-200 rounded-lg p-5">
-            <h2 className="text-sm font-semibold text-gray-800 mb-2">Customer</h2>
-            <p className="text-sm font-medium text-gray-900">{returnRequest.userId?.name || "—"}</p>
-            <p className="text-sm text-gray-500">{returnRequest.userId?.email}</p>
-            {returnRequest.userId?.phone && <p className="text-sm text-gray-500">{returnRequest.userId.phone}</p>}
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Customer</h2>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{returnRequest.userId?.name || "—"}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{returnRequest.userId?.email}</p>
+            {returnRequest.userId?.phone && <p className="text-sm text-gray-500 dark:text-gray-400">{returnRequest.userId.phone}</p>}
           </div>
         </div>
 
         {/* Actions */}
         <div className="space-y-5">
-          <div className="bg-white border border-gray-200 rounded-lg p-5">
-            <h2 className="text-sm font-semibold text-gray-800 mb-3">Admin note</h2>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">Admin note</h2>
             <textarea
               value={adminNote}
               onChange={(e) => setAdminNote(e.target.value)}
               rows={3}
               placeholder="Optional note for this return"
-              className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-sm"
+              className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md px-2.5 py-1.5 text-sm"
             />
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-5">
-            <h2 className="text-sm font-semibold text-gray-800 mb-3">Update Status</h2>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3">Update Status</h2>
 
             {nextStatuses.length === 0 ? (
               <p className="text-xs text-gray-400">No further actions available.</p>
@@ -156,7 +156,7 @@ export default function AdminReturnDetailPage() {
                     disabled={updating}
                     className={`w-full py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 ${
                       s === "REJECTED"
-                        ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                        ? "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-950/70"
                         : "bg-brand-600 text-white hover:bg-brand-700"
                     }`}
                   >

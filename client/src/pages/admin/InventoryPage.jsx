@@ -30,8 +30,8 @@ function ProductPicker({ selected, onSelect }) {
 
   if (selected) {
     return (
-      <div className="flex items-center justify-between border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
-        <span className="font-medium text-gray-900">{selected.name}</span>
+      <div className="flex items-center justify-between border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800">
+        <span className="font-medium text-gray-900 dark:text-gray-100">{selected.name}</span>
         <button type="button" onClick={() => onSelect(null)} className="text-xs text-brand-600 hover:underline">
           Change
         </button>
@@ -49,7 +49,7 @@ function ProductPicker({ selected, onSelect }) {
         className={INPUT_CLASS}
       />
       {open && query.trim() && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-y-auto">
+        <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-56 overflow-y-auto">
           {searching ? (
             <p className="px-3 py-2 text-xs text-gray-400">Searching…</p>
           ) : results.length === 0 ? (
@@ -60,7 +60,7 @@ function ProductPicker({ selected, onSelect }) {
                 key={p._id}
                 type="button"
                 onClick={() => { onSelect(p); setOpen(false); setQuery(""); }}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-700"
               >
                 {p.name}
               </button>
@@ -252,32 +252,32 @@ export default function InventoryPage() {
           <div className={`${CARD_CLASS} overflow-hidden`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 border-b border-gray-200 dark:bg-gray-800/60 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Product</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Variant</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">SKU</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Stock</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Product</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Variant</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">SKU</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Stock</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {variants.map(v => {
                   const low = v.stockQuantity < LOW_STOCK;
                   return (
-                    <tr key={v._id} className={low ? "bg-amber-50 hover:bg-amber-100" : "hover:bg-gray-50"}>
+                    <tr key={v._id} className={low ? "bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-950/60" : "hover:bg-gray-50 dark:hover:bg-gray-800/60"}>
                       <td className="px-5 py-3">
-                        <p className="font-medium text-gray-900">{v.productId?.name || "—"}</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{v.productId?.name || "—"}</p>
                         {!v.productId?.isActive && (
                           <span className="text-xs text-gray-400">Inactive</span>
                         )}
                       </td>
-                      <td className="px-5 py-3 text-gray-700">
+                      <td className="px-5 py-3 text-gray-700 dark:text-gray-200">
                         {v.size} / {v.color}
                       </td>
                       <td className="px-5 py-3 text-gray-400 font-mono text-xs">{v.sku}</td>
                       <td className="px-5 py-3">
-                        <span className={`font-semibold text-base ${low ? "text-amber-700" : "text-gray-900"}`}>
+                        <span className={`font-semibold text-base ${low ? "text-amber-700 dark:text-amber-400" : "text-gray-900 dark:text-gray-100"}`}>
                           {v.stockQuantity}
                         </span>
                         {low && (
@@ -309,35 +309,35 @@ export default function InventoryPage() {
       {/* Adjust stock modal */}
       {adjusting && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm">
-            <h3 className="text-base font-bold text-gray-900 mb-1">Adjust Stock</h3>
-            <p className="text-sm text-gray-500 mb-4">
-              <span className="font-medium text-gray-800">{adjusting.productId?.name}</span>{" "}
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-sm">
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-1">Adjust Stock</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              <span className="font-medium text-gray-800 dark:text-gray-200">{adjusting.productId?.name}</span>{" "}
               — {adjusting.size} / {adjusting.color}
               <br />
               <span className="text-xs">Current stock: <strong>{adjusting.stockQuantity}</strong></span>
             </p>
             <form onSubmit={handleAdjust} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Change amount</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Change amount</label>
                 <input
                   type="number"
                   value={adjForm.change}
                   onChange={e => setAdjForm(f => ({ ...f, change: e.target.value }))}
                   placeholder="e.g. 10 or -3"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   required
                 />
                 <p className="text-xs text-gray-400 mt-1">Use a negative number to reduce stock.</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
                 <input
                   type="text"
                   value={adjForm.reason}
                   onChange={e => setAdjForm(f => ({ ...f, reason: e.target.value }))}
                   placeholder="e.g. Manual restock, damaged goods…"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                   required
                 />
               </div>
@@ -353,7 +353,7 @@ export default function InventoryPage() {
                 <button
                   type="button"
                   onClick={() => setAdjusting(null)}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancel
                 </button>
@@ -366,34 +366,34 @@ export default function InventoryPage() {
       {/* Add variant modal */}
       {showAddVariant && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => !variantSaving && setShowAddVariant(false)}>
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-bold text-gray-900 mb-4">Add Variant</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-4">Add Variant</h3>
             <form onSubmit={handleAddVariant} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product</label>
                 <ProductPicker selected={addProduct} onSelect={setAddProduct} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Size</label>
                   <input value={variantForm.size} onChange={(e) => setVariantForm(f => ({ ...f, size: e.target.value }))} className={INPUT_CLASS} required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Color</label>
                   <input value={variantForm.color} onChange={(e) => setVariantForm(f => ({ ...f, color: e.target.value }))} className={INPUT_CLASS} required />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SKU</label>
                 <input value={variantForm.sku} onChange={(e) => setVariantForm(f => ({ ...f, sku: e.target.value }))} className={`${INPUT_CLASS} font-mono`} required />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price (optional)</label>
                   <input type="number" min="0" value={variantForm.price} onChange={(e) => setVariantForm(f => ({ ...f, price: e.target.value }))} placeholder="Uses base price" className={INPUT_CLASS} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Initial stock</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Initial stock</label>
                   <input type="number" min="0" value={variantForm.stockQuantity} onChange={(e) => setVariantForm(f => ({ ...f, stockQuantity: e.target.value }))} placeholder="0" className={INPUT_CLASS} />
                 </div>
               </div>
@@ -409,7 +409,7 @@ export default function InventoryPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddVariant(false)}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2.5 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancel
                 </button>

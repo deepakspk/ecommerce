@@ -183,18 +183,18 @@ export default function ProductsPage() {
           <div className={`${CARD_CLASS} overflow-hidden`}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-50 border-b border-gray-200 dark:bg-gray-800/60 dark:border-gray-700">
                   <tr>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Product</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Category</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Base Price</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Product</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Category</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Base Price</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
                     <th className="px-5 py-3" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {products.map(p => (
-                    <tr key={p._id} className="hover:bg-gray-50">
+                    <tr key={p._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
                           <ItemThumb
@@ -204,15 +204,15 @@ export default function ProductsPage() {
                             className="w-10 h-10 rounded-lg flex-shrink-0"
                           />
                           <div>
-                            <p className="font-medium text-gray-900">{p.name}</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">{p.name}</p>
                             <p className="text-xs text-gray-400">{p.slug}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-gray-600">
+                      <td className="px-5 py-3 text-gray-600 dark:text-gray-300">
                         {p.categories?.length ? p.categories.map((c) => c.name).join(", ") : "—"}
                       </td>
-                      <td className="px-5 py-3 text-gray-700 font-medium">{fmt(p.basePrice)}</td>
+                      <td className="px-5 py-3 text-gray-700 dark:text-gray-200 font-medium">{fmt(p.basePrice)}</td>
                       <td className="px-5 py-3">
                         <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${
                           p.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"

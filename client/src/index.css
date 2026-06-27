@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Class-based dark mode, scoped via the `.dark` ancestor class — applied only
+   on the admin layout wrapper so the storefront is unaffected. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-brand-50: #eff6ff;
   --color-brand-100: #dbeafe;

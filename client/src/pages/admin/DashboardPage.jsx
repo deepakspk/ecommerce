@@ -63,14 +63,14 @@ const ICONS = {
 
 function StatCard({ icon, label, value, sub, tone, to }) {
   const TONES = {
-    blue: { bg: "bg-blue-50", border: "border-blue-100", iconBg: "bg-blue-100 text-blue-600" },
-    green: { bg: "bg-green-50", border: "border-green-100", iconBg: "bg-green-100 text-green-600" },
-    amber: { bg: "bg-amber-50", border: "border-amber-100", iconBg: "bg-amber-100 text-amber-600" },
-    red: { bg: "bg-red-50", border: "border-red-100", iconBg: "bg-red-100 text-red-600" },
-    teal: { bg: "bg-teal-50", border: "border-teal-100", iconBg: "bg-teal-100 text-teal-600" },
-    indigo: { bg: "bg-indigo-50", border: "border-indigo-100", iconBg: "bg-indigo-100 text-indigo-600" },
-    purple: { bg: "bg-purple-50", border: "border-purple-100", iconBg: "bg-purple-100 text-purple-600" },
-    cyan: { bg: "bg-cyan-50", border: "border-cyan-100", iconBg: "bg-cyan-100 text-cyan-600" },
+    blue: { bg: "bg-blue-50 dark:bg-blue-950/40", border: "border-blue-100 dark:border-blue-900/50", iconBg: "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400" },
+    green: { bg: "bg-green-50 dark:bg-green-950/40", border: "border-green-100 dark:border-green-900/50", iconBg: "bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400" },
+    amber: { bg: "bg-amber-50 dark:bg-amber-950/40", border: "border-amber-100 dark:border-amber-900/50", iconBg: "bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400" },
+    red: { bg: "bg-red-50 dark:bg-red-950/40", border: "border-red-100 dark:border-red-900/50", iconBg: "bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400" },
+    teal: { bg: "bg-teal-50 dark:bg-teal-950/40", border: "border-teal-100 dark:border-teal-900/50", iconBg: "bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400" },
+    indigo: { bg: "bg-indigo-50 dark:bg-indigo-950/40", border: "border-indigo-100 dark:border-indigo-900/50", iconBg: "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400" },
+    purple: { bg: "bg-purple-50 dark:bg-purple-950/40", border: "border-purple-100 dark:border-purple-900/50", iconBg: "bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400" },
+    cyan: { bg: "bg-cyan-50 dark:bg-cyan-950/40", border: "border-cyan-100 dark:border-cyan-900/50", iconBg: "bg-cyan-100 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-400" },
   };
   const t = TONES[tone];
   const card = (
@@ -81,9 +81,9 @@ function StatCard({ icon, label, value, sub, tone, to }) {
         <Icon path={ICONS[icon]} className="w-6 h-6" />
       </span>
       <div>
-        <p className="text-2xl font-bold text-gray-900 leading-tight">{value}</p>
-        <p className="text-xs font-semibold text-gray-600">{label}</p>
-        {sub && <p className="text-[11px] text-gray-400 mt-0.5">{sub}</p>}
+        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight">{value}</p>
+        <p className="text-xs font-semibold text-gray-600 dark:text-gray-300">{label}</p>
+        {sub && <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -94,7 +94,7 @@ function ChartCard({ title, action, children }) {
   return (
     <div className={`${CARD_CLASS} p-5`}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-gray-800">{title}</h2>
+        <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{title}</h2>
         {action}
       </div>
       {children}
@@ -102,10 +102,10 @@ function ChartCard({ title, action, children }) {
   );
 }
 
-function InfoRow({ label, value, valueClass = "text-gray-900" }) {
+function InfoRow({ label, value, valueClass = "text-gray-900 dark:text-gray-100" }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-      <span className="text-xs text-gray-500">{label}</span>
+    <div className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
+      <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
       <span className={`text-sm font-semibold ${valueClass}`}>{value}</span>
     </div>
   );
@@ -140,7 +140,7 @@ export default function DashboardPage() {
       <AdminPageHeader title="Dashboard" subtitle={`Welcome back, ${user?.name || ""}`} />
 
       {error && (
-        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-6">{error}</p>
+        <p className="text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-md px-3 py-2 mb-6">{error}</p>
       )}
 
       {/* KPI cards */}
@@ -158,7 +158,7 @@ export default function DashboardPage() {
       {totals && totals.lowStockCount > 0 && (
         <Link
           to="/admin/inventory"
-          className="flex items-center gap-2 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 mb-6 hover:bg-amber-100 transition-colors"
+          className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-2.5 mb-6 hover:bg-amber-100 dark:hover:bg-amber-950/70 transition-colors"
         >
           <Icon path={ICONS.alert} className="w-4 h-4 flex-shrink-0" />
           {totals.lowStockCount} variant{totals.lowStockCount !== 1 ? "s" : ""} running low on stock — review inventory →
@@ -169,7 +169,7 @@ export default function DashboardPage() {
       <div className="mb-6">
         <ChartCard title="Sales & Orders Trend — Last 30 Days">
           {!dataReady ? (
-            <div className="h-72 bg-gray-50 rounded-md animate-pulse" />
+            <div className="h-72 bg-gray-50 dark:bg-gray-800 rounded-md animate-pulse" />
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={charts.monthlyTrend} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
@@ -195,7 +195,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <ChartCard title="Order Status">
           {!dataReady ? (
-            <div className="h-56 bg-gray-50 rounded-md animate-pulse" />
+            <div className="h-56 bg-gray-50 dark:bg-gray-800 rounded-md animate-pulse" />
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={charts.statusBreakdown} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -215,7 +215,7 @@ export default function DashboardPage() {
 
         <ChartCard title="Delivered vs Returned">
           {!dataReady ? (
-            <div className="h-56 bg-gray-50 rounded-md animate-pulse" />
+            <div className="h-56 bg-gray-50 dark:bg-gray-800 rounded-md animate-pulse" />
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
@@ -242,7 +242,7 @@ export default function DashboardPage() {
 
         <ChartCard title="COD Order Value — Last 7 Days">
           {!dataReady ? (
-            <div className="h-56 bg-gray-50 rounded-md animate-pulse" />
+            <div className="h-56 bg-gray-50 dark:bg-gray-800 rounded-md animate-pulse" />
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={charts.codTrend} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -266,9 +266,9 @@ export default function DashboardPage() {
       {/* Info panels */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
         <div className={`${CARD_CLASS} p-5`}>
-          <h2 className="text-sm font-semibold text-gray-800 mb-2">Today's Details</h2>
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Today's Details</h2>
           {!dataReady ? (
-            <div className="h-32 bg-gray-50 rounded-md animate-pulse" />
+            <div className="h-32 bg-gray-50 dark:bg-gray-800 rounded-md animate-pulse" />
           ) : (
             <>
               <InfoRow label="Today's Orders" value={today.orders} />
@@ -280,9 +280,9 @@ export default function DashboardPage() {
         </div>
 
         <div className={`${CARD_CLASS} p-5`}>
-          <h2 className="text-sm font-semibold text-gray-800 mb-2">COD Info</h2>
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">COD Info</h2>
           {!dataReady ? (
-            <div className="h-32 bg-gray-50 rounded-md animate-pulse" />
+            <div className="h-32 bg-gray-50 dark:bg-gray-800 rounded-md animate-pulse" />
           ) : (
             <>
               <InfoRow label="Last Paid COD Date" value={fmtFullDate(cod.lastDate)} />
@@ -294,9 +294,9 @@ export default function DashboardPage() {
         </div>
 
         <div className={`${CARD_CLASS} p-5`}>
-          <h2 className="text-sm font-semibold text-gray-800 mb-2">Order Values</h2>
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Order Values</h2>
           {!dataReady ? (
-            <div className="h-32 bg-gray-50 rounded-md animate-pulse" />
+            <div className="h-32 bg-gray-50 dark:bg-gray-800 rounded-md animate-pulse" />
           ) : (
             <>
               <InfoRow label="Order Value" value={fmt(values.orderValue)} />
@@ -308,17 +308,17 @@ export default function DashboardPage() {
         </div>
 
         <div className={`${CARD_CLASS} p-5`}>
-          <h2 className="text-sm font-semibold text-gray-800 mb-2">Return Rate — Last 3 Months</h2>
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Return Rate — Last 3 Months</h2>
           {!dataReady ? (
-            <div className="h-32 bg-gray-50 rounded-md animate-pulse" />
+            <div className="h-32 bg-gray-50 dark:bg-gray-800 rounded-md animate-pulse" />
           ) : (
             charts.returnRateByMonth.map((m) => (
-              <div key={m.month} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+              <div key={m.month} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
                 <div>
-                  <p className="text-xs font-medium text-gray-700">{m.month}</p>
+                  <p className="text-xs font-medium text-gray-700 dark:text-gray-200">{m.month}</p>
                   <p className="text-[11px] text-gray-400">{m.returns} returns / {m.orders} orders</p>
                 </div>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${m.rate > 5 ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${m.rate > 5 ? "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400" : "bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400"}`}>
                   {m.rate}%
                 </span>
               </div>
@@ -329,8 +329,8 @@ export default function DashboardPage() {
 
       {/* Recent orders */}
       <div className={`${CARD_CLASS} overflow-hidden mb-8`}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-800">Recent Orders</h2>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Recent Orders</h2>
           <Link to="/admin/orders" className="text-xs text-brand-600 hover:underline">
             View all →
           </Link>
@@ -341,24 +341,24 @@ export default function DashboardPage() {
           <p className="px-5 py-6 text-sm text-gray-400">No orders yet.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gray-50 border-b border-gray-100 dark:bg-gray-800/60 dark:border-gray-800">
               <tr>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Order</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Customer</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Order</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Customer</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
               {recentOrders.map((o) => (
-                <tr key={o._id} className="hover:bg-gray-50">
+                <tr key={o._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/60">
                   <td className="px-5 py-3">
                     <Link to={`/admin/orders/${o._id}`} className="text-brand-600 hover:underline font-mono text-xs">
                       #{o._id.slice(-8).toUpperCase()}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 text-gray-700">{o.userId?.name || "—"}</td>
-                  <td className="px-5 py-3 font-medium text-gray-900">{fmt(o.total)}</td>
+                  <td className="px-5 py-3 text-gray-700 dark:text-gray-300">{o.userId?.name || "—"}</td>
+                  <td className="px-5 py-3 font-medium text-gray-900 dark:text-gray-100">{fmt(o.total)}</td>
                   <td className="px-5 py-3">
                     <Badge kind="order" status={o.status} />
                   </td>
@@ -374,10 +374,10 @@ export default function DashboardPage() {
         <Link to="/admin/products/new" className="bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors">
           + New Product
         </Link>
-        <Link to="/admin/orders" className="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors">
+        <Link to="/admin/orders" className="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
           Manage Orders
         </Link>
-        <Link to="/admin/inventory" className="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors">
+        <Link to="/admin/inventory" className="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
           View Inventory
         </Link>
       </div>

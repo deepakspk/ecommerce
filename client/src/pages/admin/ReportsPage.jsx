@@ -87,10 +87,10 @@ const ICONS = {
 };
 
 const CARD_TONES = {
-  blue: { bg: "bg-blue-50", text: "text-blue-700", iconBg: "bg-blue-100 text-blue-600" },
-  green: { bg: "bg-green-50", text: "text-green-700", iconBg: "bg-green-100 text-green-600" },
-  amber: { bg: "bg-amber-50", text: "text-amber-700", iconBg: "bg-amber-100 text-amber-600" },
-  purple: { bg: "bg-purple-50", text: "text-purple-700", iconBg: "bg-purple-100 text-purple-600" },
+  blue: { bg: "bg-blue-50 dark:bg-blue-950/40", text: "text-blue-700 dark:text-blue-400", iconBg: "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400" },
+  green: { bg: "bg-green-50 dark:bg-green-950/40", text: "text-green-700 dark:text-green-400", iconBg: "bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400" },
+  amber: { bg: "bg-amber-50 dark:bg-amber-950/40", text: "text-amber-700 dark:text-amber-400", iconBg: "bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400" },
+  purple: { bg: "bg-purple-50 dark:bg-purple-950/40", text: "text-purple-700 dark:text-purple-400", iconBg: "bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400" },
 };
 
 function StatCard({ icon, tone, label, value }) {
@@ -101,7 +101,7 @@ function StatCard({ icon, tone, label, value }) {
         <Icon path={ICONS[icon]} className="w-7 h-7" />
       </span>
       <div>
-        <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{label}</p>
         <p className={`text-2xl font-bold ${t.text}`}>{value}</p>
       </div>
     </div>
@@ -109,47 +109,47 @@ function StatCard({ icon, tone, label, value }) {
 }
 
 function rateTone(rate) {
-  if (rate >= 80) return { bar: "bg-green-500", text: "text-green-600" };
-  if (rate >= 50) return { bar: "bg-amber-400", text: "text-amber-600" };
-  return { bar: "bg-red-500", text: "text-red-600" };
+  if (rate >= 80) return { bar: "bg-green-500", text: "text-green-600 dark:text-green-400" };
+  if (rate >= 50) return { bar: "bg-amber-400", text: "text-amber-600 dark:text-amber-400" };
+  return { bar: "bg-red-500", text: "text-red-600 dark:text-red-400" };
 }
 
 function TopDistrictsTable({ rows }) {
   return (
     <div className={`${CARD_CLASS} overflow-hidden`}>
-      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
-        <h2 className="text-sm font-semibold text-gray-900">Top Districts by Delivery Success Rate</h2>
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Top Districts by Delivery Success Rate</h2>
         <div className="flex items-center gap-3 text-[11px] font-medium">
-          <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700">≥ 80% Good</span>
-          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">50 – 79% Average</span>
-          <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700">&lt; 50% Low</span>
+          <span className="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400">≥ 80% Good</span>
+          <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400">50 – 79% Average</span>
+          <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400">&lt; 50% Low</span>
         </div>
       </div>
       {rows.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-8">No data.</p>
       ) : (
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-gray-50 border-b border-gray-200 dark:bg-gray-800/60 dark:border-gray-700">
             <tr>
-              <th className="text-left px-5 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide w-10">#</th>
-              <th className="text-left px-5 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">District</th>
-              <th className="text-right px-5 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Orders</th>
-              <th className="text-right px-5 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Delivered</th>
-              <th className="text-left px-5 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Delivered Rate</th>
+              <th className="text-left px-5 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide w-10">#</th>
+              <th className="text-left px-5 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">District</th>
+              <th className="text-right px-5 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total Orders</th>
+              <th className="text-right px-5 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Delivered</th>
+              <th className="text-left px-5 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Delivered Rate</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {rows.map((r, i) => {
               const tone = rateTone(r.deliveredRate);
               return (
                 <tr key={r.district}>
                   <td className="px-5 py-3 text-gray-400">{i + 1}</td>
-                  <td className="px-5 py-3 font-medium text-gray-800">{r.district}</td>
-                  <td className="px-5 py-3 text-right text-brand-600 font-medium">{r.totalOrders}</td>
-                  <td className="px-5 py-3 text-right text-green-600 font-medium">{r.delivered}</td>
+                  <td className="px-5 py-3 font-medium text-gray-800 dark:text-gray-200">{r.district}</td>
+                  <td className="px-5 py-3 text-right text-brand-600 dark:text-brand-400 font-medium">{r.totalOrders}</td>
+                  <td className="px-5 py-3 text-right text-green-600 dark:text-green-400 font-medium">{r.delivered}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${tone.bar}`}
                           style={{ width: `${Math.min(100, r.deliveredRate)}%` }}
@@ -171,24 +171,24 @@ function TopDistrictsTable({ rows }) {
 function ProductTable({ title, rows, metric }) {
   return (
     <div className={`${CARD_CLASS} overflow-hidden`}>
-      <div className="px-5 py-3 border-b border-gray-200">
-        <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
+      <div className="px-5 py-3 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
       </div>
       {rows.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-8">No data.</p>
       ) : (
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-gray-50 border-b border-gray-200 dark:bg-gray-800/60 dark:border-gray-700">
             <tr>
-              <th className="text-left px-5 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Product</th>
-              <th className="text-right px-5 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">{metric}</th>
+              <th className="text-left px-5 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Product</th>
+              <th className="text-right px-5 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{metric}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {rows.map((r) => (
               <tr key={r.productName}>
-                <td className="px-5 py-2 text-gray-700">{r.productName}</td>
-                <td className="px-5 py-2 text-right font-medium text-gray-900">
+                <td className="px-5 py-2 text-gray-700 dark:text-gray-300">{r.productName}</td>
+                <td className="px-5 py-2 text-right font-medium text-gray-900 dark:text-gray-100">
                   {metric === "Revenue" ? fmtMoney(r.revenue) : r.units}
                 </td>
               </tr>
@@ -288,7 +288,7 @@ export default function ReportsPage() {
         )}
       </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && <p className="text-red-600 dark:text-red-400 text-sm mb-4">{error}</p>}
 
       {loading ? (
         <p className="text-gray-400 text-sm">Loading…</p>
