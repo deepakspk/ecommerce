@@ -25,7 +25,7 @@ function ColorField({ field, value, onChange }) {
           type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-9 w-12 rounded border border-gray-300 cursor-pointer"
+          className="h-9 w-12 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
         />
         <input
           type="text"
@@ -90,15 +90,33 @@ export default function ThemeSettingsPage() {
     }
   }
 
-  if (loading) return <div className="p-4 sm:p-8"><p className="text-gray-400 text-sm">Loading…</p></div>;
-  if (loadError) return <div className="p-4 sm:p-8"><p className="text-red-600 text-sm">{loadError}</p></div>;
+  if (loading) {
+    return (
+      <div className="p-4 sm:p-8 max-w-2xl">
+        <AdminPageHeader title="Theme Settings" loading />
+        <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded mb-6 animate-pulse" />
+        <div className={`${CARD_CLASS} p-6 space-y-5 animate-pulse`}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="space-y-1.5">
+              <div className="h-3 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-12 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-9 flex-1 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (loadError) return <div className="p-4 sm:p-8"><p className="text-red-600 dark:text-red-400 text-sm">{loadError}</p></div>;
 
   const scale = deriveBrandScale(form.primaryColor);
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
       <AdminPageHeader title="Theme Settings" />
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
         Primary Color drives buttons, links, and badges. Secondary Color drives the Navbar
         and Footer background. The other fields are saved for future use.
       </p>
@@ -115,7 +133,7 @@ export default function ThemeSettingsPage() {
 
         <div>
           <p className={LABEL_CLASS}>Navbar / Footer preview</p>
-          <div className="rounded-lg overflow-hidden border border-gray-200">
+          <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
             <div
               className="px-4 py-3 flex items-center justify-between"
               style={{ backgroundColor: form.secondaryColor, color: getContrastColor(form.secondaryColor) }}
@@ -144,7 +162,7 @@ export default function ThemeSettingsPage() {
         {scale && (
           <div>
             <p className={LABEL_CLASS}>Derived brand scale preview</p>
-            <div className="flex rounded-lg overflow-hidden border border-gray-200">
+            <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
               {Object.entries(scale).map(([shade, hex]) => (
                 <div key={shade} className="flex-1 h-12 flex items-end justify-center pb-1" style={{ backgroundColor: hex }}>
                   <span className="text-[10px] font-mono text-white drop-shadow">{shade}</span>
@@ -154,8 +172,8 @@ export default function ThemeSettingsPage() {
           </div>
         )}
 
-        {saveError && <p className="text-red-600 text-sm">{saveError}</p>}
-        {saveSuccess && <p className="text-green-600 text-sm">{saveSuccess}</p>}
+        {saveError && <p className="text-red-600 dark:text-red-400 text-sm">{saveError}</p>}
+        {saveSuccess && <p className="text-green-600 dark:text-green-400 text-sm">{saveSuccess}</p>}
 
         <button type="submit" disabled={saving} className={BUTTON_PRIMARY}>
           {saving ? "Saving…" : "Save changes"}

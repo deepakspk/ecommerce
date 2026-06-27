@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import * as adminApi from "../../api/admin";
 import { cloudinaryUrl } from "../../utils/cloudinaryUrl";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import TableSkeleton from "../../components/admin/TableSkeleton";
 import { CARD_CLASS } from "../../utils/ui";
 
 const EMPTY_FORM = {
@@ -238,7 +239,7 @@ export default function CategoriesPage() {
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Loading…</p>
+        <TableSkeleton columns={5} />
       ) : roots.length === 0 ? (
         <p className="text-gray-400 text-sm">No categories yet.</p>
       ) : (

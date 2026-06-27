@@ -4,7 +4,7 @@ import * as adminApi from "../../api/admin";
 import ShipmentPanel from "../../components/ShipmentPanel";
 import NcmOrderInsights from "../../components/admin/NcmOrderInsights";
 import Badge from "../../components/Badge";
-import { H1_CLASS } from "../../utils/ui";
+import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
 import { downloadBlob } from "../../utils/downloadBlob";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
@@ -200,7 +200,37 @@ export default function AdminOrderDetailPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-gray-400 text-sm">Loading…</div>;
+  if (loading) {
+    return (
+      <div className="p-4 sm:p-8 max-w-[1600px] animate-pulse">
+        <div className="flex flex-wrap items-start justify-between gap-4 pb-6 mb-6 border-b border-gray-200 dark:border-gray-800">
+          <div>
+            <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+            <div className="h-7 w-56 bg-gray-200 dark:bg-gray-700 rounded mt-2" />
+            <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded mt-2" />
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+            <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+            <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+          <div className="space-y-6">
+            <div className={`${CARD_CLASS} p-5 h-32`} />
+            <div className={`${CARD_CLASS} p-5 h-48`} />
+            <div className={`${CARD_CLASS} p-5 h-28`} />
+            <div className={`${CARD_CLASS} p-5 h-24`} />
+          </div>
+          <div className="space-y-6">
+            <div className={`${CARD_CLASS} p-5 h-32`} />
+            <div className={`${CARD_CLASS} p-5 h-40`} />
+            <div className={`${CARD_CLASS} p-5 h-24`} />
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!order) return (
     <div className="p-8">
       <p className="text-red-600 mb-3">Order not found.</p>

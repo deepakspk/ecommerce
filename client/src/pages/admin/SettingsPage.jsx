@@ -70,13 +70,13 @@ function GroupForm({ fields, onSave }) {
     <form onSubmit={handleSave} className={`${CARD_CLASS} p-6 flex-1 space-y-4`}>
       {fields.map((field) => (
         <div key={field.key}>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{field.label}</label>
           <FieldInput field={field} value={form[field.key] ?? ""} onChange={(v) => setField(field.key, v)} />
         </div>
       ))}
 
-      {saveError && <p className="text-red-600 text-sm">{saveError}</p>}
-      {saveSuccess && <p className="text-green-600 text-sm">{saveSuccess}</p>}
+      {saveError && <p className="text-red-600 dark:text-red-400 text-sm">{saveError}</p>}
+      {saveSuccess && <p className="text-green-600 dark:text-green-400 text-sm">{saveSuccess}</p>}
 
       <button
         type="submit"
@@ -131,8 +131,29 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading) return <div className="p-4 sm:p-8"><p className="text-gray-400 text-sm">Loading…</p></div>;
-  if (loadError) return <div className="p-4 sm:p-8"><p className="text-red-600 text-sm">{loadError}</p></div>;
+  if (loading) {
+    return (
+      <div className="p-4 sm:p-8">
+        <AdminPageHeader title="System Settings" loading />
+        <div className="flex flex-col sm:flex-row gap-6 animate-pulse">
+          <nav className="flex sm:flex-col gap-1 overflow-x-auto sm:w-48 flex-shrink-0">
+            {GROUPS.map((g) => (
+              <div key={g} className="h-9 w-full bg-gray-200 dark:bg-gray-700 rounded-md flex-shrink-0" />
+            ))}
+          </nav>
+          <div className={`${CARD_CLASS} p-6 flex-1 space-y-4`}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="space-y-1.5">
+                <div className="h-3 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-9 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (loadError) return <div className="p-4 sm:p-8"><p className="text-red-600 dark:text-red-400 text-sm">{loadError}</p></div>;
 
   return (
     <div className="p-4 sm:p-8">
@@ -144,7 +165,7 @@ export default function SettingsPage() {
           </button>
         }
       />
-      {exportError && <p className="text-red-600 text-sm mb-4">{exportError}</p>}
+      {exportError && <p className="text-red-600 dark:text-red-400 text-sm mb-4">{exportError}</p>}
 
       <div className="flex flex-col sm:flex-row gap-6">
         <nav className="flex sm:flex-col gap-1 overflow-x-auto sm:w-48 flex-shrink-0">
@@ -153,7 +174,7 @@ export default function SettingsPage() {
               key={g}
               onClick={() => setActiveGroup(g)}
               className={`text-left px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-                activeGroup === g ? "bg-brand-600 text-white" : "text-gray-600 hover:bg-gray-100"
+                activeGroup === g ? "bg-brand-600 text-white" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               }`}
             >
               {GROUP_LABELS[g]}

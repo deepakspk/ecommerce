@@ -291,7 +291,31 @@ export default function ReportsPage() {
       {error && <p className="text-red-600 dark:text-red-400 text-sm mb-4">{error}</p>}
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Loading…</p>
+        <div className="space-y-6 animate-pulse">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className={`${CARD_CLASS} p-5 flex items-center gap-4`}>
+                <div className="w-14 h-14 rounded-xl bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-2/3 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-5 w-1/2 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className={`${CARD_CLASS} p-5`}>
+            <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
+            <div className="h-72 bg-gray-100 dark:bg-gray-800 rounded-md" />
+          </div>
+          <div className={`${CARD_CLASS} p-5`}>
+            <div className="h-4 w-64 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-4 bg-gray-100 dark:bg-gray-800 rounded" />
+              ))}
+            </div>
+          </div>
+        </div>
       ) : !data ? (
         <EmptyState title="No report data available." />
       ) : (

@@ -105,8 +105,24 @@ export default function CompanySettingsPage() {
     }
   }
 
-  if (loading) return <div className="p-4 sm:p-8"><p className="text-gray-400 text-sm">Loading…</p></div>;
-  if (loadError) return <div className="p-4 sm:p-8"><p className="text-red-600 text-sm">{loadError}</p></div>;
+  if (loading) {
+    return (
+      <div className="p-4 sm:p-8 max-w-3xl">
+        <AdminPageHeader title="Company Settings" loading />
+        <div className={`${CARD_CLASS} p-6 space-y-6 animate-pulse`}>
+          <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-9 bg-gray-200 dark:bg-gray-700 rounded" />
+            ))}
+          </div>
+          <div className="h-9 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded" />
+        </div>
+      </div>
+    );
+  }
+  if (loadError) return <div className="p-4 sm:p-8"><p className="text-red-600 dark:text-red-400 text-sm">{loadError}</p></div>;
 
   return (
     <div className="p-4 sm:p-8 max-w-3xl">
@@ -114,7 +130,7 @@ export default function CompanySettingsPage() {
 
       <form onSubmit={handleSave} className={`${CARD_CLASS} p-6 space-y-6`}>
         <div>
-          <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">Company Profile</h2>
+          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide mb-3">Company Profile</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {TEXT_FIELDS.map((f) => (
               <div key={f.key}>
@@ -149,7 +165,7 @@ export default function CompanySettingsPage() {
         </div>
 
         <div>
-          <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">Branding</h2>
+          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide mb-3">Branding</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={LABEL_CLASS}>Logo</label>
@@ -165,7 +181,7 @@ export default function CompanySettingsPage() {
         </div>
 
         <div>
-          <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">Social Media Links</h2>
+          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide mb-3">Social Media Links</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {SOCIAL_FIELDS.map((f) => (
               <div key={f.key}>
@@ -181,8 +197,8 @@ export default function CompanySettingsPage() {
           </div>
         </div>
 
-        {saveError && <p className="text-red-600 text-sm">{saveError}</p>}
-        {saveSuccess && <p className="text-green-600 text-sm">{saveSuccess}</p>}
+        {saveError && <p className="text-red-600 dark:text-red-400 text-sm">{saveError}</p>}
+        {saveSuccess && <p className="text-green-600 dark:text-green-400 text-sm">{saveSuccess}</p>}
 
         <button type="submit" disabled={saving} className={BUTTON_PRIMARY}>
           {saving ? "Saving…" : "Save changes"}

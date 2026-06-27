@@ -5,6 +5,28 @@ import { cloudinaryUrl } from "../../utils/cloudinaryUrl";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import { CARD_CLASS, INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER } from "../../utils/ui";
 
+function BannerRowSkeleton() {
+  return (
+    <div className="space-y-3 animate-pulse">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className={`${CARD_CLASS} p-3 flex items-center gap-4`}>
+          <div className="w-28 h-16 rounded-md bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3.5 w-2/3 bg-gray-200 dark:bg-gray-700 rounded" />
+            <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className="w-7 h-7 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="w-7 h-7 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-7 w-12 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-7 w-14 rounded bg-gray-200 dark:bg-gray-700" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const MAX_BANNERS = 5;
 
 export default function BannersPage() {
@@ -110,11 +132,11 @@ export default function BannersPage() {
         subtitle={`${banners.length} / ${MAX_BANNERS} banners`}
       />
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && <p className="text-red-600 dark:text-red-400 text-sm mb-4">{error}</p>}
 
       <div className={`${CARD_CLASS} p-5 mb-6`}>
         {atLimit ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             You've reached the {MAX_BANNERS}-banner limit. Delete one to add another.
           </p>
         ) : (
@@ -139,7 +161,7 @@ export default function BannersPage() {
                 className={INPUT_CLASS}
               />
             </div>
-            {formError && <p className="text-red-600 text-sm">{formError}</p>}
+            {formError && <p className="text-red-600 dark:text-red-400 text-sm">{formError}</p>}
             <button type="submit" disabled={saving} className={BUTTON_PRIMARY}>
               {saving ? "Uploading…" : "Add banner"}
             </button>
@@ -148,7 +170,7 @@ export default function BannersPage() {
       </div>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Loading…</p>
+        <BannerRowSkeleton />
       ) : banners.length === 0 ? (
         <EmptyState title="No banners yet" message="Add one above to show it on the homepage." />
       ) : (
@@ -158,10 +180,10 @@ export default function BannersPage() {
               <img
                 src={cloudinaryUrl(banner.imageUrl, 200)}
                 alt=""
-                className="w-28 h-16 object-cover rounded-md border border-gray-200 flex-shrink-0"
+                className="w-28 h-16 object-cover rounded-md border border-gray-200 dark:border-gray-700 flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-700 truncate">{banner.link || "No link"}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{banner.link || "No link"}</p>
                 <p className="text-xs text-gray-400">{banner.isActive ? "Active" : "Hidden"}</p>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -169,7 +191,7 @@ export default function BannersPage() {
                   onClick={() => handleMove(banner, "up")}
                   disabled={i === 0}
                   aria-label="Move up"
-                  className="w-7 h-7 rounded border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-30 flex items-center justify-center"
+                  className="w-7 h-7 rounded border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 flex items-center justify-center"
                 >
                   ↑
                 </button>
@@ -177,7 +199,7 @@ export default function BannersPage() {
                   onClick={() => handleMove(banner, "down")}
                   disabled={i === banners.length - 1}
                   aria-label="Move down"
-                  className="w-7 h-7 rounded border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-30 flex items-center justify-center"
+                  className="w-7 h-7 rounded border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 flex items-center justify-center"
                 >
                   ↓
                 </button>
