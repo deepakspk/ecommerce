@@ -6,6 +6,7 @@ import { sendOrderStatusEmail } from "../../utils/orderEmails.js";
 import { logAudit } from "../../utils/auditLog.js";
 import { streamInvoicePdf } from "../../utils/invoice.js";
 import { placeOrder } from "../../services/orderService.js";
+import { getDiscountedPrice } from "../../utils/pricing.js";
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -174,7 +175,10 @@ export async function createOrderManual(req, res) {
   if (!customer) return res.status(404).json({ message: "Customer not found" });
 
   const variantIds = items.map((i) => i.variantId);
-  const variants = await ProductVariant.find({ _id: { $in: variantIds } }).populate("productId", "name basePrice");
+  const variants = await ProductVariant.find({ _id: { $in: variantIds } }).populate(
+    "productId",
+    "name basePrice discountType discountValue"
+  );
   const variantsById = new Map(variants.map((v) => [String(v._id), v]));
 
   const orderItems = [];
@@ -182,12 +186,13 @@ export async function createOrderManual(req, res) {
     const variant = variantsById.get(String(variantId));
     if (!variant) return res.status(404).json({ message: `Variant ${variantId} not found` });
     const product = variant.productId;
+    const { finalPrice } = getDiscountedPrice(variant.price ?? product?.basePrice ?? 0, product || {});
     orderItems.push({
       variantId: variant._id,
       productName: product?.name || "Item",
       size: variant.size,
       color: variant.color,
-      unitPrice: variant.price ?? product?.basePrice ?? 0,
+      unitPrice: finalPrice,
       quantity: Number(quantity),
     });
   }

@@ -162,6 +162,23 @@ const bannerReorderValidators = [
   body("items.*.sortOrder").isInt().withMessage("each item needs an integer sortOrder"),
 ];
 
+const discountFieldValidators = [
+  body("discountType")
+    .optional({ values: "falsy" })
+    .isIn(["PERCENTAGE", "FIXED"])
+    .withMessage("discountType must be PERCENTAGE or FIXED"),
+  body("discountValue")
+    .optional({ values: "falsy" })
+    .isFloat({ min: 0 })
+    .withMessage("discountValue must be a non-negative number"),
+  body().custom((value) => {
+    if (value.discountType === "PERCENTAGE" && Number(value.discountValue) > 100) {
+      throw new Error("discountValue cannot exceed 100 when discountType is PERCENTAGE");
+    }
+    return true;
+  }),
+];
+
 const productBodyValidators = [
   body("name").trim().notEmpty().withMessage("name is required"),
   body("categories")
@@ -171,6 +188,7 @@ const productBodyValidators = [
     })
     .withMessage("categories must be a non-empty array of category ids"),
   body("basePrice").isFloat({ min: 0 }).withMessage("basePrice must be a non-negative number"),
+  ...discountFieldValidators,
 ];
 
 const productUpdateBodyValidators = [
@@ -183,6 +201,7 @@ const productUpdateBodyValidators = [
     })
     .withMessage("categories must be a non-empty array of category ids"),
   body("basePrice").optional().isFloat({ min: 0 }).withMessage("basePrice must be a non-negative number"),
+  ...discountFieldValidators,
 ];
 
 const variantBodyValidators = [

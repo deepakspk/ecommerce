@@ -10,6 +10,7 @@ import { getErrorMessage } from "../utils/errorHelpers";
 import { submitEsewaForm } from "../utils/esewaForm";
 import ItemThumb from "../components/ItemThumb";
 import { H1_CLASS, CARD_CLASS } from "../utils/ui";
+import { getDiscountedPrice } from "../utils/pricing";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -204,7 +205,7 @@ export default function CheckoutPage() {
           <div className={`${CARD_CLASS} p-5`}>
             <div className="space-y-3 mb-5">
               {items.map(item => {
-                const unitPrice = item.variantPrice ?? item.basePrice;
+                const { finalPrice: unitPrice } = getDiscountedPrice(item.variantPrice ?? item.basePrice, item);
                 return (
                   <div key={item.variantId} className="flex gap-3 items-start">
                     <div className="flex-shrink-0 w-12 h-14 rounded-lg overflow-hidden bg-gray-100">

@@ -8,6 +8,7 @@ import ClearFiltersButton from "../../components/admin/ClearFiltersButton";
 import TableSkeleton from "../../components/admin/TableSkeleton";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import { CARD_CLASS, INPUT_CLASS, FILTER_BAR_CLASS, FILTER_FIELD_CLASS, FILTER_FIELD_SM_CLASS } from "../../utils/ui";
+import { getDiscountedPrice } from "../../utils/pricing";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -212,7 +213,19 @@ export default function ProductsPage() {
                       <td className="px-5 py-3 text-gray-600 dark:text-gray-300">
                         {p.categories?.length ? p.categories.map((c) => c.name).join(", ") : "—"}
                       </td>
-                      <td className="px-5 py-3 text-gray-700 dark:text-gray-200 font-medium">{fmt(p.basePrice)}</td>
+                      <td className="px-5 py-3 text-gray-700 dark:text-gray-200 font-medium">
+                        {p.discountType && p.discountValue ? (
+                          <div>
+                            <span className="text-red-600">{fmt(getDiscountedPrice(p.basePrice, p).finalPrice)}</span>{" "}
+                            <span className="text-xs text-gray-400 line-through">{fmt(p.basePrice)}</span>
+                            <span className="ml-1.5 inline-block text-[10px] font-semibold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">
+                              {getDiscountedPrice(p.basePrice, p).discountPercent}% OFF
+                            </span>
+                          </div>
+                        ) : (
+                          fmt(p.basePrice)
+                        )}
+                      </td>
                       <td className="px-5 py-3">
                         <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${
                           p.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"

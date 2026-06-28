@@ -23,6 +23,8 @@ const productSchema = new mongoose.Schema(
       },
     },
     basePrice: { type: Number, required: true, min: 0 },
+    discountType: { type: String, enum: ["PERCENTAGE", "FIXED"], default: null },
+    discountValue: { type: Number, min: 0, default: 0 },
     isActive: { type: Boolean, default: true },
     images: { type: [productImageSchema], default: [] },
   },

@@ -6,6 +6,7 @@ import ProductVariant from "../models/ProductVariant.js";
 import InventoryLog from "../models/InventoryLog.js";
 import { placeOrder } from "../services/orderService.js";
 import { streamInvoicePdf } from "../utils/invoice.js";
+import { getDiscountedPrice } from "../utils/pricing.js";
 
 export async function createOrder(req, res) {
   const { addressId, paymentMethod = "COD", couponCode } = req.body;
@@ -16,7 +17,7 @@ export async function createOrder(req, res) {
 
   const cart = await Cart.findOne({ userId: req.user._id }).populate({
     path: "items.variantId",
-    populate: { path: "productId", select: "name basePrice" },
+    populate: { path: "productId", select: "name basePrice discountType discountValue" },
   });
 
   if (!cart || cart.items.length === 0) {
@@ -29,12 +30,13 @@ export async function createOrder(req, res) {
   const orderItems = cart.items.map((cartItem) => {
     const v = cartItem.variantId;
     const p = v.productId;
+    const { finalPrice } = getDiscountedPrice(v.price ?? p.basePrice, p);
     return {
       variantId: v._id,
       productName: p.name,
       size: v.size,
       color: v.color,
-      unitPrice: v.price ?? p.basePrice,
+      unitPrice: finalPrice,
       quantity: cartItem.quantity,
     };
   });

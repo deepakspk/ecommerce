@@ -17,6 +17,7 @@ import ProductRail from "../components/ProductRail";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import { addRecentlyViewed } from "../utils/recentlyViewed";
 import { PAGE_CLASS, H1_CLASS } from "../utils/ui";
+import { getDiscountedPrice } from "../utils/pricing";
 
 const SHIPPING_RETURNS_TEXT =
   "Orders are delivered across Nepal within 3–5 business days. Cash on Delivery, eSewa, and Khalti are all accepted at checkout. " +
@@ -122,6 +123,7 @@ export default function ProductDetailPage() {
 
   const hasVariants = variants.length > 0;
   const displayPrice = selectedVariant?.price ?? product.basePrice;
+  const { finalPrice, hasDiscount } = getDiscountedPrice(displayPrice, product);
   const isOutOfStock = selectedVariant ? selectedVariant.stockQuantity === 0 : false;
   const stockQty = selectedVariant?.stockQuantity;
 
@@ -267,9 +269,16 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Price */}
-          <p className="text-2xl font-bold text-gray-900 mb-4">
-            {formatPrice(displayPrice)}
-          </p>
+          {hasDiscount ? (
+            <p className="flex items-baseline gap-2 mb-4">
+              <span className="text-2xl font-bold text-red-600">{formatPrice(finalPrice)}</span>
+              <span className="text-base text-gray-400 line-through">{formatPrice(displayPrice)}</span>
+            </p>
+          ) : (
+            <p className="text-2xl font-bold text-gray-900 mb-4">
+              {formatPrice(displayPrice)}
+            </p>
+          )}
 
           {/* Description teaser */}
           {product.description && (

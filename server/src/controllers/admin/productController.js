@@ -57,7 +57,7 @@ function parseCategories(value) {
 }
 
 export async function createProduct(req, res) {
-  const { name, description, categories, basePrice, isActive, variants } = req.body;
+  const { name, description, categories, basePrice, discountType, discountValue, isActive, variants } = req.body;
 
   if (!name?.trim()) return res.status(400).json({ message: "Name is required" });
   const categoryIds = parseCategories(categories);
@@ -82,6 +82,8 @@ export async function createProduct(req, res) {
     description: description?.trim() || "",
     categories: categoryIds,
     basePrice: Number(basePrice),
+    discountType: discountType || null,
+    discountValue: discountType ? Number(discountValue || 0) : 0,
     isActive: isActive !== "false" && isActive !== false,
     images,
   });
@@ -103,7 +105,7 @@ export async function updateProduct(req, res) {
   const product = await Product.findById(req.params.id);
   if (!product) return res.status(404).json({ message: "Product not found" });
 
-  const { name, description, categories, basePrice, isActive, keepImages } = req.body;
+  const { name, description, categories, basePrice, discountType, discountValue, isActive, keepImages } = req.body;
 
   if (name?.trim()) {
     product.name = name.trim();
@@ -116,6 +118,12 @@ export async function updateProduct(req, res) {
     product.categories = categoryIds;
   }
   if (basePrice !== undefined) product.basePrice = Number(basePrice);
+  if (discountType !== undefined) {
+    product.discountType = discountType || null;
+    product.discountValue = discountType ? Number(discountValue || 0) : 0;
+  } else if (discountValue !== undefined) {
+    product.discountValue = Number(discountValue);
+  }
   if (isActive !== undefined) product.isActive = isActive !== "false" && isActive !== false;
 
   // keepImages is a JSON array of URLs to retain; omitting it keeps all existing images

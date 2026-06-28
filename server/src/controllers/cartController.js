@@ -1,6 +1,7 @@
 import Cart from "../models/Cart.js";
 import ProductVariant from "../models/ProductVariant.js";
 import { validateCoupon } from "../services/couponService.js";
+import { getDiscountedPrice } from "../utils/pricing.js";
 
 async function getOrCreate(userId) {
   let cart = await Cart.findOne({ userId });
@@ -11,7 +12,7 @@ async function getOrCreate(userId) {
 function populateCart(cart) {
   return cart.populate({
     path: "items.variantId",
-    populate: { path: "productId", select: "name slug basePrice images" },
+    populate: { path: "productId", select: "name slug basePrice discountType discountValue images" },
   });
 }
 
@@ -106,8 +107,8 @@ export async function applyCoupon(req, res) {
   for (const item of cart.items) {
     const v = item.variantId;
     const p = v.productId;
-    const unitPrice = v.price ?? p.basePrice;
-    subtotal += unitPrice * item.quantity;
+    const { finalPrice } = getDiscountedPrice(v.price ?? p.basePrice, p);
+    subtotal += finalPrice * item.quantity;
   }
 
   const { coupon, discountAmount } = await validateCoupon({ code, subtotal, userId: req.user._id });

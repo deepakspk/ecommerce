@@ -3,6 +3,11 @@ import Product from "../models/Product.js";
 import ProductVariant from "../models/ProductVariant.js";
 import Review from "../models/Review.js";
 import { getDescendantIds } from "../services/categoryService.js";
+import { getDiscountedPrice } from "../utils/pricing.js";
+
+function attachPricing(products) {
+  return products.map((p) => ({ ...p, ...getDiscountedPrice(p.basePrice, p) }));
+}
 
 async function attachRatings(products) {
   const ids = products.map((p) => p._id);
@@ -106,7 +111,7 @@ export async function listProducts(req, res) {
 
   const withRatings = await attachRatings(products);
   res.json({
-    products: await attachVariantCounts(withRatings),
+    products: attachPricing(await attachVariantCounts(withRatings)),
     total,
     page: pageNum,
     pages: Math.ceil(total / limitNum),
@@ -121,7 +126,7 @@ export async function getProduct(req, res) {
   if (!product) return res.status(404).json({ message: "Product not found" });
 
   const variants = await ProductVariant.find({ productId: product._id }).sort({ size: 1, color: 1 });
-  const [withRating] = await attachRatings([product]);
+  const [withRating] = attachPricing(await attachRatings([product]));
 
   async function inStockOnly(candidates) {
     if (candidates.length === 0) return [];
@@ -159,7 +164,7 @@ export async function getProduct(req, res) {
     related = [...related, ...fallbackInStock.slice(0, RELATED_LIMIT - related.length)];
   }
 
-  const relatedProducts = await attachRatings(related.slice(0, RELATED_LIMIT));
+  const relatedProducts = attachPricing(await attachRatings(related.slice(0, RELATED_LIMIT)));
 
   res.json({ product: withRating, variants, relatedProducts });
 }

@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { getErrorMessage } from "../utils/errorHelpers";
 import ItemThumb from "../components/ItemThumb";
 import { CARD_CLASS, H1_CLASS } from "../utils/ui";
+import { getDiscountedPrice } from "../utils/pricing";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -98,7 +99,8 @@ export default function CartPage() {
 }
 
 function CartItem({ item, onQtyChange, onRemove }) {
-  const unitPrice = item.variantPrice ?? item.basePrice;
+  const rawPrice = item.variantPrice ?? item.basePrice;
+  const { finalPrice: unitPrice, hasDiscount } = getDiscountedPrice(rawPrice, item);
   const lineTotal = unitPrice * item.quantity;
 
   return (
@@ -114,7 +116,14 @@ function CartItem({ item, onQtyChange, onRemove }) {
           {item.productName}
         </Link>
         <p className="text-xs text-gray-500 mt-1">{item.size} · {item.color}</p>
-        <p className="text-sm font-medium text-gray-800 mt-1">{fmt(unitPrice)}</p>
+        {hasDiscount ? (
+          <p className="flex items-baseline gap-1.5 mt-1">
+            <span className="text-sm font-medium text-red-600">{fmt(unitPrice)}</span>
+            <span className="text-xs text-gray-400 line-through">{fmt(rawPrice)}</span>
+          </p>
+        ) : (
+          <p className="text-sm font-medium text-gray-800 mt-1">{fmt(unitPrice)}</p>
+        )}
       </div>
 
       {/* Qty stepper + line total + remove */}

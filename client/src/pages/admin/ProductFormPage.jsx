@@ -12,7 +12,8 @@ export default function ProductFormPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: "", description: "", categories: [], basePrice: "", isActive: true,
+    name: "", description: "", categories: [], basePrice: "",
+    discountType: "", discountValue: "", isActive: true,
   });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
@@ -43,6 +44,8 @@ export default function ProductFormPage() {
             description: product.description || "",
             categories: (product.categories || []).map((c) => c._id || String(c)),
             basePrice: String(product.basePrice),
+            discountType: product.discountType || "",
+            discountValue: product.discountValue ? String(product.discountValue) : "",
             isActive: product.isActive,
           });
           setExistingImages(product.images || []);
@@ -58,6 +61,10 @@ export default function ProductFormPage() {
     if (!form.name.trim()) { setError("Name is required"); return; }
     if (!form.categories.length) { setError("At least one category is required"); return; }
     if (!form.basePrice) { setError("Base price is required"); return; }
+    if (form.discountType && !form.discountValue) { setError("Discount value is required when a discount type is selected"); return; }
+    if (form.discountType === "PERCENTAGE" && Number(form.discountValue) > 100) {
+      setError("Percentage discount cannot exceed 100"); return;
+    }
     setError("");
     setSaving(true);
     try {
@@ -66,6 +73,8 @@ export default function ProductFormPage() {
       fd.append("description", form.description.trim());
       fd.append("categories", JSON.stringify(form.categories));
       fd.append("basePrice", form.basePrice);
+      fd.append("discountType", form.discountType);
+      fd.append("discountValue", form.discountType ? form.discountValue : "0");
       fd.append("isActive", String(form.isActive));
       if (isEdit) {
         fd.append("keepImages", JSON.stringify(existingImages.map(i => i.url)));
@@ -242,6 +251,37 @@ export default function ProductFormPage() {
               className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Discount</label>
+              <select
+                value={form.discountType}
+                onChange={e => setForm(f => ({ ...f, discountType: e.target.value }))}
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              >
+                <option value="">None</option>
+                <option value="PERCENTAGE">Percentage</option>
+                <option value="FIXED">Fixed amount (Rs.)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {form.discountType === "PERCENTAGE" ? "Discount %" : "Discount Rs."}
+              </label>
+              <input
+                type="number"
+                min="0"
+                max={form.discountType === "PERCENTAGE" ? 100 : undefined}
+                step="0.01"
+                value={form.discountValue}
+                onChange={e => setForm(f => ({ ...f, discountValue: e.target.value }))}
+                placeholder="0"
+                disabled={!form.discountType}
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
