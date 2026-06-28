@@ -48,7 +48,6 @@ export default function ProductCard({ product }) {
     }
   }
 
-  const visibleCategories = (product.categories || []).filter((c) => c.slug !== hideCategorySlug);
   const { finalPrice, discountPercent, hasDiscount } = getDiscountedPrice(product.basePrice, product);
 
   return (
@@ -56,7 +55,7 @@ export default function ProductCard({ product }) {
       to={`/products/${product.slug}`}
       className={`group block ${CARD_CLASS} overflow-hidden hover:shadow-md transition-shadow`}
     >
-      <div className="relative aspect-[4/5] bg-gray-100 overflow-hidden">
+      <div className="relative aspect-[4/5] bg-gray-100 overflow-hidden border-b border-gray-200">
         {hasDiscount && (
           <span className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded">
             {discountPercent}% OFF
@@ -92,16 +91,7 @@ export default function ProductCard({ product }) {
         )}
       </div>
       <div className="p-3">
-        {visibleCategories.length > 0 && (
-          <p className="text-xs text-brand-600 mb-0.5">{visibleCategories.map((c) => c.name).join(", ")}</p>
-        )}
         <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">{product.name}</h3>
-        {product.reviewCount > 0 && (
-          <div className="flex items-center gap-1 mb-1">
-            <StarRating rating={product.averageRating} />
-            <span className="text-xs text-gray-400">({product.reviewCount})</span>
-          </div>
-        )}
         {hasDiscount ? (
           <p className="mb-2 flex items-baseline gap-1.5">
             <span className="text-sm font-semibold text-red-600">{formatPrice(finalPrice)}</span>
@@ -109,6 +99,14 @@ export default function ProductCard({ product }) {
           </p>
         ) : (
           <p className="text-sm font-semibold text-gray-900 mb-2">{formatPrice(product.basePrice)}</p>
+        )}
+        {product.reviewCount > 0 ? (
+          <div className="flex items-center gap-1 mb-2">
+            <StarRating rating={product.averageRating} />
+            <span className="text-xs text-gray-400">({product.reviewCount})</span>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-400 mb-2">No Rating Yet</p>
         )}
 
         <button

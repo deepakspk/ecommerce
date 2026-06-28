@@ -450,7 +450,7 @@ export default function ProductsPage() {
           ) : (
             <div className={`grid ${isHome ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4`}>
               {products.map((product) => (
-                <ProductCard key={product._id} product={product} hideCategorySlug={selectedCategory} />
+                <ProductCard key={product._id} product={product} />
               ))}
             </div>
           )}
