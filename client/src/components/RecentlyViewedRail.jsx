@@ -23,5 +23,5 @@ export default function RecentlyViewedRail({ excludeSlug }) {
     return () => { ignore = true; };
   }, [excludeSlug]);
 
-  return <ProductRail title="Recently viewed" products={products} />;
+  return <ProductRail title="Recently viewed" products={products} layout="grid" />;
 }
