@@ -11,7 +11,7 @@ import { getDiscountedPrice } from "../utils/pricing";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
-export default function ProductCard({ product, hideCategorySlug }) {
+export default function ProductCard({ product }) {
   const image = product.images?.[0];
   const secondImage = product.images?.[1];
   const [imageFailed, setImageFailed] = useState(false);

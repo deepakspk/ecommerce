@@ -57,7 +57,7 @@ function parseCategories(value) {
 }
 
 export async function createProduct(req, res) {
-  const { name, description, categories, basePrice, discountType, discountValue, isActive, variants } = req.body;
+  const { name, description, categories, basePrice, discountType, discountValue, isActive, variants, stockQuantity } = req.body;
 
   if (!name?.trim()) return res.status(400).json({ message: "Name is required" });
   const categoryIds = parseCategories(categories);
@@ -95,6 +95,27 @@ export async function createProduct(req, res) {
       createdVariants = await ProductVariant.insertMany(
         list.map(v => ({ ...v, productId: product._id, stockQuantity: Number(v.stockQuantity ?? 0) }))
       );
+    }
+  }
+
+  if (createdVariants.length === 0) {
+    const initialStock = Number(stockQuantity ?? 0);
+    const defaultVariant = await ProductVariant.create({
+      productId: product._id,
+      size: "Default",
+      color: "Default",
+      sku: `DEFAULT-${product._id}`,
+      stockQuantity: initialStock,
+      isDefault: true,
+    });
+    createdVariants = [defaultVariant];
+
+    if (initialStock > 0) {
+      await InventoryLog.create({
+        variantId: defaultVariant._id,
+        change: initialStock,
+        reason: "Initial stock on product creation",
+      });
     }
   }
 
@@ -169,6 +190,8 @@ export async function addVariant(req, res) {
   }
   const product = await Product.findById(req.params.id);
   if (!product) return res.status(404).json({ message: "Product not found" });
+
+  await ProductVariant.deleteOne({ productId: req.params.id, isDefault: true });
 
   const initialStock = Number(stockQuantity ?? 0);
   const variant = await ProductVariant.create({

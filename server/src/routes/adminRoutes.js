@@ -188,6 +188,7 @@ const productBodyValidators = [
     })
     .withMessage("categories must be a non-empty array of category ids"),
   body("basePrice").isFloat({ min: 0 }).withMessage("basePrice must be a non-negative number"),
+  body("stockQuantity").optional().isInt({ min: 0 }).withMessage("stockQuantity must be a non-negative integer"),
   ...discountFieldValidators,
 ];
 

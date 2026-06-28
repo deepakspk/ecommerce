@@ -14,6 +14,7 @@ export default function ProductFormPage() {
   const [form, setForm] = useState({
     name: "", description: "", categories: [], basePrice: "",
     discountType: "", discountValue: "", isActive: true,
+    stockQuantity: "",
   });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
@@ -82,6 +83,9 @@ export default function ProductFormPage() {
       newFiles.forEach(f => fd.append("images", f));
       if (!isEdit && stagedVariants.length) {
         fd.append("variants", JSON.stringify(stagedVariants));
+      }
+      if (!isEdit) {
+        fd.append("stockQuantity", form.stockQuantity || "0");
       }
       if (isEdit) {
         await adminApi.updateProduct(id, fd);
@@ -252,6 +256,22 @@ export default function ProductFormPage() {
               required
             />
           </div>
+
+          {!isEdit && stagedVariants.length === 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stock</label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={form.stockQuantity}
+                onChange={e => setForm(f => ({ ...f, stockQuantity: e.target.value }))}
+                placeholder="0"
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+              <p className="text-xs text-gray-400 mt-1">Stock for this product. Add variants below instead if it comes in multiple sizes/colors.</p>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>

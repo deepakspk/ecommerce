@@ -8,6 +8,7 @@ const productVariantSchema = new mongoose.Schema({
   price: { type: Number, min: 0 },
   stockQuantity: { type: Number, required: true, default: 0, min: 0 },
   imageUrl: { type: String },
+  isDefault: { type: Boolean, default: false },
 });
 
 export default mongoose.model("ProductVariant", productVariantSchema);
