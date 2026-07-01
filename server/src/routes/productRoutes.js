@@ -3,6 +3,7 @@ import { query, param } from "express-validator";
 import { validate } from "../middleware/validate.js";
 import { getAvailableFilters, listProducts, getProduct } from "../controllers/productController.js";
 import reviewRoutes from "./reviewRoutes.js";
+import questionRoutes from "./questionRoutes.js";
 
 const router = Router();
 
@@ -10,6 +11,7 @@ const router = Router();
 router.get("/available-filters", getAvailableFilters);
 
 router.use("/:productId/reviews", reviewRoutes);
+router.use("/:productId/questions", questionRoutes);
 
 router.get(
   "/",

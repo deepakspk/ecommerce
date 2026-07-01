@@ -6,7 +6,7 @@ import StarRating from "./StarRating";
 
 const fmtDate = (d) => new Date(d).toLocaleDateString("en-NP", { day: "numeric", month: "short", year: "numeric" });
 
-export default function ProductReviews({ productId }) {
+export default function ProductReviews({ productId, embedded = false }) {
   const { user } = useAuth();
 
   const [reviews, setReviews] = useState([]);
@@ -93,10 +93,12 @@ export default function ProductReviews({ productId }) {
   }
 
   return (
-    <div className="mt-12 border-t border-gray-200 pt-8">
-      <h2 className="text-lg font-bold text-gray-900 mb-4">
-        Reviews{total > 0 && <span className="text-gray-400 font-normal"> ({total})</span>}
-      </h2>
+    <div className={embedded ? "" : "mt-12 border-t border-gray-200 pt-8"}>
+      {!embedded && (
+        <h2 className="text-lg font-bold text-gray-900 mb-4">
+          Reviews{total > 0 && <span className="text-gray-400 font-normal"> ({total})</span>}
+        </h2>
+      )}
 
       {/* Write-a-review section */}
       {user && eligibility && (
