@@ -5,6 +5,7 @@ import DashboardPage from "./DashboardPage";
 import CategoriesPage from "./CategoriesPage";
 import ProductsPage from "./ProductsPage";
 import ProductFormPage from "./ProductFormPage";
+import ProductBulkUploadPage from "./ProductBulkUploadPage";
 import InventoryPage from "./InventoryPage";
 import CouponsPage from "./CouponsPage";
 import AdminOrdersPage from "./AdminOrdersPage";
@@ -35,6 +36,7 @@ export default function AdminSection() {
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/new" element={<ProductFormPage />} />
+          <Route path="products/bulk-upload" element={<ProductBulkUploadPage />} />
           <Route path="products/:id/edit" element={<ProductFormPage />} />
           <Route path="inventory" element={<InventoryPage />} />
           <Route path="coupons" element={<CouponsPage />} />

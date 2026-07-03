@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { body, param } from "express-validator";
 import { protect, requireRole } from "../middleware/auth.js";
-import { upload } from "../middleware/upload.js";
+import { upload, uploadExcel } from "../middleware/upload.js";
 import { validate } from "../middleware/validate.js";
 import {
   listCategories,
@@ -23,6 +23,8 @@ import {
   addVariant,
   updateVariant,
   deleteVariant,
+  bulkUploadProducts,
+  downloadBulkUploadSample,
 } from "../controllers/admin/productController.js";
 import {
   listInventory,
@@ -291,6 +293,8 @@ router.delete("/categories/:id", [mongoIdParam("id")], validate, deleteCategory)
 // Products
 router.get("/products", listProducts);
 router.post("/products", upload.array("images", 10), productBodyValidators, validate, createProduct);
+router.get("/products/bulk-upload/sample", downloadBulkUploadSample);
+router.post("/products/bulk-upload", uploadExcel.single("file"), bulkUploadProducts);
 router.get("/products/:id", [mongoIdParam("id")], validate, getProduct);
 router.put(
   "/products/:id",

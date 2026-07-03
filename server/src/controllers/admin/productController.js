@@ -1,6 +1,8 @@
+import ExcelJS from "exceljs";
 import Product from "../../models/Product.js";
 import ProductVariant from "../../models/ProductVariant.js";
 import InventoryLog from "../../models/InventoryLog.js";
+import Category from "../../models/Category.js";
 import { uploadToCloudinary } from "../../config/cloudinary.js";
 import { logAudit } from "../../utils/auditLog.js";
 
@@ -120,6 +122,246 @@ export async function createProduct(req, res) {
   }
 
   res.status(201).json({ product, variants: createdVariants });
+}
+
+const BULK_UPLOAD_COLUMNS = [
+  { key: "name", header: "Name*", width: 28 },
+  { key: "description", header: "Description", width: 32 },
+  { key: "categories", header: "Categories* (comma-separated)", width: 28 },
+  { key: "basePrice", header: "Base Price*", width: 14 },
+  { key: "discountType", header: "Discount Type (PERCENTAGE/FIXED)", width: 22 },
+  { key: "discountValue", header: "Discount Value", width: 16 },
+  { key: "isActive", header: "Is Active (TRUE/FALSE)", width: 16 },
+  { key: "sku", header: "SKU", width: 18 },
+  { key: "size", header: "Size", width: 12 },
+  { key: "color", header: "Color", width: 12 },
+  { key: "stockQuantity", header: "Stock Quantity", width: 16 },
+];
+
+function normalizeHeader(value) {
+  return String(value ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+const BULK_UPLOAD_HEADER_MAP = BULK_UPLOAD_COLUMNS.reduce((map, col) => {
+  map[normalizeHeader(col.header)] = col.key;
+  return map;
+}, {});
+
+export async function downloadBulkUploadSample(req, res) {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Products");
+  sheet.columns = BULK_UPLOAD_COLUMNS.map(({ header, key, width }) => ({ header, key, width }));
+  sheet.getRow(1).font = { bold: true };
+  sheet.addRow({
+    name: "Classic Cotton T-Shirt",
+    description: "Soft cotton crew-neck t-shirt",
+    categories: "Men, T-Shirts",
+    basePrice: 1200,
+    discountType: "PERCENTAGE",
+    discountValue: 10,
+    isActive: "TRUE",
+    sku: "TSHIRT-BLK-M",
+    size: "M",
+    color: "Black",
+    stockQuantity: 50,
+  });
+  sheet.addRow({
+    name: "Running Shoes",
+    description: "Lightweight everyday running shoes",
+    categories: "Footwear",
+    basePrice: 4500,
+    isActive: "TRUE",
+    stockQuantity: 20,
+  });
+
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader("Content-Disposition", "attachment; filename=product-bulk-upload-sample.xlsx");
+  await workbook.xlsx.write(res);
+  res.end();
+}
+
+export async function bulkUploadProducts(req, res) {
+  if (!req.file) return res.status(400).json({ message: "An Excel file (.xlsx) is required" });
+
+  const workbook = new ExcelJS.Workbook();
+  try {
+    await workbook.xlsx.load(req.file.buffer);
+  } catch {
+    return res.status(400).json({ message: "Could not read the uploaded file. Please upload a valid .xlsx file." });
+  }
+
+  const sheet = workbook.worksheets[0];
+  if (!sheet) return res.status(400).json({ message: "The uploaded file has no worksheet" });
+
+  const columnMap = {};
+  sheet.getRow(1).eachCell({ includeEmpty: false }, (cell, colNumber) => {
+    const key = BULK_UPLOAD_HEADER_MAP[normalizeHeader(cell.value)];
+    if (key) columnMap[colNumber] = key;
+  });
+  const categoryDocs = await Category.find({}, "name");
+  const categoryByName = new Map(categoryDocs.map((c) => [c.name.trim().toLowerCase(), c._id]));
+
+  const results = [];
+  let created = 0;
+  let failed = 0;
+  const seenSlugs = new Set();
+
+  for (let rowNumber = 2; rowNumber <= sheet.rowCount; rowNumber++) {
+    const row = sheet.getRow(rowNumber);
+    const data = {};
+    row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+      const key = columnMap[colNumber];
+      if (key) data[key] = cell.value;
+    });
+
+    const isBlankRow = Object.values(data).every((v) => v === null || v === undefined || String(v).trim() === "");
+    if (isBlankRow) continue;
+
+    const name = String(data.name ?? "").trim();
+    if (!name) {
+      failed++;
+      results.push({ row: rowNumber, name: "", status: "error", message: "Name is required" });
+      continue;
+    }
+
+    const categoryNames = String(data.categories ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+    if (!categoryNames.length) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: "At least one category is required" });
+      continue;
+    }
+    const categoryIds = [];
+    const missingCategories = [];
+    for (const catName of categoryNames) {
+      const id = categoryByName.get(catName.toLowerCase());
+      if (id) categoryIds.push(id);
+      else missingCategories.push(catName);
+    }
+    if (missingCategories.length) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: `Unknown categor${missingCategories.length > 1 ? "ies" : "y"}: ${missingCategories.join(", ")}` });
+      continue;
+    }
+
+    const basePrice = Number(data.basePrice);
+    if (data.basePrice === undefined || data.basePrice === "" || Number.isNaN(basePrice) || basePrice < 0) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: "Base price must be a non-negative number" });
+      continue;
+    }
+
+    const discountType = String(data.discountType ?? "").trim().toUpperCase();
+    if (discountType && !["PERCENTAGE", "FIXED"].includes(discountType)) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: "Discount type must be PERCENTAGE or FIXED" });
+      continue;
+    }
+    const discountValue = discountType ? Number(data.discountValue ?? 0) : 0;
+    if (discountType && (Number.isNaN(discountValue) || discountValue < 0)) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: "Discount value must be a non-negative number" });
+      continue;
+    }
+    if (discountType === "PERCENTAGE" && discountValue > 100) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: "Percentage discount cannot exceed 100" });
+      continue;
+    }
+
+    const isActiveRaw = String(data.isActive ?? "TRUE").trim().toUpperCase();
+    if (isActiveRaw && !["TRUE", "FALSE"].includes(isActiveRaw)) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: "Is Active must be TRUE or FALSE" });
+      continue;
+    }
+    const isActive = isActiveRaw !== "FALSE";
+
+    const slug = slugify(name);
+    if (seenSlugs.has(slug)) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: "Duplicate product name within this file" });
+      continue;
+    }
+    const existing = await Product.findOne({ slug });
+    if (existing) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: "A product with this name already exists" });
+      continue;
+    }
+
+    const sku = String(data.sku ?? "").trim();
+    const size = String(data.size ?? "").trim();
+    const color = String(data.color ?? "").trim();
+    if ((sku || size || color) && !(sku && size && color)) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: "SKU, Size, and Color must all be provided together, or all left blank" });
+      continue;
+    }
+
+    const stockQuantity = Number(data.stockQuantity ?? 0);
+    if (Number.isNaN(stockQuantity) || stockQuantity < 0) {
+      failed++;
+      results.push({ row: rowNumber, name, status: "error", message: "Stock quantity must be a non-negative number" });
+      continue;
+    }
+
+    try {
+      const product = await Product.create({
+        name,
+        slug,
+        description: String(data.description ?? "").trim(),
+        categories: categoryIds,
+        basePrice,
+        discountType: discountType || null,
+        discountValue,
+        isActive,
+        images: [],
+      });
+      seenSlugs.add(slug);
+
+      const variant = await ProductVariant.create({
+        productId: product._id,
+        size: size || "Default",
+        color: color || "Default",
+        sku: sku || `DEFAULT-${product._id}`,
+        stockQuantity,
+        isDefault: !sku,
+      });
+
+      if (stockQuantity > 0) {
+        await InventoryLog.create({
+          variantId: variant._id,
+          change: stockQuantity,
+          reason: "Initial stock from bulk product upload",
+        });
+      }
+
+      created++;
+      results.push({ row: rowNumber, name, status: "success", message: "Created", productId: product._id });
+    } catch (err) {
+      failed++;
+      results.push({
+        row: rowNumber,
+        name,
+        status: "error",
+        message: err.code === 11000 ? "Duplicate SKU or product slug" : "Failed to create product",
+      });
+    }
+  }
+
+  if (created > 0) {
+    logAudit({
+      adminUserId: req.user._id,
+      action: "PRODUCT_BULK_UPLOAD",
+      targetType: "Product",
+      meta: { created, failed, total: results.length },
+    });
+  }
+
+  res.json({ summary: { total: results.length, created, failed }, results });
 }
 
 export async function updateProduct(req, res) {

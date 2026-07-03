@@ -97,12 +97,20 @@ export default function ProductsPage() {
         loading={loading}
         subtitle={`${total} product${total !== 1 ? "s" : ""}`}
         action={
-          <Link
-            to="/admin/products/new"
-            className="bg-white text-brand-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-50 transition-colors shadow-sm"
-          >
-            + New Product
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/admin/products/bulk-upload"
+              className="bg-white text-brand-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-50 transition-colors shadow-sm"
+            >
+              Bulk Upload
+            </Link>
+            <Link
+              to="/admin/products/new"
+              className="bg-white text-brand-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-50 transition-colors shadow-sm"
+            >
+              + New Product
+            </Link>
+          </div>
         }
       />
 

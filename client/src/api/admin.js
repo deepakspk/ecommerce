@@ -20,6 +20,10 @@ export const getProduct = (id) => api.get(`/admin/products/${id}`).then(r => r.d
 export const createProduct = (formData) => api.post("/admin/products", formData).then(r => r.data);
 export const updateProduct = (id, formData) => api.put(`/admin/products/${id}`, formData).then(r => r.data);
 export const deleteProduct = (id) => api.delete(`/admin/products/${id}`).then(r => r.data);
+export const bulkUploadProducts = (formData) =>
+  api.post("/admin/products/bulk-upload", formData).then(r => r.data);
+export const downloadBulkUploadSample = () =>
+  api.get("/admin/products/bulk-upload/sample", { responseType: "blob" }).then(r => r.data);
 
 // Variants
 export const addVariant = (productId, data) =>
