@@ -6,6 +6,7 @@ import NcmOrderInsights from "../../components/admin/NcmOrderInsights";
 import Badge from "../../components/Badge";
 import { H1_CLASS, CARD_CLASS } from "../../utils/ui";
 import { downloadBlob } from "../../utils/downloadBlob";
+import { variantLabel } from "../../utils/variantLabel";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -436,7 +437,7 @@ export default function AdminOrderDetailPage() {
                       <tr key={i} className="px-5">
                         <td className="px-5 py-3">
                           <p className="font-medium text-gray-900 dark:text-gray-100">{item.productName}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{item.size} · {item.color}</p>
+                          {variantLabel(item) && <p className="text-xs text-gray-400 mt-0.5">{variantLabel(item)}</p>}
                         </td>
                         <td className="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs text-center">× {item.quantity}</td>
                         <td className="px-5 py-3 text-right font-medium text-gray-800 dark:text-gray-200">

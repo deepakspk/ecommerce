@@ -7,6 +7,7 @@ import { submitEsewaForm } from "../utils/esewaForm";
 import { downloadBlob } from "../utils/downloadBlob";
 import Badge from "../components/Badge";
 import { H1_CLASS, CARD_CLASS } from "../utils/ui";
+import { variantLabel } from "../utils/variantLabel";
 
 const PAYMENT_METHOD_LABELS = { COD: "Cash on Delivery", KHALTI: "Khalti", ESEWA: "eSewa" };
 
@@ -194,7 +195,9 @@ export default function OrderSuccessPage() {
             <div key={i} className="flex justify-between text-sm">
               <div>
                 <p className="font-medium text-gray-900">{item.productName}</p>
-                <p className="text-xs text-gray-500">{item.size} · {item.color} × {item.quantity}</p>
+                <p className="text-xs text-gray-500">
+                  {variantLabel(item) ? `${variantLabel(item)} × ${item.quantity}` : `Qty: ${item.quantity}`}
+                </p>
               </div>
               <p className="font-medium text-gray-800">{fmt(item.unitPrice * item.quantity)}</p>
             </div>
@@ -302,7 +305,9 @@ export default function OrderSuccessPage() {
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900">{item.productName}</p>
-                        <p className="text-xs text-gray-500">{item.size} · {item.color} (ordered × {item.maxQuantity})</p>
+                        <p className="text-xs text-gray-500">
+                          {variantLabel(item) ? `${variantLabel(item)} (ordered × ${item.maxQuantity})` : `Ordered × ${item.maxQuantity}`}
+                        </p>
                       </div>
                     </label>
                     {item.included && (

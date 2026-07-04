@@ -121,7 +121,13 @@ export async function createProduct(req, res) {
     const list = typeof variants === "string" ? JSON.parse(variants) : variants;
     if (list.length) {
       createdVariants = await ProductVariant.insertMany(
-        list.map(v => ({ ...v, productId: product._id, stockQuantity: Number(v.stockQuantity ?? 0) }))
+        list.map(v => ({
+          ...v,
+          productId: product._id,
+          size: v.size?.trim() || "Default",
+          color: v.color?.trim() || "Default",
+          stockQuantity: Number(v.stockQuantity ?? 0),
+        }))
       );
     }
   }
@@ -323,9 +329,9 @@ export async function bulkUploadProducts(req, res) {
     const sku = String(data.sku ?? "").trim();
     const size = String(data.size ?? "").trim();
     const color = String(data.color ?? "").trim();
-    if ((sku || size || color) && !(sku && size && color)) {
+    if ((size || color) && !sku) {
       failed++;
-      results.push({ row: rowNumber, name, status: "error", message: "SKU, Size, and Color must all be provided together, or all left blank" });
+      results.push({ row: rowNumber, name, status: "error", message: "SKU is required when Size or Color is provided" });
       continue;
     }
 
@@ -484,8 +490,8 @@ export async function deleteProduct(req, res) {
 
 export async function addVariant(req, res) {
   const { size, color, sku, price, stockQuantity } = req.body;
-  if (!size?.trim() || !color?.trim() || !sku?.trim()) {
-    return res.status(400).json({ message: "size, color, and sku are required" });
+  if (!sku?.trim()) {
+    return res.status(400).json({ message: "sku is required" });
   }
   const product = await Product.findById(req.params.id);
   if (!product) return res.status(404).json({ message: "Product not found" });
@@ -495,8 +501,8 @@ export async function addVariant(req, res) {
   const initialStock = Number(stockQuantity ?? 0);
   const variant = await ProductVariant.create({
     productId: req.params.id,
-    size: size.trim(),
-    color: color.trim(),
+    size: size?.trim() || "Default",
+    color: color?.trim() || "Default",
     sku: sku.trim(),
     price: price !== undefined ? Number(price) : undefined,
     stockQuantity: initialStock,

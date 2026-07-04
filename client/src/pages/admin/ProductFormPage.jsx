@@ -116,8 +116,8 @@ export default function ProductFormPage() {
 
   // Create mode: staged variants
   function addStagedVariant() {
-    if (!newVariant.size.trim() || !newVariant.color.trim() || !newVariant.sku.trim()) {
-      setVariantError("Size, color, and SKU are required");
+    if (!newVariant.sku.trim()) {
+      setVariantError("SKU is required");
       return;
     }
     setStagedVariants(v => [...v, { ...newVariant }]);
@@ -127,8 +127,8 @@ export default function ProductFormPage() {
 
   // Edit mode: live variant API calls
   async function handleAddVariant() {
-    if (!newVariant.size.trim() || !newVariant.color.trim() || !newVariant.sku.trim()) {
-      setVariantError("Size, color, and SKU are required");
+    if (!newVariant.sku.trim()) {
+      setVariantError("SKU is required");
       return;
     }
     try {
@@ -588,6 +588,9 @@ export default function ProductFormPage() {
             + Add
           </button>
         </div>
+        <p className="text-[11px] text-gray-400 mt-1">
+          SKU is required. Leave Size or Color blank if this product doesn't vary by that dimension.
+        </p>
         {variantError && <p className="text-red-600 text-xs mt-1.5">{variantError}</p>}
       </div>
     </div>

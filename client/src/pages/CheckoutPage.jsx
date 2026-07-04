@@ -11,6 +11,7 @@ import { submitEsewaForm } from "../utils/esewaForm";
 import ItemThumb from "../components/ItemThumb";
 import { H1_CLASS, CARD_CLASS } from "../utils/ui";
 import { getDiscountedPrice } from "../utils/pricing";
+import { variantLabel } from "../utils/variantLabel";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -206,6 +207,7 @@ export default function CheckoutPage() {
             <div className="space-y-3 mb-5">
               {items.map(item => {
                 const { finalPrice: unitPrice } = getDiscountedPrice(item.variantPrice ?? item.basePrice, item);
+                const label = variantLabel(item);
                 return (
                   <div key={item.variantId} className="flex gap-3 items-start">
                     <div className="flex-shrink-0 w-12 h-14 rounded-lg overflow-hidden bg-gray-100">
@@ -213,7 +215,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 line-clamp-1">{item.productName}</p>
-                      <p className="text-xs text-gray-500">{item.size} · {item.color} × {item.quantity}</p>
+                      <p className="text-xs text-gray-500">{label ? `${label} × ${item.quantity}` : `Qty: ${item.quantity}`}</p>
                     </div>
                     <p className="text-sm font-medium text-gray-800 flex-shrink-0">
                       {fmt(unitPrice * item.quantity)}

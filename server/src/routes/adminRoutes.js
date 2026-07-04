@@ -252,16 +252,16 @@ const productUpdateBodyValidators = [
 ];
 
 const variantBodyValidators = [
-  body("size").trim().notEmpty().withMessage("size is required"),
-  body("color").trim().notEmpty().withMessage("color is required"),
+  body("size").optional({ values: "falsy" }).trim(),
+  body("color").optional({ values: "falsy" }).trim(),
   body("sku").trim().notEmpty().withMessage("sku is required"),
   body("price").optional().isFloat({ min: 0 }).withMessage("price must be a non-negative number"),
   body("stockQuantity").optional().isInt({ min: 0 }).withMessage("stockQuantity must be a non-negative integer"),
 ];
 
 const variantUpdateBodyValidators = [
-  body("size").optional().trim().notEmpty().withMessage("size cannot be empty"),
-  body("color").optional().trim().notEmpty().withMessage("color cannot be empty"),
+  body("size").optional({ values: "falsy" }).trim(),
+  body("color").optional({ values: "falsy" }).trim(),
   body("sku").optional().trim().notEmpty().withMessage("sku cannot be empty"),
   body("price").optional().isFloat({ min: 0 }).withMessage("price must be a non-negative number"),
   body("stockQuantity").optional().isInt({ min: 0 }).withMessage("stockQuantity must be a non-negative integer"),

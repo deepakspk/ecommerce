@@ -6,6 +6,7 @@ import { getErrorMessage } from "../utils/errorHelpers";
 import ItemThumb from "../components/ItemThumb";
 import { CARD_CLASS, H1_CLASS } from "../utils/ui";
 import { getDiscountedPrice } from "../utils/pricing";
+import { variantLabel } from "../utils/variantLabel";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -102,6 +103,7 @@ function CartItem({ item, onQtyChange, onRemove }) {
   const rawPrice = item.variantPrice ?? item.basePrice;
   const { finalPrice: unitPrice, hasDiscount } = getDiscountedPrice(rawPrice, item);
   const lineTotal = unitPrice * item.quantity;
+  const label = variantLabel(item);
 
   return (
     <div className={`flex gap-4 ${CARD_CLASS} p-4 items-start`}>
@@ -115,7 +117,7 @@ function CartItem({ item, onQtyChange, onRemove }) {
         <Link to={`/products/${item.productSlug}`} className="text-sm font-semibold text-gray-900 hover:underline line-clamp-2 leading-snug">
           {item.productName}
         </Link>
-        <p className="text-xs text-gray-500 mt-1">{item.size} · {item.color}</p>
+        {label && <p className="text-xs text-gray-500 mt-1">{label}</p>}
         {hasDiscount ? (
           <p className="flex items-baseline gap-1.5 mt-1">
             <span className="text-sm font-medium text-red-600">{fmt(unitPrice)}</span>

@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import Badge from "../../components/Badge";
 import { H1_CLASS } from "../../utils/ui";
+import { variantLabel } from "../../utils/variantLabel";
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -106,7 +107,9 @@ export default function AdminReturnDetailPage() {
                     <tr key={i}>
                       <td className="px-5 py-3">
                         <p className="font-medium text-gray-900 dark:text-gray-100">{orderItem?.productName || "—"}</p>
-                        {orderItem && <p className="text-xs text-gray-400 mt-0.5">{orderItem.size} · {orderItem.color}</p>}
+                        {orderItem && variantLabel(orderItem) && (
+                          <p className="text-xs text-gray-400 mt-0.5">{variantLabel(orderItem)}</p>
+                        )}
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Reason: {item.reason}</p>
                       </td>
                       <td className="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs text-center">× {item.quantity}</td>

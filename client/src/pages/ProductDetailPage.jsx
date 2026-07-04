@@ -231,21 +231,27 @@ export default function ProductDetailPage() {
     );
   }
 
-  // A product with no real variants gets a single auto-created "Default"/"Default"
-  // variant (see ProductVariant#isDefault) — nothing for the shopper to actually pick,
-  // so skip the size/color pickers and go straight to Add to Cart.
-  const isDefaultOnly = variants.length === 1 && variants[0].isDefault;
-
+  // A variant that doesn't vary by size (or by color) stores the literal string
+  // "Default" for the dimension that doesn't apply (see ProductVariant / addVariant /
+  // bulkUploadProducts). For either dimension, if the current candidate set of distinct
+  // values has length <= 1 — whether because there's truly only one real value, or
+  // because it collapsed to the "Default" sentinel — there's nothing for the shopper to
+  // actually choose, so auto-resolve it and hide that dimension's picker instead of
+  // forcing an empty click.
   const sizes = [...new Set(variants.map((v) => v.size))].sort();
   const colorsForSize = selectedSize
     ? [...new Set(variants.filter((v) => v.size === selectedSize).map((v) => v.color))].sort()
     : [...new Set(variants.map((v) => v.color))].sort();
 
-  const selectedVariant = isDefaultOnly
-    ? variants[0]
-    : selectedSize && selectedColor
-    ? variants.find((v) => v.size === selectedSize && v.color === selectedColor) || null
-    : null;
+  const sizeIsFixed = sizes.length <= 1;
+  const colorIsFixed = colorsForSize.length <= 1;
+  const effectiveSize = sizeIsFixed ? (sizes[0] ?? "") : selectedSize;
+  const effectiveColor = colorIsFixed ? (colorsForSize[0] ?? "") : selectedColor;
+
+  const selectedVariant =
+    effectiveSize && effectiveColor
+      ? variants.find((v) => v.size === effectiveSize && v.color === effectiveColor) || null
+      : null;
 
   const hasVariants = variants.length > 0;
   const displayPrice = selectedVariant?.price ?? product.basePrice;
@@ -295,7 +301,7 @@ export default function ProductDetailPage() {
     }
   }
 
-  const canAddToCart = hasVariants && (isDefaultOnly || (selectedSize && selectedColor)) && !isOutOfStock;
+  const canAddToCart = hasVariants && !!effectiveSize && !!effectiveColor && !isOutOfStock;
 
   const tabsWithCount = TABS
     .filter((t) => t.id !== "additionalInfo" || product.additionalInformation?.length > 0)
@@ -458,7 +464,7 @@ export default function ProductDetailPage() {
           <div className="border-t border-gray-100" />
 
           {/* Size selection */}
-          {!isDefaultOnly && sizes.length > 0 && (
+          {!sizeIsFixed && sizes.length > 0 && (
             <div>
               <p className="text-sm font-semibold text-gray-700 mb-2">
                 Size
@@ -483,7 +489,7 @@ export default function ProductDetailPage() {
           )}
 
           {/* Color selection */}
-          {!isDefaultOnly && colorsForSize.length > 0 && (
+          {!colorIsFixed && colorsForSize.length > 0 && (
             <div>
               <p className="text-sm font-semibold text-gray-700 mb-2">
                 Color
@@ -616,9 +622,9 @@ export default function ProductDetailPage() {
                 ? "No options available"
                 : isOutOfStock && selectedVariant
                 ? "Out of Stock"
-                : !isDefaultOnly && !selectedSize
+                : !sizeIsFixed && !selectedSize
                 ? "Select a size to continue"
-                : !isDefaultOnly && !selectedColor
+                : !colorIsFixed && !selectedColor
                 ? "Select a color to continue"
                 : "Add to Cart"}
               </button>
