@@ -78,7 +78,7 @@ export async function listProducts(req, res) {
 
   if (search) {
     const rx = { $regex: search, $options: "i" };
-    filter.$or = [{ name: rx }, { description: rx }];
+    filter.$or = [{ name: rx }, { description: rx }, { shortDescription: rx }];
   }
 
   if (minPrice !== undefined && minPrice !== "") {

@@ -9,11 +9,28 @@ const productImageSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// Free-form label/value pairs so admins can attach whatever spec fields fit the
+// product (Author/Publisher/Genre for books, Material/Weight for apparel, etc.)
+// without the schema needing a fixed set of attribute fields.
+const additionalInfoSchema = new mongoose.Schema(
+  {
+    label: { type: String, required: true, trim: true, maxlength: 100 },
+    value: { type: String, required: true, trim: true, maxlength: 1000 },
+  },
+  { _id: false }
+);
+
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    description: { type: String, trim: true },
+    // Rich-text HTML (sanitized server-side before save) — short teaser capped at
+    // 500 visible characters, enforced in the request validators, not here, since
+    // maxlength here would count markup instead of the text the admin actually typed.
+    shortDescription: { type: String, trim: true, default: "" },
+    description: { type: String, trim: true, default: "" },
+    additionalInformation: { type: [additionalInfoSchema], default: [] },
+    weight: { type: Number, min: 0 },
     categories: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
       required: true,

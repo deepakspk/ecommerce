@@ -3,8 +3,12 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import * as adminApi from "../../api/admin";
 import { cloudinaryUrl } from "../../utils/cloudinaryUrl";
 import { H1_CLASS } from "../../utils/ui";
+import RichTextEditor from "../../components/RichTextEditor";
+import { stripHtml } from "../../utils/htmlText";
 
 const EMPTY_VARIANT = { size: "", color: "", sku: "", price: "", stockQuantity: "" };
+const EMPTY_ADDITIONAL_INFO = { label: "", value: "" };
+const SHORT_DESCRIPTION_MAX = 500;
 
 export default function ProductFormPage() {
   const { id } = useParams();
@@ -12,10 +16,11 @@ export default function ProductFormPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: "", description: "", categories: [], basePrice: "",
+    name: "", shortDescription: "", description: "", categories: [], basePrice: "",
     discountType: "", discountValue: "", isActive: true,
-    stockQuantity: "",
+    stockQuantity: "", weight: "",
   });
+  const [additionalInfo, setAdditionalInfo] = useState([]);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -42,13 +47,16 @@ export default function ProductFormPage() {
         .then(({ product, variants: v }) => {
           setForm({
             name: product.name,
+            shortDescription: product.shortDescription || "",
             description: product.description || "",
             categories: (product.categories || []).map((c) => c._id || String(c)),
             basePrice: String(product.basePrice),
             discountType: product.discountType || "",
             discountValue: product.discountValue ? String(product.discountValue) : "",
             isActive: product.isActive,
+            weight: product.weight != null ? String(product.weight) : "",
           });
+          setAdditionalInfo(product.additionalInformation || []);
           setExistingImages(product.images || []);
           setVariants(v);
         })
@@ -66,17 +74,24 @@ export default function ProductFormPage() {
     if (form.discountType === "PERCENTAGE" && Number(form.discountValue) > 100) {
       setError("Percentage discount cannot exceed 100"); return;
     }
+    if (stripHtml(form.shortDescription).length > SHORT_DESCRIPTION_MAX) {
+      setError(`Short information must be ${SHORT_DESCRIPTION_MAX} characters or fewer`); return;
+    }
     setError("");
     setSaving(true);
     try {
+      const validAdditionalInfo = additionalInfo.filter((i) => i.label.trim() && i.value.trim());
       const fd = new FormData();
       fd.append("name", form.name.trim());
-      fd.append("description", form.description.trim());
+      fd.append("shortDescription", form.shortDescription);
+      fd.append("description", form.description);
       fd.append("categories", JSON.stringify(form.categories));
       fd.append("basePrice", form.basePrice);
       fd.append("discountType", form.discountType);
       fd.append("discountValue", form.discountType ? form.discountValue : "0");
       fd.append("isActive", String(form.isActive));
+      fd.append("weight", form.weight);
+      fd.append("additionalInformation", JSON.stringify(validAdditionalInfo));
       if (isEdit) {
         fd.append("keepImages", JSON.stringify(existingImages.map(i => i.url)));
       }
@@ -207,13 +222,22 @@ export default function ProductFormPage() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Short Information</label>
+            <RichTextEditor
+              variant="compact"
+              value={form.shortDescription}
+              onChange={html => setForm(f => ({ ...f, shortDescription: html }))}
+              placeholder="A brief teaser shown on the product page (max 500 characters)"
+              maxLength={SHORT_DESCRIPTION_MAX}
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-            <textarea
+            <RichTextEditor
               value={form.description}
-              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              rows={3}
-              placeholder="Product description"
-              className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+              onChange={html => setForm(f => ({ ...f, description: html }))}
+              placeholder="Full product description"
             />
           </div>
 
@@ -254,6 +278,21 @@ export default function ProductFormPage() {
               placeholder="0"
               className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Weight (kg) <span className="font-normal text-gray-400">— optional</span>
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.weight}
+              onChange={e => setForm(f => ({ ...f, weight: e.target.value }))}
+              placeholder="0"
+              className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
 
@@ -314,6 +353,52 @@ export default function ProductFormPage() {
             />
             <label htmlFor="isActive" className="text-sm text-gray-700 dark:text-gray-300">Active (visible to customers)</label>
           </div>
+        </div>
+
+        {/* Additional Information */}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Additional Information</h2>
+          <p className="text-xs text-gray-400 mb-3">
+            Add any label/value pairs relevant to this product — e.g. Author, Publisher, Genre, Language,
+            Publish Year, Edition, Cover, Pages.
+          </p>
+
+          {additionalInfo.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {additionalInfo.map((item, i) => (
+                <div key={i} className="flex gap-2">
+                  <input
+                    value={item.label}
+                    onChange={e => setAdditionalInfo(rows => rows.map((r, idx) => idx === i ? { ...r, label: e.target.value } : r))}
+                    placeholder="Label (e.g. Author)"
+                    className="w-1/3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+                  <input
+                    value={item.value}
+                    onChange={e => setAdditionalInfo(rows => rows.map((r, idx) => idx === i ? { ...r, value: e.target.value } : r))}
+                    placeholder="Value"
+                    className="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setAdditionalInfo(rows => rows.filter((_, idx) => idx !== i))}
+                    aria-label="Remove field"
+                    className="px-3 text-red-500 hover:underline text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setAdditionalInfo(rows => [...rows, { ...EMPTY_ADDITIONAL_INFO }])}
+            className="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+          >
+            + Add Field
+          </button>
         </div>
 
         {/* Images */}

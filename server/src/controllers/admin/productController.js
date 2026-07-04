@@ -5,6 +5,7 @@ import InventoryLog from "../../models/InventoryLog.js";
 import Category from "../../models/Category.js";
 import { uploadToCloudinary } from "../../config/cloudinary.js";
 import { logAudit } from "../../utils/auditLog.js";
+import { sanitizeRichText } from "../../utils/sanitizeHtml.js";
 
 function slugify(name) {
   return name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
@@ -58,8 +59,30 @@ function parseCategories(value) {
   return Array.isArray(list) ? list : [];
 }
 
+function parseAdditionalInformation(value) {
+  if (value === undefined) return undefined;
+  const list = typeof value === "string" ? JSON.parse(value) : value;
+  if (!Array.isArray(list)) return [];
+  return list
+    .filter((item) => item && String(item.label ?? "").trim() && String(item.value ?? "").trim())
+    .map((item) => ({ label: String(item.label).trim(), value: String(item.value).trim() }));
+}
+
 export async function createProduct(req, res) {
-  const { name, description, categories, basePrice, discountType, discountValue, isActive, variants, stockQuantity } = req.body;
+  const {
+    name,
+    shortDescription,
+    description,
+    categories,
+    basePrice,
+    discountType,
+    discountValue,
+    isActive,
+    variants,
+    stockQuantity,
+    weight,
+    additionalInformation,
+  } = req.body;
 
   if (!name?.trim()) return res.status(400).json({ message: "Name is required" });
   const categoryIds = parseCategories(categories);
@@ -81,13 +104,16 @@ export async function createProduct(req, res) {
   const product = await Product.create({
     name: name.trim(),
     slug,
-    description: description?.trim() || "",
+    shortDescription: sanitizeRichText(shortDescription),
+    description: sanitizeRichText(description),
     categories: categoryIds,
     basePrice: Number(basePrice),
     discountType: discountType || null,
     discountValue: discountType ? Number(discountValue || 0) : 0,
     isActive: isActive !== "false" && isActive !== false,
     images,
+    weight: weight !== undefined && weight !== "" ? Number(weight) : undefined,
+    additionalInformation: parseAdditionalInformation(additionalInformation) || [],
   });
 
   let createdVariants = [];
@@ -136,6 +162,7 @@ const BULK_UPLOAD_COLUMNS = [
   { key: "size", header: "Size", width: 12 },
   { key: "color", header: "Color", width: 12 },
   { key: "stockQuantity", header: "Stock Quantity", width: 16 },
+  { key: "weight", header: "Weight (kg)", width: 14 },
 ];
 
 function normalizeHeader(value) {
@@ -164,6 +191,7 @@ export async function downloadBulkUploadSample(req, res) {
     size: "M",
     color: "Black",
     stockQuantity: 50,
+    weight: 0.2,
   });
   sheet.addRow({
     name: "Running Shoes",
@@ -308,17 +336,29 @@ export async function bulkUploadProducts(req, res) {
       continue;
     }
 
+    const weightRaw = String(data.weight ?? "").trim();
+    let weight;
+    if (weightRaw !== "") {
+      weight = Number(weightRaw);
+      if (Number.isNaN(weight) || weight < 0) {
+        failed++;
+        results.push({ row: rowNumber, name, status: "error", message: "Weight must be a non-negative number" });
+        continue;
+      }
+    }
+
     try {
       const product = await Product.create({
         name,
         slug,
-        description: String(data.description ?? "").trim(),
+        description: sanitizeRichText(String(data.description ?? "").trim()),
         categories: categoryIds,
         basePrice,
         discountType: discountType || null,
         discountValue,
         isActive,
         images: [],
+        weight,
       });
       seenSlugs.add(slug);
 
@@ -368,13 +408,30 @@ export async function updateProduct(req, res) {
   const product = await Product.findById(req.params.id);
   if (!product) return res.status(404).json({ message: "Product not found" });
 
-  const { name, description, categories, basePrice, discountType, discountValue, isActive, keepImages } = req.body;
+  const {
+    name,
+    shortDescription,
+    description,
+    categories,
+    basePrice,
+    discountType,
+    discountValue,
+    isActive,
+    keepImages,
+    weight,
+    additionalInformation,
+  } = req.body;
 
   if (name?.trim()) {
     product.name = name.trim();
     product.slug = slugify(name);
   }
-  if (description !== undefined) product.description = description.trim();
+  if (shortDescription !== undefined) product.shortDescription = sanitizeRichText(shortDescription);
+  if (description !== undefined) product.description = sanitizeRichText(description);
+  if (weight !== undefined) product.weight = weight === "" ? undefined : Number(weight);
+  if (additionalInformation !== undefined) {
+    product.additionalInformation = parseAdditionalInformation(additionalInformation) || [];
+  }
   if (categories !== undefined) {
     const categoryIds = parseCategories(categories);
     if (!categoryIds.length) return res.status(400).json({ message: "At least one category is required" });

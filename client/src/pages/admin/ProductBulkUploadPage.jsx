@@ -58,6 +58,7 @@ export default function ProductBulkUploadPage() {
           Fill it in following the column headers, then upload it below. Categories must already
           exist and are matched by name (comma-separate multiple categories). Leave SKU, Size, and
           Color blank to auto-create a default variant, or fill in all three for a specific variant.
+          Weight (kg) is optional and can be left blank.
         </p>
         <button type="button" onClick={handleDownloadSample} disabled={downloadingSample} className={BUTTON_SECONDARY}>
           {downloadingSample ? "Downloading…" : "Download Sample .xlsx"}

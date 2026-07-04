@@ -7,6 +7,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
+import { stripHtml } from "../utils/htmlText";
 import Seo from "../components/Seo";
 import WishlistButton from "../components/WishlistButton";
 import StarRating from "../components/StarRating";
@@ -27,6 +28,7 @@ const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
 const TABS = [
   { id: "description", label: "Description" },
+  { id: "additionalInfo", label: "Additional Information" },
   { id: "shipping", label: "Shipping & Returns" },
   { id: "reviews", label: "Reviews" },
   { id: "questions", label: "Questions" },
@@ -126,6 +128,23 @@ function ShareButtons({ product }) {
   );
 }
 
+function ShareModal({ product, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <div
+        className="bg-white rounded-xl shadow-lg max-w-sm w-full p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-700">Share this product</h2>
+          <button onClick={onClose} aria-label="Close dialog" className="text-gray-400 hover:text-gray-700">×</button>
+        </div>
+        <ShareButtons product={product} />
+      </div>
+    </div>
+  );
+}
+
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
@@ -148,6 +167,7 @@ export default function ProductDetailPage() {
   const [notifyMessage, setNotifyMessage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -166,6 +186,7 @@ export default function ProductDetailPage() {
           setFailedThumbs(new Set());
           setQuantity(1);
           setActiveTab("description");
+          setShareModalOpen(false);
           setError("");
           addRecentlyViewed(data.product.slug);
         }
@@ -210,15 +231,21 @@ export default function ProductDetailPage() {
     );
   }
 
+  // A product with no real variants gets a single auto-created "Default"/"Default"
+  // variant (see ProductVariant#isDefault) — nothing for the shopper to actually pick,
+  // so skip the size/color pickers and go straight to Add to Cart.
+  const isDefaultOnly = variants.length === 1 && variants[0].isDefault;
+
   const sizes = [...new Set(variants.map((v) => v.size))].sort();
   const colorsForSize = selectedSize
     ? [...new Set(variants.filter((v) => v.size === selectedSize).map((v) => v.color))].sort()
     : [...new Set(variants.map((v) => v.color))].sort();
 
-  const selectedVariant =
-    selectedSize && selectedColor
-      ? variants.find((v) => v.size === selectedSize && v.color === selectedColor) || null
-      : null;
+  const selectedVariant = isDefaultOnly
+    ? variants[0]
+    : selectedSize && selectedColor
+    ? variants.find((v) => v.size === selectedSize && v.color === selectedColor) || null
+    : null;
 
   const hasVariants = variants.length > 0;
   const displayPrice = selectedVariant?.price ?? product.basePrice;
@@ -268,18 +295,20 @@ export default function ProductDetailPage() {
     }
   }
 
-  const canAddToCart = hasVariants && selectedSize && selectedColor && !isOutOfStock;
+  const canAddToCart = hasVariants && (isDefaultOnly || (selectedSize && selectedColor)) && !isOutOfStock;
 
-  const tabsWithCount = TABS.map((t) => {
-    if (t.id === "reviews" && product.reviewCount > 0) return { ...t, label: `Reviews (${product.reviewCount})` };
-    return t;
-  });
+  const tabsWithCount = TABS
+    .filter((t) => t.id !== "additionalInfo" || product.additionalInformation?.length > 0)
+    .map((t) => {
+      if (t.id === "reviews" && product.reviewCount > 0) return { ...t, label: `Reviews (${product.reviewCount})` };
+      return t;
+    });
 
   return (
     <div className={PAGE_CLASS}>
       <Seo
         title={product.name}
-        description={product.description?.slice(0, 160) || undefined}
+        description={stripHtml(product.shortDescription || product.description).slice(0, 160) || undefined}
         image={product.images?.[0]?.url}
       />
 
@@ -357,11 +386,6 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          {/* Social Share */}
-          <div className="mt-4 flex items-center gap-3">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Share</span>
-            <ShareButtons product={product} />
-          </div>
         </div>
 
         {/* ── Details ────────────────────────────────────────────── */}
@@ -373,11 +397,23 @@ export default function ProductDetailPage() {
             </p>
             <div className="flex items-start justify-between gap-3">
               <h1 className={`${H1_CLASS} leading-snug`}>{product.name}</h1>
-              <WishlistButton
-                product={product}
-                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors"
-                iconClassName="w-5 h-5"
-              />
+              <div className="flex-shrink-0 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShareModalOpen(true)}
+                  aria-label="Share this product"
+                  className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342a3 3 0 100 2.316m0-2.316a3 3 0 100-2.316m0 2.316l6.632 3.316m-6.632-5.632l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 8.632a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                  </svg>
+                </button>
+                <WishlistButton
+                  product={product}
+                  className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors"
+                  iconClassName="w-5 h-5"
+                />
+              </div>
             </div>
 
             {product.reviewCount > 0 && (
@@ -412,14 +448,17 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Description teaser */}
-          {product.description && (
-            <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">{product.description}</p>
+          {(product.shortDescription || product.description) && (
+            <div
+              className="text-gray-600 text-sm leading-relaxed line-clamp-3 prose prose-sm max-w-none [&_p]:m-0"
+              dangerouslySetInnerHTML={{ __html: product.shortDescription || product.description }}
+            />
           )}
 
           <div className="border-t border-gray-100" />
 
           {/* Size selection */}
-          {sizes.length > 0 && (
+          {!isDefaultOnly && sizes.length > 0 && (
             <div>
               <p className="text-sm font-semibold text-gray-700 mb-2">
                 Size
@@ -444,7 +483,7 @@ export default function ProductDetailPage() {
           )}
 
           {/* Color selection */}
-          {colorsForSize.length > 0 && (
+          {!isDefaultOnly && colorsForSize.length > 0 && (
             <div>
               <p className="text-sm font-semibold text-gray-700 mb-2">
                 Color
@@ -577,9 +616,9 @@ export default function ProductDetailPage() {
                 ? "No options available"
                 : isOutOfStock && selectedVariant
                 ? "Out of Stock"
-                : !selectedSize
+                : !isDefaultOnly && !selectedSize
                 ? "Select a size to continue"
-                : !selectedColor
+                : !isDefaultOnly && !selectedColor
                 ? "Select a color to continue"
                 : "Add to Cart"}
               </button>
@@ -619,9 +658,24 @@ export default function ProductDetailPage() {
 
         <div className="p-6">
           {activeTab === "description" && (
-            <div className="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none">
-              {product.description || "No description available for this product."}
-            </div>
+            product.description ? (
+              <div
+                className="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
+            ) : (
+              <p className="text-sm text-gray-600 leading-relaxed">No description available for this product.</p>
+            )
+          )}
+          {activeTab === "additionalInfo" && (
+            <dl className="divide-y divide-gray-100">
+              {product.additionalInformation.map((item, i) => (
+                <div key={i} className="grid grid-cols-3 gap-4 py-2.5 text-sm">
+                  <dt className="font-medium text-gray-700 col-span-1">{item.label}</dt>
+                  <dd className="text-gray-600 col-span-2">{item.value}</dd>
+                </div>
+              ))}
+            </dl>
           )}
           {activeTab === "shipping" && (
             <p className="text-sm text-gray-600 leading-relaxed">{SHIPPING_RETURNS_TEXT}</p>
@@ -637,6 +691,8 @@ export default function ProductDetailPage() {
 
       <ProductRail title="Related products" products={relatedProducts} />
       <RecentlyViewedRail excludeSlug={product.slug} />
+
+      {shareModalOpen && <ShareModal product={product} onClose={() => setShareModalOpen(false)} />}
     </div>
   );
 }

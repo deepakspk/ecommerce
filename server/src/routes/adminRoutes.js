@@ -3,6 +3,7 @@ import { body, param } from "express-validator";
 import { protect, requireRole } from "../middleware/auth.js";
 import { upload, uploadExcel } from "../middleware/upload.js";
 import { validate } from "../middleware/validate.js";
+import { stripHtmlTags } from "../utils/sanitizeHtml.js";
 import {
   listCategories,
   getCategoryTree,
@@ -181,8 +182,47 @@ const discountFieldValidators = [
   }),
 ];
 
+const shortDescriptionValidator = body("shortDescription")
+  .optional({ values: "falsy" })
+  .isString()
+  .custom((value) => stripHtmlTags(value).length <= 500)
+  .withMessage("shortDescription must be 500 characters or fewer");
+
+const descriptionValidator = body("description")
+  .optional({ values: "falsy" })
+  .isString()
+  .custom((value) => stripHtmlTags(value).length <= 20000)
+  .withMessage("description must be 20000 characters or fewer");
+
+const weightValidator = body("weight")
+  .optional({ values: "falsy" })
+  .isFloat({ min: 0 })
+  .withMessage("weight must be a non-negative number");
+
+const additionalInformationValidator = body("additionalInformation")
+  .optional({ values: "falsy" })
+  .custom((value) => {
+    const list = typeof value === "string" ? JSON.parse(value) : value;
+    return (
+      Array.isArray(list) &&
+      list.every(
+        (item) =>
+          item &&
+          typeof item.label === "string" &&
+          item.label.trim() &&
+          typeof item.value === "string" &&
+          item.value.trim()
+      )
+    );
+  })
+  .withMessage("additionalInformation must be an array of non-empty {label, value} pairs");
+
 const productBodyValidators = [
   body("name").trim().notEmpty().withMessage("name is required"),
+  shortDescriptionValidator,
+  descriptionValidator,
+  weightValidator,
+  additionalInformationValidator,
   body("categories")
     .custom((value) => {
       const list = typeof value === "string" ? JSON.parse(value) : value;
@@ -196,6 +236,10 @@ const productBodyValidators = [
 
 const productUpdateBodyValidators = [
   body("name").optional().trim().notEmpty().withMessage("name cannot be empty"),
+  shortDescriptionValidator,
+  descriptionValidator,
+  weightValidator,
+  additionalInformationValidator,
   body("categories")
     .optional()
     .custom((value) => {

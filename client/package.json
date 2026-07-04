@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.1",
     "axios": "^1.18.0",
     "jsbarcode": "^3.12.3",
@@ -17,6 +18,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-helmet-async": "^3.0.0",
+    "react-quill-new": "^3.8.3",
     "react-router-dom": "^7.18.0",
     "recharts": "^3.9.0",
     "tailwindcss": "^4.3.1"
