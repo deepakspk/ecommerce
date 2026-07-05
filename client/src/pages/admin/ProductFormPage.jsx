@@ -16,12 +16,13 @@ export default function ProductFormPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: "", shortDescription: "", description: "", categories: [], basePrice: "",
+    name: "", shortDescription: "", description: "", categories: [], featureTypes: [], basePrice: "",
     discountType: "", discountValue: "", isActive: true,
     stockQuantity: "", weight: "",
   });
   const [additionalInfo, setAdditionalInfo] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [featureTypes, setFeatureTypes] = useState([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
@@ -42,6 +43,7 @@ export default function ProductFormPage() {
 
   useEffect(() => {
     adminApi.getCategories().then(d => setCategories(d.categories)).catch(() => {});
+    adminApi.getFeatureTypes().then(d => setFeatureTypes(d.featureTypes)).catch(() => {});
     if (isEdit) {
       adminApi.getProduct(id)
         .then(({ product, variants: v }) => {
@@ -50,6 +52,7 @@ export default function ProductFormPage() {
             shortDescription: product.shortDescription || "",
             description: product.description || "",
             categories: (product.categories || []).map((c) => c._id || String(c)),
+            featureTypes: (product.featureTypes || []).map((ft) => ft._id || String(ft)),
             basePrice: String(product.basePrice),
             discountType: product.discountType || "",
             discountValue: product.discountValue ? String(product.discountValue) : "",
@@ -86,6 +89,7 @@ export default function ProductFormPage() {
       fd.append("shortDescription", form.shortDescription);
       fd.append("description", form.description);
       fd.append("categories", JSON.stringify(form.categories));
+      fd.append("featureTypes", JSON.stringify(form.featureTypes));
       fd.append("basePrice", form.basePrice);
       fd.append("discountType", form.discountType);
       fd.append("discountValue", form.discountType ? form.discountValue : "0");
@@ -261,6 +265,34 @@ export default function ProductFormPage() {
                       className="rounded dark:bg-gray-800 dark:border-gray-600"
                     />
                     {c.name}
+                  </label>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Feature Types <span className="font-normal text-gray-400">— optional, powers homepage carousels</span>
+            </label>
+            <div className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 max-h-40 overflow-y-auto space-y-1">
+              {featureTypes.length === 0 ? (
+                <p className="text-xs text-gray-400">No feature types yet — create one in Feature Types first.</p>
+              ) : (
+                featureTypes.map(ft => (
+                  <label key={ft._id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <input
+                      type="checkbox"
+                      checked={form.featureTypes.includes(ft._id)}
+                      onChange={e => setForm(f => ({
+                        ...f,
+                        featureTypes: e.target.checked
+                          ? [...f.featureTypes, ft._id]
+                          : f.featureTypes.filter(id => id !== ft._id),
+                      }))}
+                      className="rounded dark:bg-gray-800 dark:border-gray-600"
+                    />
+                    {ft.name}
                   </label>
                 ))
               )}

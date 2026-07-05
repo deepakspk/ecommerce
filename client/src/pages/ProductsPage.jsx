@@ -10,6 +10,7 @@ import EmptyState from "../components/EmptyState";
 import ProductCard from "../components/ProductCard";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
+import FeatureRails from "../components/FeatureRails";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import { INPUT_CLASS, BUTTON_GHOST, CARD_CLASS, PAGE_CLASS, H1_CLASS, SECTION_HEADING_CLASS } from "../utils/ui";
 
@@ -253,6 +254,8 @@ export default function ProductsPage() {
               </div>
             )}
           </div>
+
+          {/* <FeatureRails /> */}
         </div>
       )}
 

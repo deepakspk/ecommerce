@@ -44,10 +44,15 @@ const productSchema = new mongoose.Schema(
     discountValue: { type: Number, min: 0, default: 0 },
     isActive: { type: Boolean, default: true },
     images: { type: [productImageSchema], default: [] },
+    featureTypes: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "FeatureType" }],
+      default: [],
+    },
   },
   { timestamps: { createdAt: "createdAt", updatedAt: false } }
 );
 
 productSchema.index({ categories: 1 });
+productSchema.index({ featureTypes: 1 });
 
 export default mongoose.model("Product", productSchema);

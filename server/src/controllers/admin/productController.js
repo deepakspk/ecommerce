@@ -38,6 +38,7 @@ export async function listProducts(req, res) {
   const [products, total] = await Promise.all([
     Product.find(filter)
       .populate("categories", "name")
+      .populate("featureTypes", "name")
       .sort(SORT_OPTIONS[sort] || SORT_OPTIONS.newest)
       .skip(skip)
       .limit(Number(limit)),
@@ -48,13 +49,21 @@ export async function listProducts(req, res) {
 }
 
 export async function getProduct(req, res) {
-  const product = await Product.findById(req.params.id).populate("categories", "name");
+  const product = await Product.findById(req.params.id)
+    .populate("categories", "name")
+    .populate("featureTypes", "name");
   if (!product) return res.status(404).json({ message: "Product not found" });
   const variants = await ProductVariant.find({ productId: product._id });
   res.json({ product, variants });
 }
 
 function parseCategories(value) {
+  const list = typeof value === "string" ? JSON.parse(value) : value;
+  return Array.isArray(list) ? list : [];
+}
+
+function parseFeatureTypes(value) {
+  if (value === undefined) return [];
   const list = typeof value === "string" ? JSON.parse(value) : value;
   return Array.isArray(list) ? list : [];
 }
@@ -82,6 +91,7 @@ export async function createProduct(req, res) {
     stockQuantity,
     weight,
     additionalInformation,
+    featureTypes,
   } = req.body;
 
   if (!name?.trim()) return res.status(400).json({ message: "Name is required" });
@@ -114,6 +124,7 @@ export async function createProduct(req, res) {
     images,
     weight: weight !== undefined && weight !== "" ? Number(weight) : undefined,
     additionalInformation: parseAdditionalInformation(additionalInformation) || [],
+    featureTypes: parseFeatureTypes(featureTypes),
   });
 
   let createdVariants = [];
@@ -426,6 +437,7 @@ export async function updateProduct(req, res) {
     keepImages,
     weight,
     additionalInformation,
+    featureTypes,
   } = req.body;
 
   if (name?.trim()) {
@@ -437,6 +449,9 @@ export async function updateProduct(req, res) {
   if (weight !== undefined) product.weight = weight === "" ? undefined : Number(weight);
   if (additionalInformation !== undefined) {
     product.additionalInformation = parseAdditionalInformation(additionalInformation) || [];
+  }
+  if (featureTypes !== undefined) {
+    product.featureTypes = parseFeatureTypes(featureTypes);
   }
   if (categories !== undefined) {
     const categoryIds = parseCategories(categories);

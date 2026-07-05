@@ -1,4 +1,5 @@
 import Category from "../models/Category.js";
+import FeatureType from "../models/FeatureType.js";
 import Product from "../models/Product.js";
 import ProductVariant from "../models/ProductVariant.js";
 import Review from "../models/Review.js";
@@ -65,7 +66,7 @@ export async function getAvailableFilters(req, res) {
 }
 
 export async function listProducts(req, res) {
-  const { category, search, size, color, minPrice, maxPrice, sort, page = 1, limit = 20 } = req.query;
+  const { category, featureType, search, size, color, minPrice, maxPrice, sort, page = 1, limit = 20 } = req.query;
 
   const filter = { isActive: true };
 
@@ -74,6 +75,12 @@ export async function listProducts(req, res) {
     if (!cat) return res.json({ products: [], total: 0, page: 1, pages: 0 });
     const descendantIds = await getDescendantIds(cat._id);
     filter.categories = { $in: [cat._id, ...descendantIds] };
+  }
+
+  if (featureType) {
+    const ft = await FeatureType.findOne({ slug: featureType.toLowerCase() });
+    if (!ft) return res.json({ products: [], total: 0, page: 1, pages: 0 });
+    filter.featureTypes = ft._id;
   }
 
   if (search) {

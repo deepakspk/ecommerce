@@ -14,6 +14,13 @@ export const deleteCategory = (id, force = false) =>
   api.delete(`/admin/categories/${id}`, { params: force ? { force: "true" } : {} }).then(r => r.data);
 export const reorderCategories = (items) => api.patch("/admin/categories/reorder", { items }).then(r => r.data);
 
+// Feature Types
+export const getFeatureTypes = () => api.get("/admin/feature-types").then(r => r.data);
+export const createFeatureType = (data) => api.post("/admin/feature-types", data).then(r => r.data);
+export const updateFeatureType = (id, data) => api.put(`/admin/feature-types/${id}`, data).then(r => r.data);
+export const deleteFeatureType = (id) => api.delete(`/admin/feature-types/${id}`).then(r => r.data);
+export const reorderFeatureTypes = (items) => api.patch("/admin/feature-types/reorder", { items }).then(r => r.data);
+
 // Products
 export const getProducts = (params) => api.get("/admin/products", { params }).then(r => r.data);
 export const getProduct = (id) => api.get(`/admin/products/${id}`).then(r => r.data);

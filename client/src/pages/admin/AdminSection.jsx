@@ -3,6 +3,7 @@ import AdminRoute from "../../components/AdminRoute";
 import AdminLayout from "../../components/AdminLayout";
 import DashboardPage from "./DashboardPage";
 import CategoriesPage from "./CategoriesPage";
+import FeatureTypesPage from "./FeatureTypesPage";
 import ProductsPage from "./ProductsPage";
 import ProductFormPage from "./ProductFormPage";
 import ProductBulkUploadPage from "./ProductBulkUploadPage";
@@ -34,6 +35,7 @@ export default function AdminSection() {
           <Route path="returns" element={<AdminReturnsPage />} />
           <Route path="returns/:id" element={<AdminReturnDetailPage />} />
           <Route path="categories" element={<CategoriesPage />} />
+          <Route path="feature-types" element={<FeatureTypesPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/new" element={<ProductFormPage />} />
           <Route path="products/bulk-upload" element={<ProductBulkUploadPage />} />

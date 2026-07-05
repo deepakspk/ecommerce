@@ -16,6 +16,13 @@ import {
   reorderCategories,
 } from "../controllers/admin/categoryController.js";
 import {
+  listFeatureTypes,
+  createFeatureType,
+  updateFeatureType,
+  deleteFeatureType,
+  reorderFeatureTypes,
+} from "../controllers/admin/featureTypeController.js";
+import {
   listProducts,
   getProduct,
   createProduct,
@@ -105,6 +112,17 @@ const categoryUpdateBodyValidators = [
   body("sortOrder").optional().isInt().withMessage("sortOrder must be an integer"),
   body("seoTitle").optional().trim(),
   body("seoDescription").optional().trim(),
+];
+
+const featureTypeBodyValidators = [
+  body("name").trim().notEmpty().withMessage("name is required"),
+  body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
+];
+
+const featureTypeUpdateBodyValidators = [
+  body("name").optional().trim().notEmpty().withMessage("name cannot be empty"),
+  body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
+  body("sortOrder").optional().isInt().withMessage("sortOrder must be an integer"),
 ];
 
 const reorderBodyValidators = [
@@ -217,12 +235,21 @@ const additionalInformationValidator = body("additionalInformation")
   })
   .withMessage("additionalInformation must be an array of non-empty {label, value} pairs");
 
+const featureTypesValidator = body("featureTypes")
+  .optional({ values: "falsy" })
+  .custom((value) => {
+    const list = typeof value === "string" ? JSON.parse(value) : value;
+    return Array.isArray(list);
+  })
+  .withMessage("featureTypes must be an array of feature type ids");
+
 const productBodyValidators = [
   body("name").trim().notEmpty().withMessage("name is required"),
   shortDescriptionValidator,
   descriptionValidator,
   weightValidator,
   additionalInformationValidator,
+  featureTypesValidator,
   body("categories")
     .custom((value) => {
       const list = typeof value === "string" ? JSON.parse(value) : value;
@@ -240,6 +267,7 @@ const productUpdateBodyValidators = [
   descriptionValidator,
   weightValidator,
   additionalInformationValidator,
+  featureTypesValidator,
   body("categories")
     .optional()
     .custom((value) => {
@@ -333,6 +361,18 @@ router.put(
   updateCategory
 );
 router.delete("/categories/:id", [mongoIdParam("id")], validate, deleteCategory);
+
+// Feature Types
+router.get("/feature-types", listFeatureTypes);
+router.post("/feature-types", featureTypeBodyValidators, validate, createFeatureType);
+router.patch("/feature-types/reorder", reorderBodyValidators, validate, reorderFeatureTypes);
+router.put(
+  "/feature-types/:id",
+  [mongoIdParam("id"), ...featureTypeUpdateBodyValidators],
+  validate,
+  updateFeatureType
+);
+router.delete("/feature-types/:id", [mongoIdParam("id")], validate, deleteFeatureType);
 
 // Products
 router.get("/products", listProducts);
