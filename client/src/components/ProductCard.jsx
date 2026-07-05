@@ -6,7 +6,7 @@ import StarRating from "./StarRating";
 import * as productsApi from "../api/products";
 import { useCart } from "../hooks/useCart";
 import { getErrorMessage } from "../utils/errorHelpers";
-import { CARD_CLASS, BUTTON_PRIMARY_FULL } from "../utils/ui";
+import { BUTTON_PRIMARY_FULL } from "../utils/ui";
 import { getDiscountedPrice } from "../utils/pricing";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
@@ -53,17 +53,17 @@ export default function ProductCard({ product }) {
   return (
     <Link
       to={`/products/${product.slug}`}
-      className={`group block ${CARD_CLASS} overflow-hidden hover:shadow-md transition-shadow`}
+      className="group block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
     >
-      <div className="relative aspect-[4/5] bg-gray-100 overflow-hidden border-b border-gray-200">
+      <div className="relative aspect-[4/5] bg-gray-100 overflow-hidden">
         {hasDiscount && (
-          <span className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded">
-            {discountPercent}% OFF
+          <span className="absolute top-2.5 left-2.5 z-10 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+            -{discountPercent}%
           </span>
         )}
         <WishlistButton
           product={product}
-          className="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/95 text-gray-500 hover:text-red-500 shadow-md ring-1 ring-black/5"
+          className="absolute top-2.5 right-2.5 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/95 text-gray-500 hover:text-red-500 shadow-md ring-1 ring-black/5"
           iconClassName="w-4 h-4"
         />
         {image && !imageFailed ? (
@@ -90,34 +90,40 @@ export default function ProductCard({ product }) {
           </div>
         )}
       </div>
-      <div className="p-3">
-        <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">{product.name}</h3>
+      <div className="p-4">
+        <h3 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 mb-1.5 min-h-[2.5em]">
+          {product.name}
+        </h3>
+
+        <div className="flex items-center gap-1.5 mb-2 min-h-[1.1rem]">
+          {product.reviewCount > 0 ? (
+            <>
+              <StarRating rating={product.averageRating} />
+              <span className="text-xs text-gray-400">({product.reviewCount})</span>
+            </>
+          ) : (
+            <span className="text-xs text-gray-300">No ratings yet</span>
+          )}
+        </div>
+
         {hasDiscount ? (
-          <p className="mb-2 flex items-baseline gap-1.5">
-            <span className="text-sm font-semibold text-red-600">{formatPrice(finalPrice)}</span>
+          <p className="mb-3 flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-base font-bold text-red-600">{formatPrice(finalPrice)}</span>
             <span className="text-xs text-gray-400 line-through">{formatPrice(product.basePrice)}</span>
           </p>
         ) : (
-          <p className="text-sm font-semibold text-gray-900 mb-2">{formatPrice(product.basePrice)}</p>
-        )}
-        {product.reviewCount > 0 ? (
-          <div className="flex items-center gap-1 mb-2">
-            <StarRating rating={product.averageRating} />
-            <span className="text-xs text-gray-400">({product.reviewCount})</span>
-          </div>
-        ) : (
-          <p className="text-xs text-gray-400 mb-2">No Rating Yet</p>
+          <p className="text-base font-bold text-gray-900 mb-3">{formatPrice(product.basePrice)}</p>
         )}
 
         <button
           type="button"
           onClick={handleAddToCart}
           disabled={adding}
-          className={`${BUTTON_PRIMARY_FULL} py-1.5`}
+          className={`${BUTTON_PRIMARY_FULL} !rounded-xl ${added ? "!bg-green-600" : ""}`}
         >
           {added ? "Added!" : adding ? "Adding…" : needsOptionSelection ? "Select Options" : "Add to Cart"}
         </button>
-        {cartError && <p className="text-xs text-red-600 mt-1">{cartError}</p>}
+        {cartError && <p className="text-xs text-red-600 mt-1.5">{cartError}</p>}
       </div>
     </Link>
   );

@@ -333,7 +333,7 @@ export default function ProductDetailPage() {
         <span className="text-gray-800">{product.name}</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start bg-brand-50/40 rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
         {/* ── Images ─────────────────────────────────────────────── */}
         <div className="lg:sticky lg:top-6">
           {/* Main image — square */}

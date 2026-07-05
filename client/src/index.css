@@ -21,6 +21,16 @@ body {
   margin: 0;
 }
 
+/* Hides the native scrollbar on horizontally-scrollable carousels (ProductRail)
+   while still allowing touch/trackpad swipe and programmatic scrollBy(). */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Recursive hover-flyout for nested category menus (CategoryNav) — scoped by actual
    DOM containment (direct child), so it works at any nesting depth without needing
    a uniquely-named Tailwind group per level. */
