@@ -20,6 +20,7 @@ router.get(
     query("limit").optional().isInt({ min: 1, max: 100 }).withMessage("limit must be between 1 and 100"),
     query("minPrice").optional().isFloat({ min: 0 }).withMessage("minPrice must be a non-negative number"),
     query("maxPrice").optional().isFloat({ min: 0 }).withMessage("maxPrice must be a non-negative number"),
+    query("minRating").optional().isInt({ min: 1, max: 5 }).withMessage("minRating must be between 1 and 5"),
   ],
   validate,
   listProducts

@@ -66,7 +66,8 @@ export async function getAvailableFilters(req, res) {
 }
 
 export async function listProducts(req, res) {
-  const { category, featureType, search, size, color, minPrice, maxPrice, sort, page = 1, limit = 20 } = req.query;
+  const { category, featureType, search, size, color, minPrice, maxPrice, minRating, sort, page = 1, limit = 20 } =
+    req.query;
 
   const filter = { isActive: true };
 
@@ -95,13 +96,26 @@ export async function listProducts(req, res) {
     filter.basePrice = { ...filter.basePrice, $lte: Number(maxPrice) };
   }
 
+  const idConstraints = [];
+
   if (size || color) {
     const variantFilter = {};
     if (size) variantFilter.size = { $regex: `^${escapeRegex(size)}$`, $options: "i" };
     if (color) variantFilter.color = { $regex: `^${escapeRegex(color)}$`, $options: "i" };
     const productIds = await ProductVariant.find(variantFilter).distinct("productId");
-    filter._id = { $in: productIds };
+    idConstraints.push(productIds);
   }
+
+  if (minRating !== undefined && minRating !== "") {
+    const ratingAgg = await Review.aggregate([
+      { $group: { _id: "$productId", avg: { $avg: "$rating" } } },
+      { $match: { avg: { $gte: Number(minRating) } } },
+    ]);
+    idConstraints.push(ratingAgg.map((r) => r._id));
+  }
+
+  const intersectedIds = intersectIds(idConstraints);
+  if (intersectedIds) filter._id = { $in: intersectedIds };
 
   const pageNum = Math.max(1, Number(page));
   const limitNum = Math.min(100, Math.max(1, Number(limit)));
@@ -178,4 +192,15 @@ export async function getProduct(req, res) {
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Combines multiple independent "must be one of these product IDs" constraints
+// (e.g. size/color, rating) into a single AND'd list, since Mongo can't take
+// two separate `_id: {$in}` clauses on the same filter object.
+function intersectIds(lists) {
+  if (lists.length === 0) return null;
+  return lists.reduce((acc, list) => {
+    const set = new Set(list.map(String));
+    return acc.filter((id) => set.has(String(id)));
+  });
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useSearchParams, useLocation, Link } from "react-router-dom";
 import * as productsApi from "../api/products";
+import { getActiveFeatureTypes } from "../api/featureTypes";
 import { useCategories } from "../hooks/useCategories";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { getErrorMessage } from "../utils/errorHelpers";
@@ -8,17 +9,20 @@ import Seo from "../components/Seo";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
 import ProductCard from "../components/ProductCard";
+import StarRating from "../components/StarRating";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
 import FeatureRails from "../components/FeatureRails";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
-import { INPUT_CLASS, BUTTON_GHOST, CARD_CLASS, PAGE_CLASS, H1_CLASS, SECTION_HEADING_CLASS } from "../utils/ui";
+import { INPUT_CLASS, PAGE_CLASS, H1_CLASS, SECTION_HEADING_CLASS } from "../utils/ui";
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
   { value: "price-asc", label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
 ];
+
+const SECTION_LABEL_CLASS = "block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2";
 
 function flattenCategories(nodes, depth = 0) {
   const out = [];
@@ -29,12 +33,6 @@ function flattenCategories(nodes, depth = 0) {
   return out;
 }
 
-function pillClass(active) {
-  return `px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
-    active ? "border-brand-600 bg-brand-50 text-brand-700" : "border-gray-300 text-gray-600 hover:border-gray-500"
-  }`;
-}
-
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
@@ -42,7 +40,7 @@ export default function ProductsPage() {
   const gridRef = useRef(null);
 
   const { categories, loading: categoriesLoading } = useCategories();
-  const [availableFilters, setAvailableFilters] = useState({ sizes: [], colors: [] });
+  const [featureTypes, setFeatureTypes] = useState([]);
   const [filtersLoading, setFiltersLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
@@ -57,8 +55,8 @@ export default function ProductsPage() {
   // Search is also derived from the URL (?search=) so the Navbar's search bar
   // and this page stay in sync — same reasoning as selectCategory below.
   const search = searchParams.get("search") || "";
-  const [selectedSize, setSelectedSize] = useState("");
-  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedFeatureType, setSelectedFeatureType] = useState("");
+  const [selectedMinRating, setSelectedMinRating] = useState(0);
   const [minPriceInput, setMinPriceInput] = useState("");
   const [maxPriceInput, setMaxPriceInput] = useState("");
   const minPrice = useDebouncedValue(minPriceInput, 400);
@@ -96,14 +94,14 @@ export default function ProductsPage() {
     setPage(1);
   }
 
-  // Load available filter values (sizes/colors/price range) once on mount.
+  // Load active feature types once on mount, for the Feature filter dropdown.
   // Categories come from the shared CategoriesProvider instead of a local fetch.
   useEffect(() => {
     let ignore = false;
     async function loadFilters() {
       try {
-        const filtersData = await productsApi.getAvailableFilters();
-        if (!ignore) setAvailableFilters(filtersData);
+        const { featureTypes: data } = await getActiveFeatureTypes();
+        if (!ignore) setFeatureTypes(data);
       } catch (err) {
         if (!ignore) setError(getErrorMessage(err));
       } finally {
@@ -123,8 +121,8 @@ export default function ProductsPage() {
         const params = { page, sort };
         if (selectedCategory) params.category = selectedCategory;
         if (search.trim()) params.search = search.trim();
-        if (selectedSize) params.size = selectedSize;
-        if (selectedColor) params.color = selectedColor;
+        if (selectedFeatureType) params.featureType = selectedFeatureType;
+        if (selectedMinRating > 0) params.minRating = selectedMinRating;
         if (minPrice !== "") params.minPrice = minPrice;
         if (maxPrice !== "") params.maxPrice = maxPrice;
 
@@ -143,7 +141,7 @@ export default function ProductsPage() {
     }
     loadProducts();
     return () => { ignore = true; };
-  }, [selectedCategory, search, selectedSize, selectedColor, minPrice, maxPrice, sort, page]);
+  }, [selectedCategory, search, selectedFeatureType, selectedMinRating, minPrice, maxPrice, sort, page]);
 
   // Debounced price changes should reset to page 1, same as every other filter.
   useEffect(() => {
@@ -170,21 +168,27 @@ export default function ProductsPage() {
   function clearFilters() {
     selectCategory("");
     updateSearch("");
-    setSelectedSize("");
-    setSelectedColor("");
+    setSelectedFeatureType("");
+    setSelectedMinRating(0);
     setMinPriceInput("");
     setMaxPriceInput("");
     setPage(1);
   }
 
   const hasActiveFilters =
-    selectedCategory || search || selectedSize || selectedColor || minPriceInput || maxPriceInput;
+    selectedCategory || search || selectedFeatureType || selectedMinRating || minPriceInput || maxPriceInput;
+
+  const selectedFeatureTypeObj = featureTypes.find((ft) => ft.slug === selectedFeatureType);
 
   const chips = [];
   if (selectedCategoryObj) chips.push({ key: "category", label: selectedCategoryObj.name, onRemove: () => selectCategory("") });
   if (search) chips.push({ key: "search", label: `"${search}"`, onRemove: () => updateSearch("") });
-  if (selectedSize) chips.push({ key: "size", label: `Size: ${selectedSize}`, onRemove: () => changeFilter(setSelectedSize, "") });
-  if (selectedColor) chips.push({ key: "color", label: `Color: ${selectedColor}`, onRemove: () => changeFilter(setSelectedColor, "") });
+  if (selectedFeatureTypeObj) {
+    chips.push({ key: "featureType", label: selectedFeatureTypeObj.name, onRemove: () => changeFilter(setSelectedFeatureType, "") });
+  }
+  if (selectedMinRating > 0) {
+    chips.push({ key: "minRating", label: `${selectedMinRating}★ & up`, onRemove: () => changeFilter(setSelectedMinRating, 0) });
+  }
   if (minPriceInput || maxPriceInput) {
     chips.push({
       key: "price",
@@ -294,19 +298,35 @@ export default function ProductsPage() {
         {/* Filter sidebar — homepage relies on the Navbar search bar and category
             tiles instead; this only shows on /products */}
         {!isHome && (
-          <aside className="w-full sm:w-56 flex-shrink-0">
-            <div className={`${CARD_CLASS} p-4 space-y-5 sm:sticky sm:top-20`}>
+          <aside className="w-full sm:w-[16.8rem] flex-shrink-0">
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 space-y-6 sm:sticky sm:top-20">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-gray-900">Filters</h2>
                 {hasActiveFilters && (
-                  <button onClick={clearFilters} className={`${BUTTON_GHOST} text-red-600 hover:text-red-700 text-xs`}>
+                  <button
+                    onClick={clearFilters}
+                    className="text-xs font-medium text-red-600 border border-red-200 rounded-full px-2.5 py-1 hover:bg-red-50 hover:border-red-300 transition-colors"
+                  >
                     Clear
                   </button>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Category</label>
+                <label className={SECTION_LABEL_CLASS}>Sort By</label>
+                <select
+                  value={sort}
+                  onChange={(e) => changeSort(e.target.value)}
+                  className={`${INPUT_CLASS} w-full`}
+                >
+                  {SORT_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className={SECTION_LABEL_CLASS}>Category</label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => selectCategory(e.target.value)}
@@ -322,7 +342,7 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Price (Rs.)</label>
+                <label className={SECTION_LABEL_CLASS}>Price (Rs.)</label>
                 <div className="flex items-center gap-1">
                   <input
                     type="number"
@@ -344,78 +364,42 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              {availableFilters.sizes.length > 0 && (
+              {featureTypes.length > 0 && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Size</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    <button type="button" onClick={() => changeFilter(setSelectedSize, "")} className={pillClass(selectedSize === "")}>
-                      All
-                    </button>
-                    {availableFilters.sizes.map((s) => (
-                      <button key={s} type="button" onClick={() => changeFilter(setSelectedSize, s)} className={pillClass(selectedSize === s)}>
-                        {s}
-                      </button>
+                  <label className={SECTION_LABEL_CLASS}>Feature</label>
+                  <select
+                    value={selectedFeatureType}
+                    onChange={(e) => changeFilter(setSelectedFeatureType, e.target.value)}
+                    className={`${INPUT_CLASS} w-full`}
+                  >
+                    <option value="">All features</option>
+                    {featureTypes.map((ft) => (
+                      <option key={ft.slug} value={ft.slug}>{ft.name}</option>
                     ))}
-                  </div>
+                  </select>
                 </div>
               )}
 
-              {availableFilters.colors.length > 0 && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Color</label>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => changeFilter(setSelectedColor, "")}
-                      title="All colors"
-                      aria-label="All colors"
-                      aria-pressed={selectedColor === ""}
-                      className={`w-7 h-7 rounded-full border-2 flex-shrink-0 flex items-center justify-center text-[9px] text-gray-400 transition-colors ${
-                        selectedColor === "" ? "border-brand-600 ring-2 ring-brand-100" : "border-gray-300 hover:border-gray-400"
-                      }`}
-                    >
-                      All
-                    </button>
-                    {availableFilters.colors.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => changeFilter(setSelectedColor, c)}
-                        title={c}
-                        aria-label={c}
-                        aria-pressed={selectedColor === c}
-                        style={{ backgroundColor: c }}
-                        className={`w-7 h-7 rounded-full border-2 flex-shrink-0 transition-colors ${
-                          selectedColor === c ? "border-brand-600 ring-2 ring-brand-100" : "border-gray-300 hover:border-gray-400"
-                        }`}
-                      />
-                    ))}
-                  </div>
+              <div>
+                <label className={SECTION_LABEL_CLASS}>Rating</label>
+                <div className="flex items-center gap-2">
+                  <StarRating
+                    rating={selectedMinRating}
+                    size="md"
+                    interactive
+                    onChange={(n) => changeFilter(setSelectedMinRating, n === selectedMinRating ? 0 : n)}
+                  />
+                  <span className="text-xs text-gray-500">
+                    {selectedMinRating > 0 ? `${selectedMinRating} stars & up` : "Any rating"}
+                  </span>
                 </div>
-              )}
+              </div>
             </div>
           </aside>
         )}
 
         <div ref={gridRef} className={!isHome ? "flex-1 min-w-0" : undefined}>
           {/* {isHome && <h2 className={`${SECTION_HEADING_CLASS} mb-4`}>All Products</h2>} */}
-
-          {!isHome && !loading && !error && (
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <p className="text-sm text-gray-500">
-                {/* {total > 0 ? `Showing ${products.length} of ${total} product${total === 1 ? "" : "s"}` : ""} */}
-              </p>
-              <select
-                value={sort}
-                onChange={(e) => changeSort(e.target.value)}
-                className="border border-gray-300 rounded-md px-2.5 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              >
-                {SORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-          )}
 
           {/* Error */}
           {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
@@ -424,8 +408,8 @@ export default function ProductsPage() {
           {loading ? (
             <div className={`grid ${isHome ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4`}>
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 animate-pulse">
-                  <div className="aspect-[4/5] bg-gray-200 rounded-t-lg" />
+                <div key={i} className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 animate-pulse">
+                  <div className="aspect-[4/5] bg-gray-200 rounded-t-2xl" />
                   <div className="p-3 space-y-2">
                     <div className="h-3 bg-gray-200 rounded w-1/2" />
                     <div className="h-4 bg-gray-200 rounded w-3/4" />
