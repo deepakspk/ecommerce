@@ -28,7 +28,7 @@ export const FILTER_FIELD_SM_CLASS = "w-full sm:w-28";
 // Shared horizontal container — used by Navbar, CategoryNav, Footer, and page
 // content so they all align to the same width instead of drifting (some
 // full-bleed, some capped) across the site.
-export const CONTAINER_CLASS = "max-w-[1440px] mx-auto px-4 sm:px-8";
+export const CONTAINER_CLASS = "max-w-[1728px] mx-auto px-4 sm:px-8";
 export const PAGE_CLASS = `${CONTAINER_CLASS} py-6`;
 
 export const H1_CLASS = "text-2xl font-bold text-gray-900 dark:text-white";
