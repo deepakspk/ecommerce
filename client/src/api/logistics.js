@@ -5,3 +5,6 @@ export const getDistrictBranches = (district) =>
 
 export const getDeliveryRate = (branchName) =>
   api.post("/logistics/rate", { branchName }).then(r => r.data);
+
+export const getInternationalFee = () =>
+  api.get("/logistics/international-fee").then(r => r.data);

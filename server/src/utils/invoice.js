@@ -25,7 +25,14 @@ export function streamInvoicePdf(res, order, customer) {
   if (customer.email) doc.text(customer.email);
   doc.text(order.address.phone);
   doc.text(
-    [order.address.area, order.address.street, order.address.city, order.address.district, order.address.province]
+    [
+      order.address.area,
+      order.address.street,
+      order.address.city,
+      order.address.district,
+      order.address.province,
+      order.address.country !== "Nepal" ? order.address.country : null,
+    ]
       .filter(Boolean)
       .join(", ")
   );

@@ -81,7 +81,7 @@ export async function downloadInvoice(req, res) {
 const LOCKED_STATUSES = ["DELIVERED", "CANCELLED"];
 
 export async function updateOrder(req, res) {
-  const { items, address, customer } = req.body;
+  const { items, address, customer, deliveryFee } = req.body;
   const order = await Order.findById(req.params.id).populate("userId", "name email phone");
   if (!order) return res.status(404).json({ message: "Order not found" });
 
@@ -99,6 +99,13 @@ export async function updateOrder(req, res) {
       quantity: item.quantity,
     }));
     order.subtotal = order.items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+  }
+
+  if (deliveryFee !== undefined) {
+    order.deliveryFee = Number(deliveryFee);
+  }
+
+  if (items || deliveryFee !== undefined) {
     order.total = Math.max(0, order.subtotal - order.discountAmount + order.deliveryFee);
   }
 

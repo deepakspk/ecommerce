@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import * as logisticsApi from "../api/logistics";
 import { getErrorMessage } from "../utils/errorHelpers";
 import NEPAL_GEO, { getDistricts, getMunicipalities } from "../data/nepalGeoData";
+import { COUNTRIES } from "../data/countries";
 
 const PROVINCES = Object.keys(NEPAL_GEO);
 
 const EMPTY_ADDRESS_FORM = {
   label: "", recipientName: "", phone: "",
-  province: "", district: "", city: "", branchName: "",
+  country: "Nepal", province: "", district: "", city: "", branchName: "", postalCode: "",
   area: "", street: "", landmark: "",
   isDefault: false,
 };
@@ -55,6 +56,7 @@ export function AddressForm({ initial = EMPTY_ADDRESS_FORM, onSave, onCancel, sa
   const [branches, setBranches] = useState([]);
   const [loadingBranches, setLoadingBranches] = useState(false);
 
+  const isNepal = form.country === "Nepal";
   const districts = form.province ? getDistricts(form.province) : [];
   const municipalities = form.province && form.district
     ? getMunicipalities(form.province, form.district)
@@ -77,6 +79,7 @@ export function AddressForm({ initial = EMPTY_ADDRESS_FORM, onSave, onCancel, sa
     setForm(f => {
       const next = { ...f, [field]: val };
       // Reset downstream fields when a parent changes
+      if (field === "country") { next.province = ""; next.district = ""; next.city = ""; next.branchName = ""; next.postalCode = ""; }
       if (field === "province") { next.district = ""; next.city = ""; next.branchName = ""; }
       if (field === "district") { next.city = ""; next.branchName = ""; }
       return next;
@@ -107,46 +110,65 @@ export function AddressForm({ initial = EMPTY_ADDRESS_FORM, onSave, onCancel, sa
         <TextInput label="Phone" required value={form.phone} onChange={v => set("phone", v)} placeholder="98XXXXXXXX" />
 
         <Select
-          label="Province"
+          label="Country"
           required
-          value={form.province}
-          onChange={v => set("province", v)}
-          options={PROVINCES}
-          placeholder="Select province"
+          value={form.country}
+          onChange={v => set("country", v)}
+          options={COUNTRIES}
+          placeholder="Select country"
         />
 
-        <Select
-          label="District"
-          required
-          value={form.district}
-          onChange={v => set("district", v)}
-          options={districts}
-          placeholder={form.province ? "Select district" : "Select province first"}
-          disabled={!form.province}
-        />
+        {isNepal ? (
+          <>
+            <Select
+              label="Province"
+              required
+              value={form.province}
+              onChange={v => set("province", v)}
+              options={PROVINCES}
+              placeholder="Select province"
+            />
 
-        <Select
-          label="City / Municipality"
-          required
-          value={form.city}
-          onChange={v => set("city", v)}
-          options={municipalities}
-          placeholder={form.district ? "Select municipality" : "Select district first"}
-          disabled={!form.district}
-        />
+            <Select
+              label="District"
+              required
+              value={form.district}
+              onChange={v => set("district", v)}
+              options={districts}
+              placeholder={form.province ? "Select district" : "Select province first"}
+              disabled={!form.province}
+            />
 
-        {loadingBranches && (
-          <p className="text-xs text-gray-400 dark:text-gray-500 sm:col-span-2">Checking for a courier branch in this district…</p>
-        )}
-        {!loadingBranches && branches.length > 0 && (
-          <Select
-            label="Delivery Branch"
-            required
-            value={form.branchName}
-            onChange={v => set("branchName", v)}
-            options={branches.map(b => b.name)}
-            placeholder="Select delivery branch"
-          />
+            <Select
+              label="City / Municipality"
+              required
+              value={form.city}
+              onChange={v => set("city", v)}
+              options={municipalities}
+              placeholder={form.district ? "Select municipality" : "Select district first"}
+              disabled={!form.district}
+            />
+
+            {loadingBranches && (
+              <p className="text-xs text-gray-400 dark:text-gray-500 sm:col-span-2">Checking for a courier branch in this district…</p>
+            )}
+            {!loadingBranches && branches.length > 0 && (
+              <Select
+                label="Delivery Branch"
+                required
+                value={form.branchName}
+                onChange={v => set("branchName", v)}
+                options={branches.map(b => b.name)}
+                placeholder="Select delivery branch"
+              />
+            )}
+          </>
+        ) : (
+          <>
+            <TextInput label="State / Province" value={form.province} onChange={v => set("province", v)} />
+            <TextInput label="City" required value={form.city} onChange={v => set("city", v)} />
+            <TextInput label="Postal / ZIP Code" value={form.postalCode} onChange={v => set("postalCode", v)} />
+          </>
         )}
 
         <TextInput label="Area / Tole" value={form.area} onChange={v => set("area", v)} placeholder="e.g. Thamel" />

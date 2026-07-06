@@ -2,10 +2,12 @@ import { Router } from "express";
 import { body, query } from "express-validator";
 import { protect } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
-import { listDistrictBranches, getDeliveryRate } from "../controllers/logisticsController.js";
+import { listDistrictBranches, getDeliveryRate, getInternationalFee } from "../controllers/logisticsController.js";
 
 const router = Router();
 router.use(protect);
+
+router.get("/international-fee", getInternationalFee);
 
 router.get(
   "/branches",

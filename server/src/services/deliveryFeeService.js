@@ -6,6 +6,11 @@ function calcFlatDeliveryFee(province) {
 }
 
 export async function resolveDeliveryFee(address) {
+  if (address.country && address.country !== "Nepal") {
+    const fee = Number(settingsService.get("INTERNATIONAL_SHIPPING_FEE"));
+    return Number.isFinite(fee) ? fee : 0;
+  }
+
   if (address.branchName) {
     const provider = getDefaultProvider("rateCalculation");
     if (provider) {

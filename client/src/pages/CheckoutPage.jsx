@@ -32,7 +32,10 @@ function calcDeliveryFee(province) {
 }
 
 function AddressCard({ address, selected, onSelect }) {
-  const parts = [address.area, address.street, address.city, address.district, address.province].filter(Boolean);
+  const parts = [
+    address.area, address.street, address.city, address.district, address.province,
+    address.country !== "Nepal" ? address.country : null,
+  ].filter(Boolean);
   return (
     <label className={`flex gap-3 border rounded-xl p-4 cursor-pointer transition-colors ${
       selected ? "border-brand-500 bg-brand-50" : "border-gray-200 bg-white hover:border-gray-400"
@@ -89,6 +92,17 @@ export default function CheckoutPage() {
   useEffect(() => {
     const address = addresses.find(a => a._id === selectedAddrId);
     if (!address) { setDeliveryFee(0); return; }
+
+    if (address.country && address.country !== "Nepal") {
+      let ignore = false;
+      setDeliveryFeeLoading(true);
+      logisticsApi.getInternationalFee()
+        .then(({ fee }) => { if (!ignore) setDeliveryFee(fee); })
+        .catch(() => { if (!ignore) setDeliveryFee(0); })
+        .finally(() => { if (!ignore) setDeliveryFeeLoading(false); });
+      return () => { ignore = true; };
+    }
+
     if (!address.branchName) { setDeliveryFee(calcDeliveryFee(address.province)); return; }
 
     let ignore = false;
@@ -110,6 +124,7 @@ export default function CheckoutPage() {
   }
 
   const selectedAddress = addresses.find(a => a._id === selectedAddrId);
+  const isInternational = Boolean(selectedAddress?.country && selectedAddress.country !== "Nepal");
   const couponStale = appliedCoupon && appliedCoupon.subtotal !== subtotal;
   const discountAmount = appliedCoupon && !couponStale ? appliedCoupon.discountAmount : 0;
   const total = subtotal - discountAmount + deliveryFee;
@@ -142,18 +157,18 @@ export default function CheckoutPage() {
     try {
       const { order } = await ordersApi.createOrder({
         addressId: selectedAddrId,
-        paymentMethod,
+        ...(isInternational ? {} : { paymentMethod }),
         ...(appliedCoupon && !couponStale ? { couponCode: appliedCoupon.code } : {}),
       });
       await clearCart();
 
-      if (paymentMethod === "KHALTI") {
+      if (!isInternational && paymentMethod === "KHALTI") {
         const { paymentUrl } = await paymentsApi.initiateKhalti(order._id);
         window.location.href = paymentUrl;
         return;
       }
 
-      if (paymentMethod === "ESEWA") {
+      if (!isInternational && paymentMethod === "ESEWA") {
         const { formUrl, fields } = await paymentsApi.initiateEsewa(order._id);
         submitEsewaForm({ formUrl, fields });
         return;
@@ -281,7 +296,10 @@ export default function CheckoutPage() {
               {selectedAddress?.branchName && !deliveryFeeLoading && (
                 <p className="text-xs text-gray-400">Courier rate to {selectedAddress.branchName}</p>
               )}
-              {selectedAddress && !selectedAddress.branchName && selectedAddress.province.toLowerCase() === "bagmati" && (
+              {isInternational && !deliveryFeeLoading && (
+                <p className="text-xs text-gray-400">Estimated — final delivery charge will be confirmed by our team</p>
+              )}
+              {selectedAddress && !isInternational && !selectedAddress.branchName && selectedAddress.province.toLowerCase() === "bagmati" && (
                 <p className="text-xs text-green-600">Kathmandu valley discount applied</p>
               )}
               <div className="flex justify-between font-semibold text-gray-900 text-base border-t border-gray-100 pt-2 mt-1">
@@ -290,30 +308,38 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="border-t border-gray-100 pt-4 mt-4 space-y-2">
-              <p className="text-sm font-semibold text-gray-800 mb-1">Payment Method</p>
-              <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
-                paymentMethod === "COD" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
-              }`}>
-                <input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === "COD"}
-                  onChange={() => setPaymentMethod("COD")} />
-                <span className="text-sm text-gray-800">Cash on Delivery</span>
-              </label>
-              <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
-                paymentMethod === "KHALTI" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
-              }`}>
-                <input type="radio" name="paymentMethod" value="KHALTI" checked={paymentMethod === "KHALTI"}
-                  onChange={() => setPaymentMethod("KHALTI")} />
-                <span className="text-sm text-gray-800">Pay with Khalti</span>
-              </label>
-              <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
-                paymentMethod === "ESEWA" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
-              }`}>
-                <input type="radio" name="paymentMethod" value="ESEWA" checked={paymentMethod === "ESEWA"}
-                  onChange={() => setPaymentMethod("ESEWA")} />
-                <span className="text-sm text-gray-800">Pay with eSewa</span>
-              </label>
-            </div>
+            {isInternational ? (
+              <div className="border-t border-gray-100 pt-4 mt-4">
+                <p className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  No online payment method is available for international orders. Place your order now — our team will contact you to arrange payment and confirm the final delivery charge.
+                </p>
+              </div>
+            ) : (
+              <div className="border-t border-gray-100 pt-4 mt-4 space-y-2">
+                <p className="text-sm font-semibold text-gray-800 mb-1">Payment Method</p>
+                <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
+                  paymentMethod === "COD" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
+                }`}>
+                  <input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === "COD"}
+                    onChange={() => setPaymentMethod("COD")} />
+                  <span className="text-sm text-gray-800">Cash on Delivery</span>
+                </label>
+                <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
+                  paymentMethod === "KHALTI" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
+                }`}>
+                  <input type="radio" name="paymentMethod" value="KHALTI" checked={paymentMethod === "KHALTI"}
+                    onChange={() => setPaymentMethod("KHALTI")} />
+                  <span className="text-sm text-gray-800">Pay with Khalti</span>
+                </label>
+                <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
+                  paymentMethod === "ESEWA" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
+                }`}>
+                  <input type="radio" name="paymentMethod" value="ESEWA" checked={paymentMethod === "ESEWA"}
+                    onChange={() => setPaymentMethod("ESEWA")} />
+                  <span className="text-sm text-gray-800">Pay with eSewa</span>
+                </label>
+              </div>
+            )}
 
             {error && (
               <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2 mt-4">{error}</p>
@@ -324,10 +350,12 @@ export default function CheckoutPage() {
               disabled={placing || deliveryFeeLoading || !selectedAddrId || addresses.length === 0}
               className="w-full mt-5 bg-brand-600 text-white py-3 rounded-lg font-semibold text-sm hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {placing ? "Placing order…" : PLACE_ORDER_LABELS[paymentMethod]}
+              {placing ? "Placing order…" : isInternational ? "Place Order" : PLACE_ORDER_LABELS[paymentMethod]}
             </button>
 
-            <p className="text-xs text-center text-gray-400 mt-2">{PAYMENT_FOOTNOTES[paymentMethod]}</p>
+            <p className="text-xs text-center text-gray-400 mt-2">
+              {isInternational ? "We'll email you to confirm payment and the delivery charge." : PAYMENT_FOOTNOTES[paymentMethod]}
+            </p>
           </div>
         </section>
       </div>

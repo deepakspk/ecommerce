@@ -6,6 +6,11 @@ export async function listDistrictBranches(req, res) {
   res.json({ branches });
 }
 
+export async function getInternationalFee(req, res) {
+  const fee = Number(settingsService.get("INTERNATIONAL_SHIPPING_FEE"));
+  res.json({ fee: Number.isFinite(fee) ? fee : 0 });
+}
+
 export async function getDeliveryRate(req, res) {
   const provider = getDefaultProvider("rateCalculation");
   if (!provider) return res.status(400).json({ message: "No logistics provider is configured for rate calculation" });

@@ -4,7 +4,9 @@ import { getErrorMessage } from "../utils/errorHelpers";
 import { AddressForm } from "./AddressForm";
 
 function formatAddress(a) {
-  return [a.area, a.street, a.city, a.district, a.province].filter(Boolean).join(", ");
+  return [a.area, a.street, a.city, a.district, a.province, a.country !== "Nepal" ? a.country : null]
+    .filter(Boolean)
+    .join(", ");
 }
 
 export default function AddressBook() {

@@ -298,7 +298,7 @@ export default function AdminOrderCreatePage() {
             <div className="flex items-start justify-between border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
               <div className="text-sm text-gray-700 dark:text-gray-300">
                 <p className="font-medium text-gray-900 dark:text-gray-100">{address.recipientName} — {address.phone}</p>
-                <p>{[address.area, address.street, address.city, address.district, address.province].filter(Boolean).join(", ")}</p>
+                <p>{[address.area, address.street, address.city, address.district, address.province, address.country !== "Nepal" ? address.country : null].filter(Boolean).join(", ")}</p>
                 {address.landmark && <p className="text-xs text-gray-400">Near: {address.landmark}</p>}
               </div>
               <button type="button" onClick={() => setEditingAddress(true)} className="text-xs text-brand-600 hover:underline font-medium">

@@ -35,6 +35,14 @@ function text() {
   return () => null;
 }
 
+function number() {
+  return (value) => {
+    if (isBlank(value)) return null;
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0 ? null : "must be a non-negative number";
+  };
+}
+
 export const SETTINGS_SCHEMA = {
   SMTP: [
     { key: "SMTP_HOST", label: "SMTP Host", isSecret: false, validate: text(), envFallback: "SMTP_HOST", default: "" },
@@ -156,6 +164,14 @@ export const SETTINGS_SCHEMA = {
       validate: text(),
       envFallback: "NCM_WEBHOOK_SECRET",
       default: "",
+    },
+    {
+      key: "INTERNATIONAL_SHIPPING_FEE",
+      label: "International Shipping Fee (Rs.)",
+      isSecret: false,
+      validate: number(),
+      envFallback: "",
+      default: "3000",
     },
   ],
   APPLICATION: [

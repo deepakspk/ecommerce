@@ -64,6 +64,7 @@ export default function AdminOrderDetailPage() {
   const [editItems, setEditItems] = useState([]);
   const [editAddress, setEditAddress] = useState(null);
   const [editCustomer, setEditCustomer] = useState(null);
+  const [editDeliveryFee, setEditDeliveryFee] = useState("");
 
   useEffect(() => {
     editingRef.current = editing;
@@ -99,6 +100,7 @@ export default function AdminOrderDetailPage() {
       email: order.userId?.email || "",
       phone: order.userId?.phone || "",
     });
+    setEditDeliveryFee(String(order.deliveryFee));
     setEditing(true);
   }
 
@@ -143,13 +145,21 @@ export default function AdminOrderDetailPage() {
         return;
       }
     }
-    if (!editAddress.recipientName.trim() || !editAddress.phone.trim() ||
-        !editAddress.province.trim() || !editAddress.district.trim() || !editAddress.city.trim()) {
-      setSaveError("Recipient name, phone, province, district, and city are required.");
+    const isEditAddrNepal = !editAddress.country?.trim() || editAddress.country.trim() === "Nepal";
+    if (!editAddress.recipientName.trim() || !editAddress.phone.trim() || !editAddress.city.trim()) {
+      setSaveError("Recipient name, phone, and city are required.");
+      return;
+    }
+    if (isEditAddrNepal && (!editAddress.province.trim() || !editAddress.district.trim())) {
+      setSaveError("Province and district are required for Nepal addresses.");
       return;
     }
     if (!editCustomer.name.trim() || !editCustomer.phone.trim()) {
       setSaveError("Customer name and phone are required.");
+      return;
+    }
+    if (!(Number(editDeliveryFee) >= 0)) {
+      setSaveError("Delivery fee must be a non-negative number.");
       return;
     }
 
@@ -163,6 +173,7 @@ export default function AdminOrderDetailPage() {
         })),
         address: editAddress,
         customer: editCustomer,
+        deliveryFee: Number(editDeliveryFee),
       });
       setOrder(updated);
       setEditing(false);
@@ -251,7 +262,7 @@ export default function AdminOrderDetailPage() {
   const nextStatuses = STATUS_TRANSITIONS[order.status] ?? [];
   const isCancelled = order.status === "CANCELLED";
   const isDelivered = order.status === "DELIVERED";
-  const canMarkPaid = order.paymentMethod === "COD" && order.paymentStatus !== "PAID";
+  const canMarkPaid = ["COD", "MANUAL"].includes(order.paymentMethod) && order.paymentStatus !== "PAID";
 
   return (
     <div className="p-4 sm:p-8 max-w-[1600px]">
@@ -428,6 +439,16 @@ export default function AdminOrderDetailPage() {
                 <div className="px-5 py-3 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Subtotal: {fmt(editItems.reduce((s, it) => s + (Number(it.unitPrice) || 0) * (Number(it.quantity) || 0), 0))}
                 </div>
+                <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-end gap-2">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Delivery fee (Rs.)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="w-28 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-2 py-1 text-sm text-right"
+                    value={editDeliveryFee}
+                    onChange={e => setEditDeliveryFee(e.target.value)}
+                  />
+                </div>
               </div>
             ) : (
               <>
@@ -480,6 +501,12 @@ export default function AdminOrderDetailPage() {
                   onChange={e => setEditAddress(a => ({ ...a, phone: e.target.value }))}
                 />
                 <input
+                  className="col-span-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-2 py-1.5 text-sm"
+                  placeholder="Country"
+                  value={editAddress.country || ""}
+                  onChange={e => setEditAddress(a => ({ ...a, country: e.target.value }))}
+                />
+                <input
                   className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-2 py-1.5 text-sm"
                   placeholder="Province"
                   value={editAddress.province}
@@ -522,7 +549,9 @@ export default function AdminOrderDetailPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-300">{order.address.phone}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {[order.address.area, order.address.street, order.address.city,
-                    order.address.district, order.address.province].filter(Boolean).join(", ")}
+                    order.address.district, order.address.province,
+                    order.address.country && order.address.country !== "Nepal" ? order.address.country : null]
+                    .filter(Boolean).join(", ")}
                 </p>
                 {order.address.landmark && (
                   <p className="text-xs text-gray-400 mt-0.5">Near: {order.address.landmark}</p>
@@ -622,7 +651,7 @@ export default function AdminOrderDetailPage() {
                 disabled={markingPaid}
                 className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-green-700 disabled:opacity-50 transition-colors"
               >
-                {markingPaid ? "Saving…" : "Mark COD as Paid"}
+                {markingPaid ? "Saving…" : "Mark as Paid"}
               </button>
             ) : (
               <p className="text-xs text-gray-400">

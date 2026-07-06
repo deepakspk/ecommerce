@@ -9,11 +9,8 @@ import { streamInvoicePdf } from "../utils/invoice.js";
 import { getDiscountedPrice } from "../utils/pricing.js";
 
 export async function createOrder(req, res) {
-  const { addressId, paymentMethod = "COD", couponCode } = req.body;
+  const { addressId, paymentMethod, couponCode } = req.body;
   if (!addressId) return res.status(400).json({ message: "addressId is required" });
-  if (!["COD", "KHALTI", "ESEWA"].includes(paymentMethod)) {
-    return res.status(400).json({ message: "Invalid paymentMethod" });
-  }
 
   const cart = await Cart.findOne({ userId: req.user._id }).populate({
     path: "items.variantId",
@@ -26,6 +23,20 @@ export async function createOrder(req, res) {
 
   const address = await Address.findOne({ _id: addressId, userId: req.user._id });
   if (!address) return res.status(404).json({ message: "Address not found" });
+
+  const isInternational = Boolean(address.country && address.country !== "Nepal");
+
+  // International orders skip online payment entirely — no gateway works for them yet, so
+  // the admin arranges payment out-of-band and marks the order paid manually afterward.
+  let finalPaymentMethod;
+  if (isInternational) {
+    finalPaymentMethod = "MANUAL";
+  } else {
+    finalPaymentMethod = paymentMethod || "COD";
+    if (!["COD", "KHALTI", "ESEWA"].includes(finalPaymentMethod)) {
+      return res.status(400).json({ message: "Invalid paymentMethod" });
+    }
+  }
 
   const orderItems = cart.items.map((cartItem) => {
     const v = cartItem.variantId;
@@ -44,10 +55,12 @@ export async function createOrder(req, res) {
   const addressSnapshot = {
     recipientName: address.recipientName,
     phone: address.phone,
+    country: address.country,
     province: address.province,
     district: address.district,
     city: address.city,
     branchName: address.branchName,
+    postalCode: address.postalCode,
     area: address.area,
     street: address.street,
     landmark: address.landmark,
@@ -57,7 +70,7 @@ export async function createOrder(req, res) {
     userId: req.user._id,
     items: orderItems,
     address: addressSnapshot,
-    paymentMethod,
+    paymentMethod: finalPaymentMethod,
     couponCode,
     source: "CUSTOMER",
     customerEmail: req.user.email,
