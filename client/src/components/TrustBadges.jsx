@@ -76,7 +76,7 @@ export default function TrustBadges({ className = "", compact = false }) {
   }
 
   return (
-    <div className={`flex flex-wrap justify-center sm:justify-between gap-x-8 gap-y-10 ${className}`}>
+    <div className={`flex flex-wrap justify-center sm:justify-between gap-x-8 gap-y-10 mt-10 ${className}`}>
       {ITEMS.map((item) => (
         <div key={item.label} className="flex flex-col items-center text-center gap-3 w-36">
           <span className={`w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 ${item.color}`}>
