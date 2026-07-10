@@ -3,7 +3,6 @@ import { useSearchParams, useLocation, Link } from "react-router-dom";
 import * as productsApi from "../api/products";
 import { getActiveFeatureTypes } from "../api/featureTypes";
 import { useCategories } from "../hooks/useCategories";
-import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { getErrorMessage } from "../utils/errorHelpers";
 import Seo from "../components/Seo";
 import Pagination from "../components/Pagination";
@@ -12,9 +11,8 @@ import ProductCard from "../components/ProductCard";
 import StarRating from "../components/StarRating";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
-import FeatureRails from "../components/FeatureRails";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
-import { INPUT_CLASS, PAGE_CLASS, H1_CLASS, SECTION_HEADING_CLASS } from "../utils/ui";
+import { INPUT_CLASS, PAGE_CLASS } from "../utils/ui";
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
@@ -24,11 +22,19 @@ const SORT_OPTIONS = [
 
 const SECTION_LABEL_CLASS = "block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2";
 
-function flattenCategories(nodes, depth = 0) {
+const SUBCATEGORY_LIMIT = 8;
+
+function flattenCategories(nodes, depth = 0, parentSlug = null) {
   const out = [];
   for (const node of nodes) {
-    out.push({ slug: node.slug, name: node.name, depth });
-    out.push(...flattenCategories(node.children, depth + 1));
+    out.push({
+      slug: node.slug,
+      name: node.name,
+      depth,
+      parentSlug,
+      hasChildren: (node.children?.length ?? 0) > 0,
+    });
+    out.push(...flattenCategories(node.children, depth + 1, node.slug));
   }
   return out;
 }
@@ -43,7 +49,6 @@ export default function ProductsPage() {
   const [featureTypes, setFeatureTypes] = useState([]);
   const [filtersLoading, setFiltersLoading] = useState(true);
   const [products, setProducts] = useState([]);
-  const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -57,12 +62,15 @@ export default function ProductsPage() {
   const search = searchParams.get("search") || "";
   const [selectedFeatureType, setSelectedFeatureType] = useState("");
   const [selectedMinRating, setSelectedMinRating] = useState(0);
+  // Price inputs are draft state; they only filter once the GO button (or
+  // Enter) commits them into minPrice/maxPrice — matching marketplace UX.
   const [minPriceInput, setMinPriceInput] = useState("");
   const [maxPriceInput, setMaxPriceInput] = useState("");
-  const minPrice = useDebouncedValue(minPriceInput, 400);
-  const maxPrice = useDebouncedValue(maxPriceInput, 400);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
+  const [showAllSubCategories, setShowAllSubCategories] = useState(false);
 
   const metaLoading = categoriesLoading || filtersLoading;
   const flatCategories = useMemo(() => flattenCategories(categories), [categories]);
@@ -129,7 +137,6 @@ export default function ProductsPage() {
         const data = await productsApi.getProducts(params);
         if (!ignore) {
           setProducts(data.products);
-          setTotal(data.total);
           setPages(data.pages);
           setError("");
         }
@@ -143,10 +150,21 @@ export default function ProductsPage() {
     return () => { ignore = true; };
   }, [selectedCategory, search, selectedFeatureType, selectedMinRating, minPrice, maxPrice, sort, page]);
 
-  // Debounced price changes should reset to page 1, same as every other filter.
-  useEffect(() => {
+  function applyPriceRange(e) {
+    e?.preventDefault();
+    setMinPrice(minPriceInput);
+    setMaxPrice(maxPriceInput);
     setPage(1);
-  }, [minPrice, maxPrice]);
+    scrollToGrid();
+  }
+
+  function clearPriceRange() {
+    setMinPriceInput("");
+    setMaxPriceInput("");
+    setMinPrice("");
+    setMaxPrice("");
+    setPage(1);
+  }
 
   function changeFilter(setter, value) {
     setter(value);
@@ -170,32 +188,12 @@ export default function ProductsPage() {
     updateSearch("");
     setSelectedFeatureType("");
     setSelectedMinRating(0);
-    setMinPriceInput("");
-    setMaxPriceInput("");
+    clearPriceRange();
     setPage(1);
   }
 
   const hasActiveFilters =
-    selectedCategory || search || selectedFeatureType || selectedMinRating || minPriceInput || maxPriceInput;
-
-  const selectedFeatureTypeObj = featureTypes.find((ft) => ft.slug === selectedFeatureType);
-
-  const chips = [];
-  if (selectedCategoryObj) chips.push({ key: "category", label: selectedCategoryObj.name, onRemove: () => selectCategory("") });
-  if (search) chips.push({ key: "search", label: `"${search}"`, onRemove: () => updateSearch("") });
-  if (selectedFeatureTypeObj) {
-    chips.push({ key: "featureType", label: selectedFeatureTypeObj.name, onRemove: () => changeFilter(setSelectedFeatureType, "") });
-  }
-  if (selectedMinRating > 0) {
-    chips.push({ key: "minRating", label: `${selectedMinRating}★ & up`, onRemove: () => changeFilter(setSelectedMinRating, 0) });
-  }
-  if (minPriceInput || maxPriceInput) {
-    chips.push({
-      key: "price",
-      label: `Rs. ${minPriceInput || 0}–${maxPriceInput || "∞"}`,
-      onRemove: () => { setMinPriceInput(""); setMaxPriceInput(""); },
-    });
-  }
+    selectedCategory || search || selectedFeatureType || selectedMinRating || minPrice || maxPrice;
 
   const showHero = isHome && !hasActiveFilters;
   const pageHeading = selectedCategoryObj
@@ -203,6 +201,25 @@ export default function ProductsPage() {
     : search
     ? `Results for "${search}"`
     : "All Products";
+
+  // Breadcrumb trail: the selected category plus all its ancestors.
+  const breadcrumbTrail = [];
+  for (let node = selectedCategoryObj; node; node = flatCategories.find((c) => c.slug === node.parentSlug)) {
+    breadcrumbTrail.unshift(node);
+  }
+
+  // Sidebar checkbox list scope: top-level categories by default; the selected
+  // category's children once one is picked (its siblings if it has none, so
+  // the shopper can still switch without going back up).
+  let subCategoryScope = flatCategories.filter((c) => c.depth === 0);
+  let subCategoryLabel = "Categories";
+  if (selectedCategoryObj) {
+    subCategoryLabel = "Sub-Categories";
+    subCategoryScope = flatCategories.filter(
+      (c) => c.parentSlug === (selectedCategoryObj.hasChildren ? selectedCategoryObj.slug : selectedCategoryObj.parentSlug)
+    );
+  }
+  const visibleSubCategories = showAllSubCategories ? subCategoryScope : subCategoryScope.slice(0, SUBCATEGORY_LIMIT);
 
   return (
     <div className={PAGE_CLASS}>
@@ -263,45 +280,20 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {!isHome && (
-        <div className="mb-6">
-          <nav className="text-sm text-gray-500 mb-2 flex items-center gap-1.5">
-            <Link to="/" className="hover:text-gray-900">Home</Link>
-            <span>/</span>
-            <span className="text-gray-800">{pageHeading}</span>
-          </nav>
-          <h1 className={H1_CLASS}>{pageHeading}</h1>
-        </div>
-      )}
-
-      {!isHome && chips.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-5">
-          {chips.map((chip) => (
-            <button
-              key={chip.key}
-              onClick={chip.onRemove}
-              className="inline-flex items-center gap-1.5 text-xs font-medium pl-3 pr-2 py-1.5 rounded-full bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
-            >
-              {chip.label}
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          ))}
-          <button onClick={clearFilters} className="text-xs text-gray-500 hover:text-gray-700 underline">
-            Clear all
-          </button>
-        </div>
-      )}
-
       <div className={!isHome ? "flex flex-col sm:flex-row gap-6" : undefined}>
         {/* Filter sidebar — homepage relies on the Navbar search bar and category
             tiles instead; this only shows on /products */}
         {!isHome && (
           <aside className="w-full sm:w-[16.8rem] flex-shrink-0">
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 space-y-6 sm:sticky sm:top-20">
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-5 sm:sticky sm:top-20">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-900">Filters</h2>
+                <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                  <svg className="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+                  </svg>
+                  Filters
+                </h2>
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
@@ -325,47 +317,74 @@ export default function ProductsPage() {
                 </select>
               </div>
 
-              <div>
-                <label className={SECTION_LABEL_CLASS}>Category</label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => selectCategory(e.target.value)}
-                  className={`${INPUT_CLASS} w-full`}
-                >
-                  <option value="">All categories</option>
-                  {flatCategories.map((c) => (
-                    <option key={c.slug} value={c.slug}>
-                      {"  ".repeat(c.depth)}{c.depth > 0 ? "– " : ""}{c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className={SECTION_LABEL_CLASS}>Price (Rs.)</label>
-                <div className="flex items-center gap-1">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={minPriceInput}
-                    onChange={(e) => setMinPriceInput(e.target.value)}
-                    min={0}
-                    className={`${INPUT_CLASS} w-full`}
-                  />
-                  <span className="text-gray-400 text-sm">–</span>
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={maxPriceInput}
-                    onChange={(e) => setMaxPriceInput(e.target.value)}
-                    min={0}
-                    className={`${INPUT_CLASS} w-full`}
-                  />
+              <form onSubmit={applyPriceRange} className="border border-gray-200 rounded-xl shadow-sm p-3">
+                <p className="text-sm font-semibold text-gray-900 mb-2.5">Price Range</p>
+                <div className="flex items-end gap-2">
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs text-gray-500 mb-1">Min Price</label>
+                    <input
+                      type="number"
+                      value={minPriceInput}
+                      onChange={(e) => setMinPriceInput(e.target.value)}
+                      min={0}
+                      className={`${INPUT_CLASS} !rounded-lg`}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs text-gray-500 mb-1">Max Price</label>
+                    <input
+                      type="number"
+                      value={maxPriceInput}
+                      onChange={(e) => setMaxPriceInput(e.target.value)}
+                      min={0}
+                      className={`${INPUT_CLASS} !rounded-lg`}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="flex-shrink-0 bg-brand-600 text-white text-xs font-bold rounded-lg px-3 py-2.5 ring-2 ring-brand-800/60 hover:bg-brand-700 transition-colors"
+                  >
+                    GO
+                  </button>
                 </div>
+              </form>
+
+              <div className="pt-4 border-t-2 border-brand-600/70">
+                <p className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-3">
+                  <svg className="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 5v6a3 3 0 0 0 3 3h13m0 0-4-4m4 4-4 4" />
+                  </svg>
+                  {subCategoryLabel}
+                </p>
+                <div className="space-y-2.5">
+                  {visibleSubCategories.map((c) => (
+                    <label key={c.slug} className="flex items-start gap-2.5 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={selectedCategory === c.slug}
+                        onChange={(e) => selectCategory(e.target.checked ? c.slug : c.parentSlug || "")}
+                        className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-brand-600 flex-shrink-0"
+                      />
+                      <span className="text-sm text-gray-700 group-hover:text-brand-600 leading-snug">{c.name}</span>
+                    </label>
+                  ))}
+                  {subCategoryScope.length === 0 && (
+                    <p className="text-xs text-gray-400">No sub-categories</p>
+                  )}
+                </div>
+                {subCategoryScope.length > SUBCATEGORY_LIMIT && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllSubCategories((v) => !v)}
+                    className="mt-3 pt-3 border-t border-gray-100 w-full text-center text-xs font-bold uppercase tracking-wide text-brand-600 hover:text-brand-700"
+                  >
+                    {showAllSubCategories ? "Show Less" : "Show More"}
+                  </button>
+                )}
               </div>
 
               {featureTypes.length > 0 && (
-                <div>
+                <div className="pt-4 border-t border-gray-100">
                   <label className={SECTION_LABEL_CLASS}>Feature</label>
                   <select
                     value={selectedFeatureType}
@@ -380,7 +399,7 @@ export default function ProductsPage() {
                 </div>
               )}
 
-              <div>
+              <div className="pt-4 border-t border-gray-100">
                 <label className={SECTION_LABEL_CLASS}>Rating</label>
                 <div className="flex items-center gap-2">
                   <StarRating
@@ -401,6 +420,41 @@ export default function ProductsPage() {
         <div ref={gridRef} className={!isHome ? "flex-1 min-w-0" : undefined}>
           {/* {isHome && <h2 className={`${SECTION_HEADING_CLASS} mb-4`}>All Products</h2>} */}
 
+          {/* Breadcrumb bar — card above the grid, marketplace style */}
+          {!isHome && (
+            <div className="mb-5">
+              <nav
+                aria-label="Breadcrumb"
+                className="bg-white border border-gray-100 rounded-xl shadow-sm px-5 py-3 flex items-center gap-2 text-sm overflow-x-auto whitespace-nowrap"
+              >
+                <Link to="/" className="text-brand-600 hover:underline flex-shrink-0">Home</Link>
+                {breadcrumbTrail.length > 0 ? (
+                  breadcrumbTrail.map((crumb, i) => (
+                    <span key={crumb.slug} className="flex items-center gap-2 min-w-0">
+                      <span className="text-gray-300">/</span>
+                      {i < breadcrumbTrail.length - 1 ? (
+                        <button
+                          type="button"
+                          onClick={() => selectCategory(crumb.slug)}
+                          className="text-brand-600 hover:underline"
+                        >
+                          {crumb.name}
+                        </button>
+                      ) : (
+                        <span className="text-gray-700 font-medium truncate">{crumb.name}</span>
+                      )}
+                    </span>
+                  ))
+                ) : (
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="text-gray-300">/</span>
+                    <span className="text-gray-700 font-medium truncate">{pageHeading}</span>
+                  </span>
+                )}
+              </nav>
+            </div>
+          )}
+
           {/* Error */}
           {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
@@ -409,7 +463,7 @@ export default function ProductsPage() {
             <div className={`grid ${isHome ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4`}>
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 animate-pulse">
-                  <div className="aspect-[4/5] bg-gray-200 rounded-t-2xl" />
+                  <div className="aspect-square bg-gray-200 rounded-t-2xl" />
                   <div className="p-3 space-y-2">
                     <div className="h-3 bg-gray-200 rounded w-1/2" />
                     <div className="h-4 bg-gray-200 rounded w-3/4" />
