@@ -13,12 +13,48 @@
   --color-brand-700: #1d4ed8;
   --color-brand-800: #1e40af;
 
-  --color-secondary: #1e293b;
+  --color-secondary: #0f172a;
   --color-secondary-contrast: #ffffff;
 }
 
 body {
   margin: 0;
+}
+
+/* Storefront page background — plain base on the Layout wrapper, with dot-grid
+   patches (echoing the Track Order hero pattern) only in the top-right and
+   bottom-left corners of the content area, fading toward the middle. */
+.page-dots {
+  background-color: #f8fafc;
+}
+.page-dots-corners {
+  position: relative;
+  /* Own stacking context so the z-index:-1 patches sit behind the page content
+     but still above the wrapper's background. */
+  isolation: isolate;
+}
+.page-dots-corners::before,
+.page-dots-corners::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  width: min(480px, 55vw);
+  height: 300px;
+  background-image: radial-gradient(circle, rgba(100, 116, 139, 0.35) 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+.page-dots-corners::before {
+  top: 0;
+  right: 0;
+  -webkit-mask-image: linear-gradient(225deg, black, transparent 72%);
+  mask-image: linear-gradient(225deg, black, transparent 72%);
+}
+.page-dots-corners::after {
+  bottom: 0;
+  left: 0;
+  -webkit-mask-image: linear-gradient(45deg, black, transparent 72%);
+  mask-image: linear-gradient(45deg, black, transparent 72%);
 }
 
 /* Hides the native scrollbar on horizontally-scrollable carousels (ProductRail)
