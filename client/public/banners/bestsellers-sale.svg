@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1680 360">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7c2d12"/>
+      <stop offset="1" stop-color="#ea580c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1680" height="360" fill="url(#bg2)"/>
+
+  <circle cx="80" cy="320" r="150" fill="#9a3412" opacity="0.6"/>
+  <circle cx="1620" cy="40" r="140" fill="#f97316" opacity="0.45"/>
+  <g fill="#fed7aa" opacity="0.7">
+    <circle cx="620" cy="50" r="4"/><circle cx="1050" cy="40" r="3"/><circle cx="480" cy="300" r="3"/>
+    <circle cx="1240" cy="310" r="4"/><circle cx="880" cy="320" r="3"/>
+  </g>
+
+  <!-- open book illustration (right) -->
+  <g transform="translate(1150 90)">
+    <path d="M130 30C100 10 45 10 15 26v150c30-16 85-16 115 4 30-20 85-20 115-4V26c-30-16-85-16-115 4z" fill="#fff7ed"/>
+    <path d="M130 30C100 10 45 10 15 26v150c30-16 85-16 115 4z" fill="#ffedd5"/>
+    <line x1="130" y1="30" x2="130" y2="180" stroke="#c2410c" stroke-width="6" stroke-linecap="round"/>
+    <g stroke="#fdba74" stroke-width="6" stroke-linecap="round">
+      <line x1="40" y1="60" x2="105" y2="52"/>
+      <line x1="40" y1="88" x2="105" y2="80"/>
+      <line x1="40" y1="116" x2="105" y2="108"/>
+      <line x1="155" y1="52" x2="220" y2="60"/>
+      <line x1="155" y1="80" x2="220" y2="88"/>
+      <line x1="155" y1="108" x2="220" y2="116"/>
+    </g>
+    <!-- discount tag -->
+    <g transform="rotate(12 235 30)">
+      <path d="M200 0h62a12 12 0 0 1 12 12v62l-20 20-74-74z" fill="#facc15"/>
+      <circle cx="252" cy="22" r="7" fill="#7c2d12"/>
+    </g>
+  </g>
+
+  <text x="260" y="120" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="6" fill="#fed7aa">BESTSELLERS SALE</text>
+  <text x="260" y="205" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="800" fill="#ffffff">UP TO 40% OFF</text>
+  <text x="260" y="250" font-family="Segoe UI, Arial, sans-serif" font-size="26" fill="#ffedd5">Fiction · History · Business · Biography &amp; more</text>
+
+  <g>
+    <rect x="260" y="272" width="220" height="54" rx="27" fill="#ffffff"/>
+    <text x="370" y="308" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" text-anchor="middle" fill="#c2410c">GRAB A DEAL</text>
+  </g>
+</svg>
