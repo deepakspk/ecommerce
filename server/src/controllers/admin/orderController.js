@@ -148,6 +148,7 @@ export async function updateStatus(req, res) {
 
   const previousStatus = order.status;
   order.status = status;
+  order.statusHistory.push({ status, occurredAt: new Date() });
   if (status === "DELIVERED" && !order.deliveredAt) order.deliveredAt = new Date();
   await order.save();
 

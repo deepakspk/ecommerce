@@ -4,7 +4,10 @@ import Order from "../models/Order.js";
 import Address from "../models/Address.js";
 import ProductVariant from "../models/ProductVariant.js";
 import InventoryLog from "../models/InventoryLog.js";
+import Shipment from "../models/Shipment.js";
 import { placeOrder } from "../services/orderService.js";
+import { SHIPMENT_TO_ORDER_STATUS } from "../services/trackingService.js";
+import { TRACKING_ID_REGEX } from "../utils/trackingId.js";
 import { streamInvoicePdf } from "../utils/invoice.js";
 import { getDiscountedPrice } from "../utils/pricing.js";
 
@@ -98,6 +101,68 @@ export async function downloadInvoice(req, res) {
   streamInvoicePdf(res, order, { name: req.user.name, email: req.user.email });
 }
 
+// Public (no auth): customers paste the tracking id from their confirmation
+// email. Responds with status timeline only — no name, address, items, or
+// payment details — since anyone holding the code can call this.
+export async function trackOrder(req, res) {
+  const code = (req.params.code || "").trim().toUpperCase();
+  const notFound = () =>
+    res.status(404).json({
+      message: "We couldn't find any order for that tracking code. Please check the code and try again.",
+    });
+
+  if (!TRACKING_ID_REGEX.test(code)) return notFound();
+
+  const order = await Order.findOne({ trackingId: code });
+  if (!order) return notFound();
+
+  const shipment = await Shipment.findOne({ orderId: order._id });
+
+  // One timeline entry per status. Order-level history forms the base; carrier
+  // events override matching statuses because they carry descriptions and the
+  // carrier's own timestamps. Orders created before statusHistory existed fall
+  // back to createdAt/deliveredAt so the timeline is never empty.
+  const byStatus = new Map();
+  for (const h of order.statusHistory) {
+    byStatus.set(h.status, { status: h.status, occurredAt: h.occurredAt, description: null });
+  }
+  if (!byStatus.has("PENDING")) {
+    byStatus.set("PENDING", { status: "PENDING", occurredAt: order.createdAt, description: null });
+  }
+  for (const e of shipment?.trackingEvents ?? []) {
+    const status = SHIPMENT_TO_ORDER_STATUS[e.status] || e.status;
+    byStatus.set(status, {
+      status,
+      occurredAt: e.occurredAt || byStatus.get(status)?.occurredAt || null,
+      description: e.description || null,
+    });
+  }
+  if (order.deliveredAt && !byStatus.has("DELIVERED")) {
+    byStatus.set("DELIVERED", { status: "DELIVERED", occurredAt: order.deliveredAt, description: null });
+  }
+  if (!byStatus.has(order.status)) {
+    byStatus.set(order.status, { status: order.status, occurredAt: null, description: null });
+  }
+
+  const events = [...byStatus.values()].sort((a, b) => {
+    if (!a.occurredAt) return 1;
+    if (!b.occurredAt) return -1;
+    return new Date(a.occurredAt) - new Date(b.occurredAt);
+  });
+
+  res.json({
+    tracking: {
+      trackingId: order.trackingId,
+      status: order.status,
+      placedAt: order.createdAt,
+      deliveredAt: order.deliveredAt,
+      itemCount: order.items.reduce((n, i) => n + i.quantity, 0),
+      carrier: shipment?.provider || null,
+      events,
+    },
+  });
+}
+
 export async function cancelOrder(req, res) {
   const order = await Order.findOne({ _id: req.params.id, userId: req.user._id });
   if (!order) return res.status(404).json({ message: "Order not found" });
@@ -122,6 +187,7 @@ export async function cancelOrder(req, res) {
     }
 
     order.status = "CANCELLED";
+    order.statusHistory.push({ status: "CANCELLED", occurredAt: new Date() });
     await order.save({ session });
 
     await session.commitTransaction();

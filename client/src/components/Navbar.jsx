@@ -197,7 +197,7 @@ export default function Navbar() {
           />
 
           <div className="hidden sm:flex items-center gap-6 flex-shrink-0">
-            <NavIconLink to="/orders" label="Track Order" icon={TrackOrderIcon} />
+            <NavIconLink to="/track-order" label="Track Order" icon={TrackOrderIcon} />
             <NavIconLink to="/wishlist" label="Wishlist" icon={WishlistIcon} badge={wishlistCount} />
             <NavIconLink to="/cart" label="Cart" icon={CartIcon} badge={itemCount} />
             {user ? (
@@ -259,7 +259,7 @@ export default function Navbar() {
               </div>
             )}
             <div className="flex flex-col gap-3">
-              <Link to="/orders" className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
+              <Link to="/track-order" className="text-secondary-contrast/80 hover:text-secondary-contrast" onClick={() => setMenuOpen(false)}>
                 Track Order
               </Link>
 

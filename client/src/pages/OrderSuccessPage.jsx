@@ -181,10 +181,20 @@ export default function OrderSuccessPage() {
 
       <div className={`${CARD_CLASS} overflow-hidden`}>
         {/* Order meta */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-gray-100">
           <div>
             <p className="text-xs text-gray-400">Order ID</p>
             <p className="text-sm font-mono font-medium text-gray-700">{order._id}</p>
+            {order.trackingId && (
+              <p className="text-xs text-gray-400 mt-1.5">
+                Tracking ID:{" "}
+                <span className="font-mono font-medium text-gray-700">{order.trackingId}</span>
+                {" · "}
+                <Link to={`/track-order?code=${order.trackingId}`} className="text-brand-600 hover:underline">
+                  Track this order
+                </Link>
+              </p>
+            )}
           </div>
           <Badge kind="order" status={order.status} />
         </div>

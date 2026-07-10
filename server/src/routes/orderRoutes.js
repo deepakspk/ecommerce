@@ -2,10 +2,14 @@ import { Router } from "express";
 import { body, param } from "express-validator";
 import { protect } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
-import { createOrder, listOrders, getOrder, cancelOrder, downloadInvoice } from "../controllers/orderController.js";
+import { createOrder, listOrders, getOrder, cancelOrder, downloadInvoice, trackOrder } from "../controllers/orderController.js";
 import { createReturnRequest, getMyReturnRequests } from "../controllers/returnController.js";
 
 const router = Router();
+
+// Public tracking lookup — must stay above the protect middleware.
+router.get("/track/:code", trackOrder);
+
 router.use(protect);
 
 const orderIdParam = param("id").isMongoId().withMessage("Invalid order id");

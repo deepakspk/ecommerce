@@ -56,6 +56,7 @@ export async function placeOrder({ userId, items, address, paymentMethod, coupon
         paymentMethod,
         paymentStatus: "PENDING",
         status: "PENDING",
+        statusHistory: [{ status: "PENDING", occurredAt: new Date() }],
       }],
       { session }
     );

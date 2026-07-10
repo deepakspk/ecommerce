@@ -2,7 +2,7 @@ import Order from "../models/Order.js";
 import { getProvider } from "../logistics/logisticsManager.js";
 import { sendOrderStatusEmail } from "../utils/orderEmails.js";
 
-const SHIPMENT_TO_ORDER_STATUS = {
+export const SHIPMENT_TO_ORDER_STATUS = {
   PICKED_UP: "PICKED",
   DISPATCHED: "SHIPPED",
   ARRIVED: "ARRIVED",
@@ -35,6 +35,7 @@ export async function syncOrderStatus(shipment) {
   if (!order || !isForwardMove(order.status, nextOrderStatus)) return;
 
   order.status = nextOrderStatus;
+  order.statusHistory.push({ status: nextOrderStatus, occurredAt: new Date() });
   if (nextOrderStatus === "DELIVERED" && !order.deliveredAt) order.deliveredAt = new Date();
   await order.save();
 

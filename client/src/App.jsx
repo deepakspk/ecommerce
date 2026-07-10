@@ -28,6 +28,7 @@ import KhaltiCallbackPage from "./pages/KhaltiCallbackPage";
 import EsewaCallbackPage from "./pages/EsewaCallbackPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import OrdersPage from "./pages/OrdersPage";
+import TrackOrderPage from "./pages/TrackOrderPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 function StoreLayout() {
@@ -97,6 +98,7 @@ export default function App() {
                       path="/orders/:id"
                       element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>}
                     />
+                    <Route path="/track-order" element={<TrackOrderPage />} />
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Route>

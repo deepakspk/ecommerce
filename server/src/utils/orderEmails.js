@@ -4,13 +4,19 @@ function fireAndForget(promise, label) {
   promise.catch((err) => console.error(`[email] failed to send ${label}:`, err.message));
 }
 
+function trackingLine(order) {
+  return order.trackingId
+    ? `<p>Track it anytime with tracking ID <strong>${order.trackingId}</strong> on our Track Order page.</p>`
+    : "";
+}
+
 export function sendOrderConfirmedEmail(order, email) {
   if (!email) return;
   fireAndForget(
     sendEmail({
       to: email,
       subject: `Order confirmed — #${order._id}`,
-      html: `<p>Thanks for your order! Your order <strong>#${order._id}</strong> totalling Rs. ${order.total} has been received and is being processed.</p>`,
+      html: `<p>Thanks for your order! Your order <strong>#${order._id}</strong> totalling Rs. ${order.total} has been received and is being processed.</p>${trackingLine(order)}`,
     }),
     `order-confirmed:${order._id}`
   );
@@ -43,7 +49,7 @@ export function sendOrderStatusEmail(order, email, status) {
     sendEmail({
       to: email,
       subject: `Order #${order._id} ${statusText}`,
-      html: `<p>Your order <strong>#${order._id}</strong> has been ${statusText}.</p>`,
+      html: `<p>Your order <strong>#${order._id}</strong> has been ${statusText}.</p>${trackingLine(order)}`,
     }),
     `order-${status}:${order._id}`
   );

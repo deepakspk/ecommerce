@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { generateTrackingId } from "../utils/trackingId.js";
 
 const orderAddressSchema = new mongoose.Schema(
   {
@@ -29,9 +30,20 @@ const orderItemSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const statusHistorySchema = new mongoose.Schema(
+  {
+    status: { type: String, required: true },
+    occurredAt: { type: Date, required: true },
+  },
+  { _id: false }
+);
+
 const orderSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    // Customer-facing tracking code — sparse because orders that predate the
+    // field have none until the backfill script runs.
+    trackingId: { type: String, unique: true, sparse: true, uppercase: true, trim: true },
     address: { type: orderAddressSchema, required: true },
     status: {
       type: String,
@@ -46,9 +58,24 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: { type: String, enum: ["ESEWA", "KHALTI", "COD", "MANUAL"], required: true },
     paymentStatus: { type: String, enum: ["PENDING", "PAID", "FAILED", "REFUNDED"], default: "PENDING" },
     items: { type: [orderItemSchema], required: true },
+    statusHistory: { type: [statusHistorySchema], default: [] },
     deliveredAt: { type: Date, default: null },
   },
   { timestamps: { createdAt: "createdAt", updatedAt: false } }
 );
+
+// A collision across 36^10 ids is vanishingly rare, but the unique index would
+// make one fatal to checkout — retry a few times before giving up.
+orderSchema.pre("validate", async function () {
+  if (!this.isNew || this.trackingId) return;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const candidate = generateTrackingId();
+    if (!(await this.constructor.exists({ trackingId: candidate }))) {
+      this.trackingId = candidate;
+      return;
+    }
+  }
+  throw new Error("Could not generate a unique tracking id");
+});
 
 export default mongoose.model("Order", orderSchema);

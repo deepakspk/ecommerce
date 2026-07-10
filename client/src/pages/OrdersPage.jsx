@@ -72,7 +72,9 @@ export default function OrdersPage() {
                     <Badge kind="order" status={order.status} />
                     <span className="text-xs text-gray-400">{fmtDate(order.createdAt)}</span>
                   </div>
-                  <p className="text-sm font-mono text-gray-400 truncate">{order._id}</p>
+                  <p className="text-sm font-mono text-gray-400 truncate">
+                    {order.trackingId ? <>Tracking ID: <span className="text-gray-600">{order.trackingId}</span></> : order._id}
+                  </p>
                   <p className="text-sm text-gray-600 mt-1">
                     {order.items.length} item{order.items.length !== 1 ? "s" : ""}
                     {" — "}
