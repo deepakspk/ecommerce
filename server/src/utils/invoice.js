@@ -9,12 +9,23 @@ export function streamInvoicePdf(res, order, customer) {
   const doc = new PDFDocument({ size: "A4", margin: 50 });
   doc.pipe(res);
 
-  doc.fontSize(20).text("Ecommerce Nepal", { continued: false });
-  doc.fontSize(10).fillColor("#666").text("Tax Invoice");
-  doc.moveDown(1.5);
+  // GyanKosh logo mark, drawn as vector paths (PDFKit can't embed SVG files).
+  doc.save();
+  doc.translate(50, 40).scale(0.6);
+  doc.roundedRect(0, 0, 64, 64, 14).fill("#2563eb");
+  doc.path("M32 10l8 9-8 11-8-11z").fill("#fbbf24");
+  doc.path("M32 10l8 9H24z").fill("#fde68a");
+  doc.path("M32 38c-4.5-3-11.5-3-16-1v14c4.5-2 11.5-2 16 1 4.5-3 11.5-3 16-1V37c-4.5-2-11.5-2-16 1z").fill("#ffffff");
+  doc.restore();
+
+  doc.font("Helvetica-Bold").fontSize(22).fillColor("#0f172a")
+    .text("Gyan", 96, 46, { continued: true })
+    .fillColor("#2563eb").text("Kosh");
+  doc.font("Helvetica").fontSize(9).fillColor("#666")
+    .text("ONLINE BOOKSTORE  ·  TAX INVOICE", 96, 72, { characterSpacing: 1.5 });
 
   doc.fillColor("#000").fontSize(11);
-  doc.text(`Invoice for Order #${order._id}`);
+  doc.text(`Invoice for Order #${order._id}`, 50, 105);
   doc.text(`Date: ${order.createdAt.toLocaleDateString("en-NP")}`);
   doc.text(`Status: ${order.status}  |  Payment: ${order.paymentMethod} (${order.paymentStatus})`);
   doc.moveDown(1);

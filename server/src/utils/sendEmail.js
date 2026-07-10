@@ -13,6 +13,23 @@ function getTransporter() {
   });
 }
 
+// Text-based logo header so branding renders in every email client without
+// depending on externally hosted images.
+function brandedTemplate(html) {
+  return `<div style="background:#f1f5f9;padding:24px 12px;font-family:'Segoe UI',Arial,sans-serif;">
+    <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
+      <div style="background:#1e293b;padding:18px 24px;">
+        <span style="font-size:22px;font-weight:700;color:#ffffff;">Gyan<span style="color:#93c5fd;">Kosh</span></span>
+        <span style="display:block;margin-top:2px;font-size:10px;letter-spacing:3px;color:#94a3b8;">ONLINE BOOKSTORE</span>
+      </div>
+      <div style="padding:24px;color:#334155;font-size:14px;line-height:1.6;">${html}</div>
+      <div style="padding:14px 24px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;">
+        © ${new Date().getFullYear()} GyanKosh · Happy reading!
+      </div>
+    </div>
+  </div>`;
+}
+
 export async function sendEmail({ to, subject, html }) {
   const transport = getTransporter();
 
@@ -28,6 +45,6 @@ export async function sendEmail({ to, subject, html }) {
     from: fromName ? `"${fromName}" <${fromAddress}>` : fromAddress,
     to,
     subject,
-    html,
+    html: brandedTemplate(html),
   });
 }
