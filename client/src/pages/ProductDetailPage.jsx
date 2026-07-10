@@ -333,18 +333,18 @@ export default function ProductDetailPage() {
         <span className="text-gray-800">{product.name}</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start bg-brand-50/40 rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
         {/* ── Images ─────────────────────────────────────────────── */}
         <div className="lg:sticky lg:top-6">
           {/* Main image — square */}
-          <div className="group relative aspect-square bg-gray-100 rounded-2xl overflow-hidden shadow-sm">
+          <div className="group relative aspect-square rounded-2xl overflow-hidden border border-gray-100">
             {product.images.length > 0 && !mainImageFailed ? (
               <img
                 src={cloudinaryUrl(product.images[selectedImage].url, 700)}
                 alt={product.images[selectedImage].altText || product.name}
                 loading="eager"
                 onError={() => setMainImageFailed(true)}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
@@ -447,6 +447,9 @@ export default function ProductDetailPage() {
                     {Math.round(discountPercent)}% OFF
                   </span>
                 )}
+                <p className="w-full text-sm font-medium text-green-600 -mt-1">
+                  You save {formatPrice(displayPrice - finalPrice)}
+                </p>
               </>
             ) : (
               <span className="text-3xl font-bold text-gray-900">{formatPrice(displayPrice)}</span>
@@ -637,7 +640,15 @@ export default function ProductDetailPage() {
                 ? "Select a size to continue"
                 : !colorIsFixed && !selectedColor
                 ? "Select a color to continue"
-                : "Add to Cart"}
+                : (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round"
+                        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                    </svg>
+                    Add to Cart
+                  </span>
+                )}
               </button>
             </div>
 
