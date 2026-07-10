@@ -78,7 +78,7 @@ export default function CategoryRail({ categories, loading = false }) {
         {Array.from({ length: 9 }).map((_, i) => (
           <div key={i} className={`${TILE_CLASS} rounded-xl border border-gray-200 bg-white overflow-hidden animate-pulse`}>
             <div className="aspect-square bg-gray-200" />
-            <div className="px-3 py-2">
+            <div className="px-2 py-1.5">
               <div className="h-4 bg-gray-200 rounded w-3/4" />
             </div>
           </div>
@@ -119,7 +119,7 @@ export default function CategoryRail({ categories, loading = false }) {
             to={`/products?category=${cat.slug}`}
             className={`${TILE_CLASS} group rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition-shadow`}
           >
-            <div className="aspect-square bg-gray-100 overflow-hidden p-6">
+            <div className="aspect-square bg-gray-100 overflow-hidden p-2">
               {cat.image ? (
                 <img
                   src={cloudinaryUrl(cat.image, 240)}
@@ -133,7 +133,7 @@ export default function CategoryRail({ categories, loading = false }) {
                 </div>
               )}
             </div>
-            <p className="px-3 py-2 text-sm font-medium text-gray-700 group-hover:text-brand-600 truncate">
+            <p className="px-2 py-1.5 text-sm font-medium text-gray-700 group-hover:text-brand-600 truncate">
               {cat.name}
             </p>
           </Link>

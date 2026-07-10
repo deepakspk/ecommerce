@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <circle cx="120" cy="120" r="108" fill="#fee2e2"/>
+  <path d="M120 44l14 22 26-10-4 28 28 6-20 20 18 22-28 2-4 28-24-16-24 16-4-28-28-2 18-22-20-20 28-6-4-28 26 10z" fill="#facc15" stroke="#eab308" stroke-width="4" stroke-linejoin="round"/>
+  <text x="120" y="132" font-family="Arial Black, Arial, sans-serif" font-size="38" font-weight="900" text-anchor="middle" fill="#dc2626" transform="rotate(-8 120 120)">POW!</text>
+  <path d="M74 168h92a10 10 0 0 1 10 10v0a10 10 0 0 1-10 10h-58l-18 14v-14h-16a10 10 0 0 1-10-10v0a10 10 0 0 1 10-10z" fill="#ef4444"/>
+</svg>
