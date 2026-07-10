@@ -11,7 +11,7 @@ import ProductCard from "../components/ProductCard";
 import StarRating from "../components/StarRating";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
-import { cloudinaryUrl } from "../utils/cloudinaryUrl";
+import CategoryRail from "../components/CategoryRail";
 import { INPUT_CLASS, PAGE_CLASS } from "../utils/ui";
 
 const SORT_OPTIONS = [
@@ -231,49 +231,7 @@ export default function ProductsPage() {
 
           <div>
             {/* <h2 className={`${SECTION_HEADING_CLASS} mb-4`}>Shop by Category</h2> */}
-
-            {metaLoading && (
-              <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-4">
-                {Array.from({ length: 9 }).map((_, i) => (
-                  <div key={i} className="rounded-xl border border-gray-200 bg-white overflow-hidden animate-pulse">
-                    <div className="aspect-square bg-gray-200" />
-                    <div className="px-3 py-2">
-                      <div className="h-4 bg-gray-200 rounded w-3/4" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!metaLoading && categories.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-4">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    to={`/products?category=${cat.slug}`}
-                    className="group rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition-shadow"
-                  >
-                    <div className="aspect-square bg-gray-100 overflow-hidden p-6">
-                      {cat.image ? (
-                        <img
-                          src={cloudinaryUrl(cat.image, 240)}
-                          alt={cat.name}
-                          loading="lazy"
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-3xl font-semibold text-gray-300">
-                          {cat.name.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    <p className="px-3 py-2 text-sm font-medium text-gray-700 group-hover:text-brand-600 truncate">
-                      {cat.name}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            )}
+            <CategoryRail categories={categories} loading={metaLoading} />
           </div>
 
           {/* <FeatureRails /> */}

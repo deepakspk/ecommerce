@@ -90,6 +90,7 @@ export async function createProduct(req, res) {
     variants,
     stockQuantity,
     weight,
+    warranty,
     additionalInformation,
     featureTypes,
   } = req.body;
@@ -123,6 +124,7 @@ export async function createProduct(req, res) {
     isActive: isActive !== "false" && isActive !== false,
     images,
     weight: weight !== undefined && weight !== "" ? Number(weight) : undefined,
+    warranty: typeof warranty === "string" ? warranty.trim() : "",
     additionalInformation: parseAdditionalInformation(additionalInformation) || [],
     featureTypes: parseFeatureTypes(featureTypes),
   });
@@ -436,6 +438,7 @@ export async function updateProduct(req, res) {
     isActive,
     keepImages,
     weight,
+    warranty,
     additionalInformation,
     featureTypes,
   } = req.body;
@@ -447,6 +450,7 @@ export async function updateProduct(req, res) {
   if (shortDescription !== undefined) product.shortDescription = sanitizeRichText(shortDescription);
   if (description !== undefined) product.description = sanitizeRichText(description);
   if (weight !== undefined) product.weight = weight === "" ? undefined : Number(weight);
+  if (warranty !== undefined) product.warranty = typeof warranty === "string" ? warranty.trim() : "";
   if (additionalInformation !== undefined) {
     product.additionalInformation = parseAdditionalInformation(additionalInformation) || [];
   }

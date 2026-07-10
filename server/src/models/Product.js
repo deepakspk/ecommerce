@@ -31,6 +31,8 @@ const productSchema = new mongoose.Schema(
     description: { type: String, trim: true, default: "" },
     additionalInformation: { type: [additionalInfoSchema], default: [] },
     weight: { type: Number, min: 0 },
+    // Free text like "12 Months Brand Warranty" — empty means no warranty shown.
+    warranty: { type: String, trim: true, maxlength: 200, default: "" },
     categories: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
       required: true,

@@ -217,6 +217,13 @@ const weightValidator = body("weight")
   .isFloat({ min: 0 })
   .withMessage("weight must be a non-negative number");
 
+const warrantyValidator = body("warranty")
+  .optional({ values: "falsy" })
+  .isString()
+  .trim()
+  .isLength({ max: 200 })
+  .withMessage("warranty must be 200 characters or fewer");
+
 const additionalInformationValidator = body("additionalInformation")
   .optional({ values: "falsy" })
   .custom((value) => {
@@ -248,6 +255,7 @@ const productBodyValidators = [
   shortDescriptionValidator,
   descriptionValidator,
   weightValidator,
+  warrantyValidator,
   additionalInformationValidator,
   featureTypesValidator,
   body("categories")
@@ -266,6 +274,7 @@ const productUpdateBodyValidators = [
   shortDescriptionValidator,
   descriptionValidator,
   weightValidator,
+  warrantyValidator,
   additionalInformationValidator,
   featureTypesValidator,
   body("categories")

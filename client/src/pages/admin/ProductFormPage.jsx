@@ -18,7 +18,7 @@ export default function ProductFormPage() {
   const [form, setForm] = useState({
     name: "", shortDescription: "", description: "", categories: [], featureTypes: [], basePrice: "",
     discountType: "", discountValue: "", isActive: true,
-    stockQuantity: "", weight: "",
+    stockQuantity: "", weight: "", warranty: "",
   });
   const [additionalInfo, setAdditionalInfo] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -58,6 +58,7 @@ export default function ProductFormPage() {
             discountValue: product.discountValue ? String(product.discountValue) : "",
             isActive: product.isActive,
             weight: product.weight != null ? String(product.weight) : "",
+            warranty: product.warranty || "",
           });
           setAdditionalInfo(product.additionalInformation || []);
           setExistingImages(product.images || []);
@@ -95,6 +96,7 @@ export default function ProductFormPage() {
       fd.append("discountValue", form.discountType ? form.discountValue : "0");
       fd.append("isActive", String(form.isActive));
       fd.append("weight", form.weight);
+      fd.append("warranty", form.warranty);
       fd.append("additionalInformation", JSON.stringify(validAdditionalInfo));
       if (isEdit) {
         fd.append("keepImages", JSON.stringify(existingImages.map(i => i.url)));
@@ -326,6 +328,21 @@ export default function ProductFormPage() {
               placeholder="0"
               className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Warranty <span className="font-normal text-gray-400">— optional</span>
+            </label>
+            <input
+              type="text"
+              maxLength={200}
+              value={form.warranty}
+              onChange={e => setForm(f => ({ ...f, warranty: e.target.value }))}
+              placeholder="e.g. 12 Months Brand Warranty"
+              className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+            <p className="text-xs text-gray-400 mt-1">Shown on the product page. Leave empty if the product has no warranty.</p>
           </div>
 
           {!isEdit && stagedVariants.length === 0 && (
