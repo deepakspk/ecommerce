@@ -15,6 +15,7 @@ const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [featureTypes, setFeatureTypes] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -24,6 +25,7 @@ export default function ProductsPage() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [featureType, setFeatureType] = useState("");
   const [status, setStatus] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -37,6 +39,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     adminApi.getCategories().then(({ categories }) => setCategories(categories)).catch(() => setCategories([]));
+    adminApi.getFeatureTypes().then(({ featureTypes }) => setFeatureTypes(featureTypes)).catch(() => setFeatureTypes([]));
   }, []);
 
   useEffect(() => {
@@ -47,6 +50,7 @@ export default function ProductsPage() {
         const params = { page, limit: 10, sort };
         if (search.trim()) params.search = search.trim();
         if (category) params.category = category;
+        if (featureType) params.featureType = featureType;
         if (status) params.status = status;
         if (minPrice) params.minPrice = minPrice;
         if (maxPrice) params.maxPrice = maxPrice;
@@ -64,7 +68,7 @@ export default function ProductsPage() {
     }
     load();
     return () => { active = false; };
-  }, [page, search, category, status, minPrice, maxPrice, sort]);
+  }, [page, search, category, featureType, status, minPrice, maxPrice, sort]);
 
   async function handleDelete(id, name) {
     if (!confirm(`Delete "${name}"? This also removes all its variants.`)) return;
@@ -78,12 +82,13 @@ export default function ProductsPage() {
     }
   }
 
-  const hasFilters = search || category || status || minPrice || maxPrice;
+  const hasFilters = search || category || featureType || status || minPrice || maxPrice;
 
   function clearFilters() {
     setSearchInput("");
     setSearch("");
     setCategory("");
+    setFeatureType("");
     setStatus("");
     setMinPrice("");
     setMaxPrice("");
@@ -132,6 +137,14 @@ export default function ProductsPage() {
           </select>
         </div>
         <div className={FILTER_FIELD_CLASS}>
+          <select value={featureType} onChange={(e) => { setFeatureType(e.target.value); setPage(1); }} className={INPUT_CLASS}>
+            <option value="">All feature types</option>
+            {featureTypes.map((ft) => (
+              <option key={ft._id} value={ft._id}>{ft.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className={FILTER_FIELD_CLASS}>
           <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={INPUT_CLASS}>
             <option value="">All statuses</option>
             <option value="active">Active</option>
@@ -175,7 +188,7 @@ export default function ProductsPage() {
       )}
 
       {loading ? (
-        <TableSkeleton columns={5} />
+        <TableSkeleton columns={6} />
       ) : products.length === 0 ? (
         <EmptyState
           title={hasFilters ? "No products match these filters." : "No products yet."}
@@ -196,6 +209,7 @@ export default function ProductsPage() {
                   <tr>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Product</th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Category</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Feature Types</th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Base Price</th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
                     <th className="px-5 py-3" />
@@ -220,6 +234,22 @@ export default function ProductsPage() {
                       </td>
                       <td className="px-5 py-3 text-gray-600 dark:text-gray-300">
                         {p.categories?.length ? p.categories.map((c) => c.name).join(", ") : "—"}
+                      </td>
+                      <td className="px-5 py-3">
+                        {p.featureTypes?.length ? (
+                          <div className="flex flex-wrap gap-1">
+                            {p.featureTypes.map((ft) => (
+                              <span
+                                key={ft._id}
+                                className="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-100 text-brand-700"
+                              >
+                                {ft.name}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="px-5 py-3 text-gray-700 dark:text-gray-200 font-medium">
                         {p.discountType && p.discountValue ? (

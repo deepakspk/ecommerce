@@ -20,12 +20,13 @@ const SORT_OPTIONS = {
 };
 
 export async function listProducts(req, res) {
-  const { search, category, status, minPrice, maxPrice, sort, page = 1, limit = 10 } = req.query;
+  const { search, category, featureType, status, minPrice, maxPrice, sort, page = 1, limit = 10 } = req.query;
   const filter = {};
   if (search?.trim()) {
     filter.name = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
   }
   if (category) filter.categories = category;
+  if (featureType) filter.featureTypes = featureType;
   if (status === "active") filter.isActive = true;
   if (status === "inactive") filter.isActive = false;
   if (minPrice || maxPrice) {
