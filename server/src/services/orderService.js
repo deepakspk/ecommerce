@@ -4,7 +4,7 @@ import ProductVariant from "../models/ProductVariant.js";
 import InventoryLog from "../models/InventoryLog.js";
 import { validateCoupon, redeemCoupon } from "./couponService.js";
 import { resolveDeliveryFee } from "./deliveryFeeService.js";
-import { sendOrderConfirmedEmail } from "../utils/orderEmails.js";
+import { sendOrderConfirmedEmail, sendNewOrderAdminEmail } from "../utils/orderEmails.js";
 
 // Shared core of order creation used by both customer checkout and admin
 // manual order creation — keeps stock-checking, coupon redemption, and the
@@ -87,6 +87,7 @@ export async function placeOrder({ userId, items, address, paymentMethod, coupon
   }
 
   if (customerEmail) sendOrderConfirmedEmail(order, customerEmail);
+  if (source === "CUSTOMER") sendNewOrderAdminEmail(order, customerEmail);
 
   return order;
 }
