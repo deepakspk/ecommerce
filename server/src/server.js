@@ -23,6 +23,7 @@ import companySettingsRoutes from "./routes/companySettingsRoutes.js";
 import themeSettingsRoutes from "./routes/themeSettingsRoutes.js";
 import webhookRoutes from "./routes/webhookRoutes.js";
 import logisticsRoutes from "./routes/logisticsRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
 import { protect, requireRole } from "./middleware/auth.js";
 
 const app = express();
@@ -60,6 +61,7 @@ app.use("/api/settings/company", companySettingsRoutes);
 app.use("/api/settings/theme", themeSettingsRoutes);
 app.use("/api/webhooks", webhookRoutes);
 app.use("/api/logistics", logisticsRoutes);
+app.use("/api/contact", contactRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/api/admin/ping", protect, requireRole("ADMIN"), (req, res) => {

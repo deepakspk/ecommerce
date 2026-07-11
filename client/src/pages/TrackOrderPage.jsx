@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import * as ordersApi from "../api/orders";
 import { getErrorMessage } from "../utils/errorHelpers";
-import { useCompanySettings } from "../hooks/useCompanySettings";
 import Badge from "../components/Badge";
+import ContactSupportModal from "../components/ContactSupportModal";
 import { CONTAINER_CLASS, CARD_CLASS } from "../utils/ui";
 
 const STATUS_LABELS = {
@@ -68,12 +68,12 @@ const FEATURES = [
 
 export default function TrackOrderPage() {
   const [searchParams] = useSearchParams();
-  const { company } = useCompanySettings();
   const initialCode = (searchParams.get("code") || "").trim().toUpperCase();
   const [code, setCode] = useState(initialCode);
   const [tracking, setTracking] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(Boolean(initialCode));
+  const [contactOpen, setContactOpen] = useState(false);
   const resultRef = useRef(null);
 
   const fetchTracking = useCallback((value) => {
@@ -112,8 +112,6 @@ export default function TrackOrderPage() {
     setLoading(true);
     fetchTracking(trimmed);
   }
-
-  const supportEmail = company?.email || "";
 
   return (
     <div>
@@ -255,8 +253,9 @@ export default function TrackOrderPage() {
         <div className={`${CONTAINER_CLASS} py-10 sm:py-12 text-center`}>
           <h2 className="text-base font-bold text-gray-900 dark:text-white">Need Help?</h2>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Contact our support team for assistance</p>
-          <a
-            href={supportEmail ? `mailto:${supportEmail}` : "/terms"}
+          <button
+            type="button"
+            onClick={() => setContactOpen(true)}
             className="mt-4 inline-flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-4 py-2 text-xs font-bold uppercase tracking-wide text-gray-800 dark:text-gray-200 hover:border-brand-400 transition-colors"
           >
             <svg className="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -264,9 +263,11 @@ export default function TrackOrderPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25h.008v.008H12V8.25Zm0 3v4.5" />
             </svg>
             Contact Support
-          </a>
+          </button>
         </div>
       </section>
+
+      <ContactSupportModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </div>
   );
 }

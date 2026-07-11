@@ -80,6 +80,13 @@ export const updateUser = (id, data) => api.put(`/admin/users/${id}`, data).then
 export const updateUserRole = (id, role) => api.patch(`/admin/users/${id}/role`, { role }).then(r => r.data);
 export const updateUserStatus = (id, status) => api.patch(`/admin/users/${id}/status`, { status }).then(r => r.data);
 
+// Contact messages
+export const listContactMessages = (params) => api.get("/admin/messages", { params }).then(r => r.data);
+export const getContactMessage = (id) => api.get(`/admin/messages/${id}`).then(r => r.data);
+export const updateContactMessageStatus = (id, status) =>
+  api.patch(`/admin/messages/${id}/status`, { status }).then(r => r.data);
+export const deleteContactMessage = (id) => api.delete(`/admin/messages/${id}`).then(r => r.data);
+
 // Audit log
 export const listAuditLog = (params) => api.get("/admin/audit-log", { params }).then(r => r.data);
 

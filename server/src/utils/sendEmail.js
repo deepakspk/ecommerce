@@ -30,7 +30,7 @@ function brandedTemplate(html) {
   </div>`;
 }
 
-export async function sendEmail({ to, subject, html }) {
+export async function sendEmail({ to, subject, html, replyTo }) {
   const transport = getTransporter();
 
   if (!transport) {
@@ -46,5 +46,6 @@ export async function sendEmail({ to, subject, html }) {
     to,
     subject,
     html: brandedTemplate(html),
+    ...(replyTo ? { replyTo } : {}),
   });
 }

@@ -64,6 +64,12 @@ export const RETURN_STATUS_COLORS = {
   REFUNDED: "bg-green-100 text-green-700",
 };
 
+export const MESSAGE_STATUS_COLORS = {
+  NEW: "bg-amber-100 text-amber-700",
+  READ: "bg-indigo-100 text-indigo-700",
+  RESOLVED: "bg-green-100 text-green-700",
+};
+
 export const USER_ROLE_COLORS = {
   SUPER_ADMIN: "bg-amber-100 text-amber-700",
   ADMIN: "bg-purple-100 text-purple-700",

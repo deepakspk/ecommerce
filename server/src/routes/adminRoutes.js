@@ -75,6 +75,12 @@ import {
   addShipmentComment,
 } from "../controllers/admin/logisticsController.js";
 import { listUsers, createUser, updateUser, updateUserRole, updateUserStatus } from "../controllers/admin/userController.js";
+import {
+  listContactMessages,
+  getContactMessage,
+  updateContactMessageStatus,
+  deleteContactMessage,
+} from "../controllers/admin/contactController.js";
 import { listAuditLog } from "../controllers/admin/auditLogController.js";
 import { getReportSummary, exportOrdersCsv } from "../controllers/admin/reportsController.js";
 import { listSettings, updateGroup, exportSettings } from "../controllers/admin/settingsController.js";
@@ -511,6 +517,17 @@ router.patch(
   validate,
   updateUserStatus
 );
+
+// Contact messages
+router.get("/messages", listContactMessages);
+router.get("/messages/:id", [mongoIdParam("id")], validate, getContactMessage);
+router.patch(
+  "/messages/:id/status",
+  [mongoIdParam("id"), body("status").isIn(["NEW", "READ", "RESOLVED"]).withMessage("Invalid status")],
+  validate,
+  updateContactMessageStatus
+);
+router.delete("/messages/:id", [mongoIdParam("id")], validate, deleteContactMessage);
 
 // Audit log
 router.get("/audit-log", listAuditLog);

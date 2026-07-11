@@ -14,6 +14,7 @@ import AdminOrderCreatePage from "./AdminOrderCreatePage";
 import AdminOrderDetailPage from "./AdminOrderDetailPage";
 import AdminReturnsPage from "./AdminReturnsPage";
 import AdminReturnDetailPage from "./AdminReturnDetailPage";
+import MessagesPage from "./MessagesPage";
 import UsersPage from "./UsersPage";
 import AuditLogPage from "./AuditLogPage";
 import ReportsPage from "./ReportsPage";
@@ -34,6 +35,7 @@ export default function AdminSection() {
           <Route path="orders/:id" element={<AdminOrderDetailPage />} />
           <Route path="returns" element={<AdminReturnsPage />} />
           <Route path="returns/:id" element={<AdminReturnDetailPage />} />
+          <Route path="messages" element={<MessagesPage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="feature-types" element={<FeatureTypesPage />} />
           <Route path="products" element={<ProductsPage />} />

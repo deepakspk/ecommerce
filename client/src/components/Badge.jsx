@@ -1,5 +1,6 @@
 import {
   BADGE_BASE,
+  MESSAGE_STATUS_COLORS,
   ORDER_STATUS_COLORS,
   PAYMENT_STATUS_COLORS,
   RETURN_STATUS_COLORS,
@@ -15,6 +16,7 @@ const COLOR_MAPS = {
   shipment: SHIPMENT_STATUS_COLORS,
   role: USER_ROLE_COLORS,
   userStatus: USER_STATUS_COLORS,
+  message: MESSAGE_STATUS_COLORS,
 };
 
 export default function Badge({ kind, status }) {
