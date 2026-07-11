@@ -27,6 +27,14 @@ const PAYMENT_FOOTNOTES = {
   ESEWA: "You'll be redirected to eSewa to complete payment",
 };
 
+// Official logos live in public/payments/ (shared with the footer). Each entry
+// sets its own image height so differently proportioned logos look balanced.
+const PAYMENT_OPTIONS = [
+  { value: "COD", label: "Cash on Delivery", logo: "/payments/cod.svg", logoClass: "h-6" },
+  { value: "KHALTI", label: "Pay with Khalti", logo: "/payments/khalti.png", logoClass: "h-6" },
+  { value: "ESEWA", label: "Pay with eSewa", logo: "/payments/esewa.png", logoClass: "h-5" },
+];
+
 function calcDeliveryFee(province) {
   return province?.toLowerCase().trim() === "bagmati" ? 100 : 200;
 }
@@ -317,27 +325,21 @@ export default function CheckoutPage() {
             ) : (
               <div className="border-t border-gray-100 pt-4 mt-4 space-y-2">
                 <p className="text-sm font-semibold text-gray-800 mb-1">Payment Method</p>
-                <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
-                  paymentMethod === "COD" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
-                }`}>
-                  <input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === "COD"}
-                    onChange={() => setPaymentMethod("COD")} />
-                  <span className="text-sm text-gray-800">Cash on Delivery</span>
-                </label>
-                <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
-                  paymentMethod === "KHALTI" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
-                }`}>
-                  <input type="radio" name="paymentMethod" value="KHALTI" checked={paymentMethod === "KHALTI"}
-                    onChange={() => setPaymentMethod("KHALTI")} />
-                  <span className="text-sm text-gray-800">Pay with Khalti</span>
-                </label>
-                <label className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
-                  paymentMethod === "ESEWA" ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
-                }`}>
-                  <input type="radio" name="paymentMethod" value="ESEWA" checked={paymentMethod === "ESEWA"}
-                    onChange={() => setPaymentMethod("ESEWA")} />
-                  <span className="text-sm text-gray-800">Pay with eSewa</span>
-                </label>
+                {PAYMENT_OPTIONS.map((opt) => (
+                  <label
+                    key={opt.value}
+                    className={`flex items-center gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
+                      paymentMethod === opt.value ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-400"
+                    }`}
+                  >
+                    <input type="radio" name="paymentMethod" value={opt.value} checked={paymentMethod === opt.value}
+                      onChange={() => setPaymentMethod(opt.value)} />
+                    <span className="text-sm text-gray-800 flex-1">{opt.label}</span>
+                    <span className="inline-flex items-center justify-center h-8 px-2 rounded-md bg-white border border-gray-200">
+                      <img src={opt.logo} alt="" className={`${opt.logoClass} w-auto`} />
+                    </span>
+                  </label>
+                ))}
               </div>
             )}
 
