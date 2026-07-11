@@ -90,10 +90,25 @@ router.post(
   verifyOtp
 );
 
-router.get("/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }));
+// The Google strategy is only registered when GOOGLE_CLIENT_ID/SECRET are set
+// (see config/passport.js) — without this guard, hitting these routes with
+// missing credentials crashes with "Unknown authentication strategy".
+function requireGoogleOAuth(req, res, next) {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.redirect(`${process.env.CLIENT_URL || "http://localhost:5173"}/login?error=google_unavailable`);
+  }
+  next();
+}
+
+router.get(
+  "/google",
+  requireGoogleOAuth,
+  passport.authenticate("google", { scope: ["profile", "email"], session: false })
+);
 
 router.get(
   "/google/callback",
+  requireGoogleOAuth,
   passport.authenticate("google", {
     session: false,
     failureRedirect: `${process.env.CLIENT_URL || "http://localhost:5173"}/login?error=google`,

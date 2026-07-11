@@ -16,7 +16,13 @@ export default function LoginPage() {
   const [generalError, setGeneralError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const googleError = searchParams.get("error") === "google";
+  const oauthError = searchParams.get("error");
+  const googleErrorMessage =
+    oauthError === "google_unavailable"
+      ? "Google sign-in isn't set up on this server yet. Please log in with your email and password."
+      : oauthError === "google"
+        ? "Google sign-in failed. Please try again."
+        : "";
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -51,7 +57,7 @@ export default function LoginPage() {
   return (
     <div className="max-w-md mx-auto px-4 py-10">
       <h1 className={`${H1_CLASS} mb-6`}>Log in</h1>
-      <FormError message={googleError ? "Google sign-in failed. Please try again." : generalError} />
+      <FormError message={googleErrorMessage || generalError} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className={LABEL_CLASS}>Email</label>
