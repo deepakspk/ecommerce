@@ -87,38 +87,22 @@ function IconCircle({ children }) {
   );
 }
 
-function CodBadge() {
+// Official payment logos live in public/payments/. Each entry sets its own
+// image height so differently proportioned logos look balanced on the chips.
+const PAYMENT_METHODS = [
+  { src: "/payments/cod.svg", alt: "Cash on Delivery", imgClass: "h-9" },
+  { src: "/payments/esewa.png", alt: "eSewa", imgClass: "h-6" },
+  { src: "/payments/khalti.png", alt: "Khalti", imgClass: "h-8" },
+];
+
+function PaymentBadge({ src, alt, imgClass }) {
   return (
-    <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-white border border-gray-200 text-gray-700">
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <rect x="3" y="7" width="18" height="10" rx="1.5" />
-        <circle cx="12" cy="12" r="2.25" />
-        <path strokeLinecap="round" d="M6.5 9.5h-.01M17.5 14.5h.01" />
-      </svg>
-      <span className="text-xs font-semibold">Cash on Delivery</span>
+    <span
+      title={alt}
+      className="inline-flex items-center justify-center h-12 px-3 rounded-md bg-white border border-gray-200"
+    >
+      <img src={src} alt={alt} loading="lazy" className={`${imgClass} w-auto`} />
     </span>
-  );
-}
-
-function EsewaBadge() {
-  return (
-    <svg className="h-8 w-auto" viewBox="0 0 96 32" role="img" aria-label="eSewa">
-      <rect width="96" height="32" rx="6" fill="#60BB46" />
-      <text x="48" y="21" textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif" fontStyle="italic" fontWeight="700" fontSize="15" fill="#ffffff">
-        eSewa
-      </text>
-    </svg>
-  );
-}
-
-function KhaltiBadge() {
-  return (
-    <svg className="h-8 w-auto" viewBox="0 0 96 32" role="img" aria-label="Khalti">
-      <rect width="96" height="32" rx="6" fill="#5C2D91" />
-      <text x="48" y="21" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="14" fill="#ffffff">
-        Khalti
-      </text>
-    </svg>
   );
 }
 
@@ -270,9 +254,9 @@ export default function Footer() {
           <div>
             <FooterHeading>We Accept</FooterHeading>
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-              <CodBadge />
-              <EsewaBadge />
-              <KhaltiBadge />
+              {PAYMENT_METHODS.map((method) => (
+                <PaymentBadge key={method.alt} {...method} />
+              ))}
             </div>
           </div>
         </div>
