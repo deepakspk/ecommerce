@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import * as authApi from "../api/auth";
 import { FormError, FieldError } from "../components/FormError";
 import { getErrorMessage, getFieldErrors } from "../utils/errorHelpers";
 import { isValidNepaliPhone, isValidOtpCode } from "../utils/validators";
+import { safeRedirectPath } from "../utils/redirect";
 import { INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY_FULL, H1_CLASS } from "../utils/ui";
 
 export default function OtpLoginPage() {
   const { loginWithOtp } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = safeRedirectPath(searchParams.get("redirect"));
   const [stage, setStage] = useState("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -48,7 +51,7 @@ export default function OtpLoginPage() {
     setSubmitting(true);
     try {
       await loginWithOtp(phone, code);
-      navigate("/");
+      navigate(redirect);
     } catch (err) {
       setGeneralError(getErrorMessage(err));
       setFieldErrors(getFieldErrors(err));

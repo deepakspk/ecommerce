@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { FormError, FieldError } from "../components/FormError";
 import { getErrorMessage, getFieldErrors } from "../utils/errorHelpers";
 import { isValidEmail, isValidPassword, isValidNepaliPhone } from "../utils/validators";
+import { safeRedirectPath, redirectQuery } from "../utils/redirect";
 import { INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY_FULL, H1_CLASS } from "../utils/ui";
 
 export default function SignupPage() {
   const { signup } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = safeRedirectPath(searchParams.get("redirect"));
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
   const [fieldErrors, setFieldErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
@@ -39,7 +42,7 @@ export default function SignupPage() {
     setSubmitting(true);
     try {
       await signup({ ...form, phone: form.phone || undefined });
-      navigate("/");
+      navigate(redirect);
     } catch (err) {
       setGeneralError(getErrorMessage(err));
       setFieldErrors(getFieldErrors(err));
@@ -102,7 +105,7 @@ export default function SignupPage() {
       </form>
       <p className="text-sm text-gray-600 mt-4">
         Already have an account?{" "}
-        <Link to="/login" className="text-brand-600 hover:underline">
+        <Link to={`/login${redirectQuery(redirect)}`} className="text-brand-600 hover:underline">
           Log in
         </Link>
       </p>

@@ -255,5 +255,12 @@ export function googleCallback(req, res) {
     return res.redirect(`${clientUrl}/login?error=disabled`);
   }
   const token = signAccessToken(req.user);
-  res.redirect(`${clientUrl}/oauth-callback?token=${token}`);
+  // `state` echoes back the post-login redirect path set when the OAuth flow
+  // started. Only forward internal paths so it can't become an open redirect.
+  const state = req.query.state;
+  const redirect =
+    typeof state === "string" && state.startsWith("/") && !state.startsWith("//")
+      ? `&redirect=${encodeURIComponent(state)}`
+      : "";
+  res.redirect(`${clientUrl}/oauth-callback?token=${token}${redirect}`);
 }

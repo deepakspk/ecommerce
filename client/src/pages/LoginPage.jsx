@@ -5,6 +5,7 @@ import { FormError, FieldError } from "../components/FormError";
 import { getErrorMessage, getFieldErrors } from "../utils/errorHelpers";
 import { isValidEmail } from "../utils/validators";
 import { getGoogleAuthUrl } from "../api/auth";
+import { safeRedirectPath, redirectQuery } from "../utils/redirect";
 import { INPUT_CLASS, LABEL_CLASS, BUTTON_PRIMARY_FULL, H1_CLASS } from "../utils/ui";
 
 export default function LoginPage() {
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [generalError, setGeneralError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const redirect = safeRedirectPath(searchParams.get("redirect"));
   const oauthError = searchParams.get("error");
   const googleErrorMessage =
     oauthError === "google_unavailable"
@@ -45,7 +47,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(form);
-      navigate("/");
+      navigate(redirect);
     } catch (err) {
       setGeneralError(getErrorMessage(err));
       setFieldErrors(getFieldErrors(err));
@@ -90,13 +92,13 @@ export default function LoginPage() {
         <Link to="/forgot-password" className="text-brand-600 hover:underline">
           Forgot password?
         </Link>
-        <Link to="/otp-login" className="text-brand-600 hover:underline">
+        <Link to={`/otp-login${redirectQuery(redirect)}`} className="text-brand-600 hover:underline">
           Log in with phone OTP
         </Link>
       </div>
 
       <a
-        href={getGoogleAuthUrl()}
+        href={getGoogleAuthUrl(redirect)}
         className="mt-4 block text-center border border-gray-300 rounded-md py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
       >
         Continue with Google
@@ -104,7 +106,7 @@ export default function LoginPage() {
 
       <p className="text-sm text-gray-600 mt-4">
         Don't have an account?{" "}
-        <Link to="/signup" className="text-brand-600 hover:underline">
+        <Link to={`/signup${redirectQuery(redirect)}`} className="text-brand-600 hover:underline">
           Sign up
         </Link>
       </p>

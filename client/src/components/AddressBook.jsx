@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import * as addressApi from "../api/addresses";
 import { getErrorMessage } from "../utils/errorHelpers";
+import { safeRedirectPath } from "../utils/redirect";
 import { AddressForm } from "./AddressForm";
 
 function formatAddress(a) {
@@ -10,9 +12,17 @@ function formatAddress(a) {
 }
 
 export default function AddressBook() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Set when another page (e.g. checkout) sent the user here to add an
+  // address — after saving, they're sent back with the new address selected.
+  const returnTo = searchParams.get("redirect")
+    ? safeRedirectPath(searchParams.get("redirect"))
+    : "";
+
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(Boolean(returnTo));
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -34,7 +44,11 @@ export default function AddressBook() {
   async function handleCreate(form) {
     setSaving(true);
     try {
-      await addressApi.createAddress(form);
+      const { address } = await addressApi.createAddress(form);
+      if (returnTo) {
+        navigate(`${returnTo}${returnTo.includes("?") ? "&" : "?"}address=${address._id}`);
+        return;
+      }
       await load();
       setShowForm(false);
     } finally {

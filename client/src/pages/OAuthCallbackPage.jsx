@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { safeRedirectPath } from "../utils/redirect";
 
 export default function OAuthCallbackPage() {
   const { loginWithToken } = useAuth();
@@ -20,7 +21,7 @@ export default function OAuthCallbackPage() {
       const user = await loginWithToken(token);
       if (ignore) return;
       if (user) {
-        navigate("/");
+        navigate(safeRedirectPath(searchParams.get("redirect")));
       } else {
         setError("Could not complete sign-in. Please try logging in again.");
       }

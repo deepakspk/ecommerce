@@ -40,7 +40,8 @@ export function changePassword(data) {
   return api.post("/auth/change-password", data).then((res) => res.data);
 }
 
-export function getGoogleAuthUrl() {
+export function getGoogleAuthUrl(redirect) {
   const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-  return `${baseURL}/auth/google`;
+  const query = redirect && redirect !== "/" ? `?redirect=${encodeURIComponent(redirect)}` : "";
+  return `${baseURL}/auth/google${query}`;
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import * as addressApi from "../api/addresses";
 import * as ordersApi from "../api/orders";
@@ -71,6 +71,7 @@ function AddressCard({ address, selected, onSelect }) {
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [addresses, setAddresses] = useState([]);
   const [addrLoading, setAddrLoading] = useState(true);
@@ -90,9 +91,13 @@ export default function CheckoutPage() {
   useEffect(() => {
     addressApi.getAddresses().then(data => {
       setAddresses(data.addresses);
-      const def = data.addresses.find(a => a.isDefault) ?? data.addresses[0];
+      // ?address= is set when returning from the address book after adding a
+      // new address — select it over the default one.
+      const justAdded = data.addresses.find(a => a._id === searchParams.get("address"));
+      const def = justAdded ?? data.addresses.find(a => a.isDefault) ?? data.addresses[0];
       if (def) setSelectedAddrId(def._id);
     }).catch(() => {}).finally(() => setAddrLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Real NCM-quoted rate when the address has a confirmed delivery branch; otherwise the
@@ -205,7 +210,7 @@ export default function CheckoutPage() {
           ) : addresses.length === 0 ? (
             <div className="border border-dashed border-gray-300 rounded-xl p-8 text-center">
               <p className="text-gray-500 mb-3 text-sm">No saved addresses.</p>
-              <Link to="/addresses" className="text-brand-600 hover:underline text-sm font-medium">
+              <Link to="/addresses?redirect=/checkout" className="text-brand-600 hover:underline text-sm font-medium">
                 Add a delivery address →
               </Link>
             </div>
@@ -215,7 +220,7 @@ export default function CheckoutPage() {
                 <AddressCard key={a._id} address={a} selected={selectedAddrId === a._id}
                   onSelect={setSelectedAddrId} />
               ))}
-              <Link to="/addresses" className="inline-block text-sm text-brand-600 hover:underline mt-1">
+              <Link to="/addresses?redirect=/checkout" className="inline-block text-sm text-brand-600 hover:underline mt-1">
                 + Add new address
               </Link>
             </div>

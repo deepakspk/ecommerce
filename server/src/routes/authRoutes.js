@@ -103,7 +103,17 @@ function requireGoogleOAuth(req, res, next) {
 router.get(
   "/google",
   requireGoogleOAuth,
-  passport.authenticate("google", { scope: ["profile", "email"], session: false })
+  // Carry the post-login redirect path through Google via the OAuth `state`
+  // param so the callback can send the user back to where they started
+  // (e.g. /checkout). Must be built per-request, hence the wrapper.
+  (req, res, next) => {
+    const redirect = typeof req.query.redirect === "string" ? req.query.redirect : "";
+    passport.authenticate("google", {
+      scope: ["profile", "email"],
+      session: false,
+      state: redirect || undefined,
+    })(req, res, next);
+  }
 );
 
 router.get(
