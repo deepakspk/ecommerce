@@ -102,6 +102,13 @@ export const updateBanner = (id, formData) => api.put(`/admin/banners/${id}`, fo
 export const deleteBanner = (id) => api.delete(`/admin/banners/${id}`).then(r => r.data);
 export const reorderBanners = (items) => api.patch("/admin/banners/reorder", { items }).then(r => r.data);
 
+// Promotions
+export const getPromotions = () => api.get("/admin/promotions").then(r => r.data);
+export const getPromotion = (id) => api.get(`/admin/promotions/${id}`).then(r => r.data);
+export const createPromotion = (formData) => api.post("/admin/promotions", formData).then(r => r.data);
+export const updatePromotion = (id, formData) => api.put(`/admin/promotions/${id}`, formData).then(r => r.data);
+export const deletePromotion = (id) => api.delete(`/admin/promotions/${id}`).then(r => r.data);
+
 // Company Settings
 export const getCompanySettingsAdmin = () => api.get("/admin/company-settings").then(r => r.data);
 export const updateCompanySettings = (formData) =>

@@ -94,6 +94,13 @@ import {
   deleteBanner,
   reorderBanners,
 } from "../controllers/admin/bannerController.js";
+import {
+  listPromotions,
+  getPromotion,
+  createPromotion,
+  updatePromotion,
+  deletePromotion,
+} from "../controllers/admin/promotionController.js";
 
 const router = Router();
 router.use(protect, requireRole("ADMIN"));
@@ -182,6 +189,36 @@ const couponUpdateBodyValidators = [
 ];
 
 const bannerBodyValidators = [body("link").optional().trim()];
+
+const promotionDateRangeValidator = body().custom((value) => {
+  if (value.visibleFrom && value.visibleUntil && new Date(value.visibleUntil) < new Date(value.visibleFrom)) {
+    throw new Error("visibleUntil must be on or after visibleFrom");
+  }
+  return true;
+});
+
+const promotionBodyValidators = [
+  body("title").trim().notEmpty().withMessage("title is required"),
+  body("visibleFrom").isISO8601().withMessage("visibleFrom must be a valid date"),
+  body("visibleUntil").isISO8601().withMessage("visibleUntil must be a valid date"),
+  body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
+  promotionDateRangeValidator,
+];
+
+const promotionUpdateBodyValidators = [
+  body("title").optional().trim().notEmpty().withMessage("title cannot be empty"),
+  body("visibleFrom").optional().isISO8601().withMessage("visibleFrom must be a valid date"),
+  body("visibleUntil").optional().isISO8601().withMessage("visibleUntil must be a valid date"),
+  body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
+  promotionDateRangeValidator,
+];
+
+const promotionUpload = upload.fields([
+  { name: "webBanner", maxCount: 1 },
+  { name: "mobileBanner", maxCount: 1 },
+  { name: "webPopup", maxCount: 1 },
+  { name: "mobilePopup", maxCount: 1 },
+]);
 
 const bannerReorderValidators = [
   body("items").isArray({ min: 1 }).withMessage("items must be a non-empty array"),
@@ -592,6 +629,19 @@ router.put(
   updateBanner
 );
 router.delete("/banners/:id", [mongoIdParam("id")], validate, deleteBanner);
+
+// Promotions
+router.get("/promotions", listPromotions);
+router.post("/promotions", promotionUpload, promotionBodyValidators, validate, createPromotion);
+router.get("/promotions/:id", [mongoIdParam("id")], validate, getPromotion);
+router.put(
+  "/promotions/:id",
+  promotionUpload,
+  [mongoIdParam("id"), ...promotionUpdateBodyValidators],
+  validate,
+  updatePromotion
+);
+router.delete("/promotions/:id", [mongoIdParam("id")], validate, deletePromotion);
 
 // Logistics
 router.get("/logistics/providers", getProviders);

@@ -11,6 +11,7 @@ import ProductCard from "../components/ProductCard";
 import StarRating from "../components/StarRating";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
+import HomePromotions from "../components/HomePromotions";
 import CategoryRail from "../components/CategoryRail";
 import { INPUT_CLASS, PAGE_CLASS } from "../utils/ui";
 
@@ -457,6 +458,9 @@ export default function ProductsPage() {
           <Pagination page={page} pages={pages} onChange={goToPage} />
         </div>
       </div>
+
+      {/* Promotion ads — homepage only, between the product grid and Recently Viewed */}
+      {isHome && <HomePromotions />}
 
       <RecentlyViewedRail />
     </div>

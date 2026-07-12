@@ -19,6 +19,8 @@ import UsersPage from "./UsersPage";
 import AuditLogPage from "./AuditLogPage";
 import ReportsPage from "./ReportsPage";
 import BannersPage from "./BannersPage";
+import PromotionsPage from "./PromotionsPage";
+import PromotionFormPage from "./PromotionFormPage";
 import SettingsPage from "./SettingsPage";
 import CompanySettingsPage from "./CompanySettingsPage";
 import ThemeSettingsPage from "./ThemeSettingsPage";
@@ -48,6 +50,9 @@ export default function AdminSection() {
           <Route path="audit-log" element={<AuditLogPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="banners" element={<BannersPage />} />
+          <Route path="promotions" element={<PromotionsPage />} />
+          <Route path="promotions/new" element={<PromotionFormPage />} />
+          <Route path="promotions/:id/edit" element={<PromotionFormPage />} />
           <Route path="settings" element={<AdminRoute superAdminOnly><SettingsPage /></AdminRoute>} />
           <Route path="company-settings" element={<AdminRoute superAdminOnly><CompanySettingsPage /></AdminRoute>} />
           <Route path="theme-settings" element={<AdminRoute superAdminOnly><ThemeSettingsPage /></AdminRoute>} />
