@@ -9,7 +9,8 @@ import { placeOrder } from "../services/orderService.js";
 import { SHIPMENT_TO_ORDER_STATUS } from "../services/trackingService.js";
 import { TRACKING_ID_REGEX } from "../utils/trackingId.js";
 import { streamInvoicePdf } from "../utils/invoice.js";
-import { getDiscountedPrice } from "../utils/pricing.js";
+import { getEffectivePricing } from "../utils/pricing.js";
+import { getCampaignPriceMap } from "../services/campaignService.js";
 
 export async function createOrder(req, res) {
   const { addressId, paymentMethod, couponCode } = req.body;
@@ -41,10 +42,20 @@ export async function createOrder(req, res) {
     }
   }
 
+  // Campaign special prices are re-resolved here (not trusted from the client)
+  // so the shopper is charged exactly what the running campaign advertises.
+  const campaignPrices = await getCampaignPriceMap(
+    cart.items.map((i) => i.variantId.productId._id)
+  );
+
   const orderItems = cart.items.map((cartItem) => {
     const v = cartItem.variantId;
     const p = v.productId;
-    const { finalPrice } = getDiscountedPrice(v.price ?? p.basePrice, p);
+    const { finalPrice } = getEffectivePricing(
+      v.price ?? p.basePrice,
+      p,
+      campaignPrices.get(String(p._id)) ?? null
+    );
     return {
       variantId: v._id,
       productName: p.name,

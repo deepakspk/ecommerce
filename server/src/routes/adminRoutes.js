@@ -101,6 +101,14 @@ import {
   updatePromotion,
   deletePromotion,
 } from "../controllers/admin/promotionController.js";
+import {
+  listCampaigns,
+  getCampaign,
+  createCampaign,
+  updateCampaign,
+  deleteCampaign,
+  reorderCampaigns,
+} from "../controllers/admin/campaignController.js";
 
 const router = Router();
 router.use(protect, requireRole("ADMIN"));
@@ -218,6 +226,48 @@ const promotionUpload = upload.fields([
   { name: "mobileBanner", maxCount: 1 },
   { name: "webPopup", maxCount: 1 },
   { name: "mobilePopup", maxCount: 1 },
+]);
+
+const campaignDateRangeValidator = body().custom((value) => {
+  if (value.startDate && value.endDate && new Date(value.endDate) <= new Date(value.startDate)) {
+    throw new Error("endDate must be later than startDate");
+  }
+  return true;
+});
+
+const campaignThemeColorValidator = body("themeColor")
+  .optional({ values: "falsy" })
+  .matches(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)
+  .withMessage("themeColor must be a valid hex color");
+
+const campaignBodyValidators = [
+  body("name").trim().notEmpty().withMessage("name is required"),
+  body("startDate").isISO8601().withMessage("startDate must be a valid date"),
+  body("endDate").isISO8601().withMessage("endDate must be a valid date"),
+  body("slug").optional().trim(),
+  body("buttonLabel").optional().trim().isLength({ max: 50 }).withMessage("buttonLabel must be 50 characters or fewer"),
+  campaignThemeColorValidator,
+  body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
+  body("isCancelled").optional().isBoolean().withMessage("isCancelled must be a boolean"),
+  campaignDateRangeValidator,
+];
+
+const campaignUpdateBodyValidators = [
+  body("name").optional().trim().notEmpty().withMessage("name cannot be empty"),
+  body("startDate").optional().isISO8601().withMessage("startDate must be a valid date"),
+  body("endDate").optional().isISO8601().withMessage("endDate must be a valid date"),
+  body("slug").optional().trim(),
+  body("buttonLabel").optional().trim().isLength({ max: 50 }).withMessage("buttonLabel must be 50 characters or fewer"),
+  campaignThemeColorValidator,
+  body("isActive").optional().isBoolean().withMessage("isActive must be a boolean"),
+  body("isCancelled").optional().isBoolean().withMessage("isCancelled must be a boolean"),
+  campaignDateRangeValidator,
+];
+
+const campaignUpload = upload.fields([
+  { name: "desktopBanner", maxCount: 1 },
+  { name: "mobileBanner", maxCount: 1 },
+  { name: "actionImage", maxCount: 1 },
 ]);
 
 const bannerReorderValidators = [
@@ -642,6 +692,20 @@ router.put(
   updatePromotion
 );
 router.delete("/promotions/:id", [mongoIdParam("id")], validate, deletePromotion);
+
+// Campaigns
+router.get("/campaigns", listCampaigns);
+router.post("/campaigns", campaignUpload, campaignBodyValidators, validate, createCampaign);
+router.patch("/campaigns/reorder", reorderBodyValidators, validate, reorderCampaigns);
+router.get("/campaigns/:id", [mongoIdParam("id")], validate, getCampaign);
+router.put(
+  "/campaigns/:id",
+  campaignUpload,
+  [mongoIdParam("id"), ...campaignUpdateBodyValidators],
+  validate,
+  updateCampaign
+);
+router.delete("/campaigns/:id", [mongoIdParam("id")], validate, deleteCampaign);
 
 // Logistics
 router.get("/logistics/providers", getProviders);

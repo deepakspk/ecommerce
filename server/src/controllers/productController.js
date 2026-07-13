@@ -4,41 +4,7 @@ import Product from "../models/Product.js";
 import ProductVariant from "../models/ProductVariant.js";
 import Review from "../models/Review.js";
 import { getDescendantIds } from "../services/categoryService.js";
-import { getDiscountedPrice } from "../utils/pricing.js";
-
-function attachPricing(products) {
-  return products.map((p) => ({ ...p, ...getDiscountedPrice(p.basePrice, p) }));
-}
-
-async function attachRatings(products) {
-  const ids = products.map((p) => p._id);
-  const agg = await Review.aggregate([
-    { $match: { productId: { $in: ids } } },
-    { $group: { _id: "$productId", avg: { $avg: "$rating" }, count: { $sum: 1 } } },
-  ]);
-  const byId = new Map(agg.map((r) => [String(r._id), r]));
-
-  return products.map((p) => {
-    const stats = byId.get(String(p._id));
-    return {
-      ...p.toObject(),
-      averageRating: stats ? Math.round(stats.avg * 10) / 10 : 0,
-      reviewCount: stats ? stats.count : 0,
-    };
-  });
-}
-
-// Lets the storefront know whether "Add to Cart" can safely auto-pick a variant
-// (0 or 1 total variants) or must send the shopper to the product page to choose.
-async function attachVariantCounts(products) {
-  const ids = products.map((p) => p._id);
-  const agg = await ProductVariant.aggregate([
-    { $match: { productId: { $in: ids } } },
-    { $group: { _id: "$productId", count: { $sum: 1 } } },
-  ]);
-  const byId = new Map(agg.map((r) => [String(r._id), r.count]));
-  return products.map((p) => ({ ...p, variantCount: byId.get(String(p._id)) || 0 }));
-}
+import { attachPricing, attachRatings, presentProducts } from "../services/productPresenter.js";
 
 const SORT_OPTIONS = {
   newest: { createdAt: -1 },
@@ -130,9 +96,8 @@ export async function listProducts(req, res) {
     Product.countDocuments(filter),
   ]);
 
-  const withRatings = await attachRatings(products);
   res.json({
-    products: attachPricing(await attachVariantCounts(withRatings)),
+    products: await presentProducts(products),
     total,
     page: pageNum,
     pages: Math.ceil(total / limitNum),
@@ -147,7 +112,7 @@ export async function getProduct(req, res) {
   if (!product) return res.status(404).json({ message: "Product not found" });
 
   const variants = await ProductVariant.find({ productId: product._id }).sort({ size: 1, color: 1 });
-  const [withRating] = attachPricing(await attachRatings([product]));
+  const [withRating] = await attachPricing(await attachRatings([product]));
 
   async function inStockOnly(candidates) {
     if (candidates.length === 0) return [];
@@ -185,7 +150,7 @@ export async function getProduct(req, res) {
     related = [...related, ...fallbackInStock.slice(0, RELATED_LIMIT - related.length)];
   }
 
-  const relatedProducts = attachPricing(await attachRatings(related.slice(0, RELATED_LIMIT)));
+  const relatedProducts = await presentProducts(related.slice(0, RELATED_LIMIT));
 
   res.json({ product: withRating, variants, relatedProducts });
 }

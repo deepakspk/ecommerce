@@ -7,7 +7,7 @@ import * as productsApi from "../api/products";
 import { useCart } from "../hooks/useCart";
 import { getErrorMessage } from "../utils/errorHelpers";
 import { BUTTON_PRIMARY_FULL } from "../utils/ui";
-import { getDiscountedPrice } from "../utils/pricing";
+import { getEffectivePricing } from "../utils/pricing";
 
 const formatPrice = (price) => `Rs. ${Number(price).toLocaleString()}`;
 
@@ -48,7 +48,9 @@ export default function ProductCard({ product }) {
     }
   }
 
-  const { finalPrice, discountPercent, hasDiscount } = getDiscountedPrice(product.basePrice, product);
+  // campaignPrice rides along on products served by the API while a campaign
+  // is running, so campaign deals show up wherever the product appears.
+  const { finalPrice, discountPercent, hasDiscount } = getEffectivePricing(product.basePrice, product);
 
   return (
     <Link

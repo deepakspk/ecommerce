@@ -5,7 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { getErrorMessage } from "../utils/errorHelpers";
 import ItemThumb from "../components/ItemThumb";
 import { CARD_CLASS, H1_CLASS } from "../utils/ui";
-import { getDiscountedPrice } from "../utils/pricing";
+import { getEffectivePricing } from "../utils/pricing";
 import { variantLabel } from "../utils/variantLabel";
 
 const fmt = (n) => `Rs. ${Number(n).toLocaleString()}`;
@@ -101,7 +101,7 @@ export default function CartPage() {
 
 function CartItem({ item, onQtyChange, onRemove }) {
   const rawPrice = item.variantPrice ?? item.basePrice;
-  const { finalPrice: unitPrice, hasDiscount } = getDiscountedPrice(rawPrice, item);
+  const { finalPrice: unitPrice, hasDiscount } = getEffectivePricing(rawPrice, item);
   const lineTotal = unitPrice * item.quantity;
   const label = variantLabel(item);
 

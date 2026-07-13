@@ -13,3 +13,19 @@ export function getDiscountedPrice(price, { discountType, discountValue } = {}) 
 
   return { finalPrice, discountPercent, hasDiscount: discount > 0 };
 }
+
+// Campaign-aware pricing: a running campaign's special price wins only when it
+// beats the regular (discounted) price, so a shopper never pays more because a
+// product joined a campaign. Mirrors server/src/utils/pricing.js.
+export function getEffectivePricing(price, product = {}, campaignPrice = product.campaignPrice) {
+  const pricing = getDiscountedPrice(price, product);
+  if (campaignPrice != null && campaignPrice < pricing.finalPrice) {
+    return {
+      finalPrice: campaignPrice,
+      discountPercent: price > 0 ? Math.round(((price - campaignPrice) / price) * 100) : 0,
+      hasDiscount: campaignPrice < price,
+      isCampaignPrice: true,
+    };
+  }
+  return { ...pricing, isCampaignPrice: false };
+}

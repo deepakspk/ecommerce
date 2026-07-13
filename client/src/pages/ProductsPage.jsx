@@ -12,6 +12,7 @@ import StarRating from "../components/StarRating";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
 import HomePromotions from "../components/HomePromotions";
+import HomeCampaigns from "../components/HomeCampaigns";
 import CategoryRail from "../components/CategoryRail";
 import { INPUT_CLASS, PAGE_CLASS } from "../utils/ui";
 
@@ -234,6 +235,9 @@ export default function ProductsPage() {
             {/* <h2 className={`${SECTION_HEADING_CLASS} mb-4`}>Shop by Category</h2> */}
             <CategoryRail categories={categories} loading={metaLoading} />
           </div>
+
+          {/* Running campaigns (Flash Sale etc.) with countdown + product rails */}
+          <HomeCampaigns />
 
           {/* <FeatureRails /> */}
         </div>

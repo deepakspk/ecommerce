@@ -1,7 +1,8 @@
 import Cart from "../models/Cart.js";
 import ProductVariant from "../models/ProductVariant.js";
 import { validateCoupon } from "../services/couponService.js";
-import { getDiscountedPrice } from "../utils/pricing.js";
+import { getEffectivePricing } from "../utils/pricing.js";
+import { getCampaignPriceMap } from "../services/campaignService.js";
 
 async function getOrCreate(userId) {
   let cart = await Cart.findOne({ userId });
@@ -20,7 +21,17 @@ export async function getCart(req, res) {
   const cart = await Cart.findOne({ userId: req.user._id });
   if (!cart) return res.json({ items: [] });
   await populateCart(cart);
-  res.json({ items: cart.items });
+
+  // Attach the running-campaign special price per item so the cart page shows
+  // the same unit price checkout will actually charge.
+  const campaignPrices = await getCampaignPriceMap(
+    cart.items.map((i) => i.variantId?.productId?._id).filter(Boolean)
+  );
+  const items = cart.items.map((item) => ({
+    ...item.toObject(),
+    campaignPrice: campaignPrices.get(String(item.variantId?.productId?._id)) ?? null,
+  }));
+  res.json({ items });
 }
 
 export async function addToCart(req, res) {
@@ -103,11 +114,17 @@ export async function applyCoupon(req, res) {
   }
   await populateCart(cart);
 
+  const campaignPrices = await getCampaignPriceMap(cart.items.map((i) => i.variantId.productId._id));
+
   let subtotal = 0;
   for (const item of cart.items) {
     const v = item.variantId;
     const p = v.productId;
-    const { finalPrice } = getDiscountedPrice(v.price ?? p.basePrice, p);
+    const { finalPrice } = getEffectivePricing(
+      v.price ?? p.basePrice,
+      p,
+      campaignPrices.get(String(p._id)) ?? null
+    );
     subtotal += finalPrice * item.quantity;
   }
 

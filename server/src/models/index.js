@@ -16,6 +16,7 @@ export { default as Shipment } from "./Shipment.js";
 export { default as AuditLog } from "./AuditLog.js";
 export { default as Banner } from "./Banner.js";
 export { default as Promotion } from "./Promotion.js";
+export { default as Campaign } from "./Campaign.js";
 export { default as FeatureType } from "./FeatureType.js";
 export { default as SystemSetting } from "./SystemSetting.js";
 export { default as CompanySettings } from "./CompanySettings.js";

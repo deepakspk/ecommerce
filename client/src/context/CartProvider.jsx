@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import CartContext from "./CartContext";
 import { useAuth } from "../hooks/useAuth";
 import * as cartApi from "../api/cart";
-import { getDiscountedPrice } from "../utils/pricing";
+import { getEffectivePricing } from "../utils/pricing";
 
 const GUEST_KEY = "ecommerce_guest_cart";
 
@@ -30,6 +30,8 @@ function normalizeServerItem(item) {
     basePrice: p.basePrice,
     discountType: p.discountType ?? null,
     discountValue: p.discountValue ?? 0,
+    // Server-resolved running-campaign special price (null when none applies)
+    campaignPrice: item.campaignPrice ?? null,
     imageUrl: v.imageUrl || p.images?.[0]?.url || null,
   };
 }
@@ -128,6 +130,7 @@ export default function CartProvider({ children }) {
           basePrice: product.basePrice,
           discountType: product.discountType ?? null,
           discountValue: product.discountValue ?? 0,
+          campaignPrice: product.campaignPrice ?? null,
           imageUrl: variant.imageUrl || product.images?.[0]?.url || null,
         });
       }
@@ -173,7 +176,7 @@ export default function CartProvider({ children }) {
 
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
   const subtotal = items.reduce((s, i) => {
-    const { finalPrice } = getDiscountedPrice(i.variantPrice ?? i.basePrice, i);
+    const { finalPrice } = getEffectivePricing(i.variantPrice ?? i.basePrice, i);
     return s + i.quantity * finalPrice;
   }, 0);
 

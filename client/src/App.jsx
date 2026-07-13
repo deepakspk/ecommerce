@@ -18,6 +18,7 @@ import OtpLoginPage from "./pages/OtpLoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProductsPage from "./pages/ProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import CampaignPage from "./pages/CampaignPage";
 import CartPage from "./pages/CartPage";
 import WishlistPage from "./pages/WishlistPage";
 import AddressesPage from "./pages/AddressesPage";
@@ -68,6 +69,7 @@ export default function App() {
                     <Route path="/otp-login" element={<OtpLoginPage />} />
                     <Route path="/products" element={<ProductsPage />} />
                     <Route path="/products/:slug" element={<ProductDetailPage />} />
+                    <Route path="/campaigns/:slug" element={<CampaignPage />} />
                     <Route path="/cart" element={<CartPage />} />
                     <Route path="/wishlist" element={<WishlistPage />} />
                     <Route
