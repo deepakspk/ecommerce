@@ -39,11 +39,33 @@ async function uniqueSlug(baseSlug, excludeId) {
   return slug;
 }
 
-// Parses the products payload (JSON string from FormData) and enforces the
-// special-price rule against each product's CURRENT selling price (base price
+// null means "sell at regular price"; otherwise must be a positive number
+function parseSpecialPrice(raw) {
+  if (raw === null || raw === undefined || raw === "") return null;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value <= 0) {
+    throw httpError(400, "Campaign special price must be a positive number");
+  }
+  return value;
+}
+
+// The special price must beat the product's CURRENT selling price (base price
 // minus its own discount) — a campaign price that isn't actually cheaper is
-// rejected with a message naming the offending product. Duplicates collapse to
-// their first occurrence so the same product can't appear twice in a campaign.
+// rejected with a message naming the offending product.
+function assertSpecialPriceBeatsSelling(product, specialPrice) {
+  if (specialPrice === null) return;
+  const { finalPrice } = getDiscountedPrice(product.basePrice, product);
+  if (specialPrice >= finalPrice) {
+    throw httpError(
+      400,
+      `Special price for "${product.name}" must be lower than its current selling price (Rs. ${finalPrice})`
+    );
+  }
+}
+
+// Parses the products payload (JSON string from FormData) used by bulk
+// create/update. Duplicates collapse to their first occurrence so the same
+// product can't appear twice in a campaign.
 async function resolveCampaignProducts(raw) {
   if (raw === undefined) return undefined;
   let list;
@@ -61,15 +83,7 @@ async function resolveCampaignProducts(raw) {
     if (!/^[0-9a-f]{24}$/i.test(id)) throw httpError(400, "Each campaign product needs a valid product id");
     if (seen.has(id)) continue;
     seen.add(id);
-    let specialPrice = entry.specialPrice;
-    if (specialPrice === "" || specialPrice === undefined) specialPrice = null;
-    if (specialPrice !== null) {
-      specialPrice = Number(specialPrice);
-      if (!Number.isFinite(specialPrice) || specialPrice <= 0) {
-        throw httpError(400, "Campaign special price must be a positive number");
-      }
-    }
-    items.push({ product: id, specialPrice });
+    items.push({ product: id, specialPrice: parseSpecialPrice(entry.specialPrice) });
   }
 
   const products = await Product.find({ _id: { $in: items.map((i) => i.product) } }).select(
@@ -80,15 +94,7 @@ async function resolveCampaignProducts(raw) {
   for (const item of items) {
     const product = byId.get(item.product);
     if (!product) throw httpError(400, "One of the selected products no longer exists");
-    if (item.specialPrice !== null) {
-      const { finalPrice } = getDiscountedPrice(product.basePrice, product);
-      if (item.specialPrice >= finalPrice) {
-        throw httpError(
-          400,
-          `Special price for "${product.name}" must be lower than its current selling price (Rs. ${finalPrice})`
-        );
-      }
-    }
+    assertSpecialPriceBeatsSelling(product, item.specialPrice);
   }
   return items;
 }
@@ -199,4 +205,106 @@ export async function reorderCampaigns(req, res) {
   );
   const campaigns = await Campaign.find().sort({ sortOrder: 1, createdAt: -1 });
   res.json({ campaigns });
+}
+
+// ── Per-product management (edit form's right-hand panel) ───────────────────
+// Campaign product lists are small (dozens at most), so pagination/search
+// happen in memory after one products query — this keeps the campaign's array
+// order (= storefront display order) intact for free.
+
+const CAMPAIGN_PRODUCTS_PAGE_SIZE = 10;
+
+export async function listCampaignProducts(req, res) {
+  const campaign = await Campaign.findById(req.params.id);
+  if (!campaign) return res.status(404).json({ message: "Campaign not found" });
+
+  const search = (req.query.search || "").trim();
+  const filter = { _id: { $in: campaign.products.map((e) => e.product) } };
+  if (search) {
+    filter.name = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+  }
+  const docs = await Product.find(filter).select(
+    "name slug basePrice discountType discountValue images isActive"
+  );
+  const byId = new Map(docs.map((p) => [String(p._id), p]));
+
+  // Preserve campaign order; deleted or non-matching products drop out
+  const entries = campaign.products.filter((e) => byId.has(String(e.product)));
+  const total = entries.length;
+  const pageNum = Math.max(1, Number(req.query.page) || 1);
+  const pageEntries = entries.slice(
+    (pageNum - 1) * CAMPAIGN_PRODUCTS_PAGE_SIZE,
+    pageNum * CAMPAIGN_PRODUCTS_PAGE_SIZE
+  );
+
+  res.json({
+    products: pageEntries.map((e) => ({
+      product: byId.get(String(e.product)),
+      specialPrice: e.specialPrice,
+    })),
+    total,
+    totalInCampaign: campaign.products.length,
+    page: pageNum,
+    pages: Math.ceil(total / CAMPAIGN_PRODUCTS_PAGE_SIZE),
+  });
+}
+
+export async function addCampaignProduct(req, res) {
+  const campaign = await Campaign.findById(req.params.id);
+  if (!campaign) return res.status(404).json({ message: "Campaign not found" });
+
+  const productId = req.body.product;
+  if (campaign.products.some((e) => String(e.product) === productId)) {
+    return res.status(409).json({ message: "This product is already in the campaign" });
+  }
+  const product = await Product.findById(productId).select("name basePrice discountType discountValue");
+  if (!product) return res.status(404).json({ message: "Product not found" });
+
+  const specialPrice = parseSpecialPrice(req.body.specialPrice);
+  assertSpecialPriceBeatsSelling(product, specialPrice);
+
+  campaign.products.push({ product: productId, specialPrice });
+  await campaign.save();
+  res.status(201).json({ message: "Product added", totalInCampaign: campaign.products.length });
+}
+
+export async function updateCampaignProduct(req, res) {
+  const campaign = await Campaign.findById(req.params.id);
+  if (!campaign) return res.status(404).json({ message: "Campaign not found" });
+
+  const index = campaign.products.findIndex((e) => String(e.product) === req.params.productId);
+  if (index === -1) return res.status(404).json({ message: "Product is not in this campaign" });
+
+  if (req.body.specialPrice !== undefined) {
+    const product = await Product.findById(req.params.productId).select(
+      "name basePrice discountType discountValue"
+    );
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    const specialPrice = parseSpecialPrice(req.body.specialPrice);
+    assertSpecialPriceBeatsSelling(product, specialPrice);
+    campaign.products[index].specialPrice = specialPrice;
+  }
+
+  // First 10 campaign products show on the home screen, so "move to top" is
+  // the ordering control that still works with a paginated list.
+  if (req.body.moveToTop === true || req.body.moveToTop === "true") {
+    const [entry] = campaign.products.splice(index, 1);
+    campaign.products.unshift(entry);
+  }
+
+  await campaign.save();
+  res.json({ message: "Product updated" });
+}
+
+export async function removeCampaignProduct(req, res) {
+  const campaign = await Campaign.findById(req.params.id);
+  if (!campaign) return res.status(404).json({ message: "Campaign not found" });
+
+  const before = campaign.products.length;
+  campaign.products = campaign.products.filter((e) => String(e.product) !== req.params.productId);
+  if (campaign.products.length === before) {
+    return res.status(404).json({ message: "Product is not in this campaign" });
+  }
+  await campaign.save();
+  res.json({ message: "Product removed", totalInCampaign: campaign.products.length });
 }

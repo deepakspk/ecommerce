@@ -116,6 +116,14 @@ export const createCampaign = (formData) => api.post("/admin/campaigns", formDat
 export const updateCampaign = (id, formData) => api.put(`/admin/campaigns/${id}`, formData).then(r => r.data);
 export const deleteCampaign = (id) => api.delete(`/admin/campaigns/${id}`).then(r => r.data);
 export const reorderCampaigns = (items) => api.patch("/admin/campaigns/reorder", { items }).then(r => r.data);
+export const getCampaignProducts = (id, params) =>
+  api.get(`/admin/campaigns/${id}/products`, { params }).then(r => r.data);
+export const addCampaignProduct = (id, data) =>
+  api.post(`/admin/campaigns/${id}/products`, data).then(r => r.data);
+export const updateCampaignProduct = (id, productId, data) =>
+  api.put(`/admin/campaigns/${id}/products/${productId}`, data).then(r => r.data);
+export const removeCampaignProduct = (id, productId) =>
+  api.delete(`/admin/campaigns/${id}/products/${productId}`).then(r => r.data);
 
 // Company Settings
 export const getCompanySettingsAdmin = () => api.get("/admin/company-settings").then(r => r.data);

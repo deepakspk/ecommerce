@@ -108,6 +108,10 @@ import {
   updateCampaign,
   deleteCampaign,
   reorderCampaigns,
+  listCampaignProducts,
+  addCampaignProduct,
+  updateCampaignProduct,
+  removeCampaignProduct,
 } from "../controllers/admin/campaignController.js";
 
 const router = Router();
@@ -708,6 +712,35 @@ router.put(
   updateCampaign
 );
 router.delete("/campaigns/:id", [mongoIdParam("id")], validate, deleteCampaign);
+
+// Campaign products (paginated panel on the campaign edit page)
+router.get("/campaigns/:id/products", [mongoIdParam("id")], validate, listCampaignProducts);
+router.post(
+  "/campaigns/:id/products",
+  [
+    mongoIdParam("id"),
+    body("product").isMongoId().withMessage("product must be a valid id"),
+    body("specialPrice").optional({ values: "falsy" }).isFloat({ min: 0 }).withMessage("specialPrice must be a non-negative number"),
+  ],
+  validate,
+  addCampaignProduct
+);
+router.put(
+  "/campaigns/:id/products/:productId",
+  [
+    mongoIdParam("id"),
+    mongoIdParam("productId"),
+    body("moveToTop").optional().isBoolean().withMessage("moveToTop must be a boolean"),
+  ],
+  validate,
+  updateCampaignProduct
+);
+router.delete(
+  "/campaigns/:id/products/:productId",
+  [mongoIdParam("id"), mongoIdParam("productId")],
+  validate,
+  removeCampaignProduct
+);
 
 // Logistics
 router.get("/logistics/providers", getProviders);
