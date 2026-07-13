@@ -128,7 +128,9 @@ export default function ProductsPage() {
     async function loadProducts() {
       setLoading(true);
       try {
-        const params = { page, sort };
+        // Home keeps the grid short (campaign sections live above it); the
+        // dedicated /products browse page shows the server default of 20.
+        const params = { page, sort, limit: isHome ? 10 : 20 };
         if (selectedCategory) params.category = selectedCategory;
         if (search.trim()) params.search = search.trim();
         if (selectedFeatureType) params.featureType = selectedFeatureType;
@@ -150,7 +152,7 @@ export default function ProductsPage() {
     }
     loadProducts();
     return () => { ignore = true; };
-  }, [selectedCategory, search, selectedFeatureType, selectedMinRating, minPrice, maxPrice, sort, page]);
+  }, [isHome, selectedCategory, search, selectedFeatureType, selectedMinRating, minPrice, maxPrice, sort, page]);
 
   function applyPriceRange(e) {
     e?.preventDefault();
