@@ -70,6 +70,7 @@ export default function CampaignFormPage() {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [startDate, setStartDate] = useState("");
@@ -103,6 +104,7 @@ export default function CampaignFormPage() {
     adminApi.getCampaign(id)
       .then(({ campaign }) => {
         setName(campaign.name);
+        setDescription(campaign.description || "");
         setSlug(campaign.slug);
         setSlugTouched(true);
         setStartDate(toDateTimeInput(campaign.startDate));
@@ -220,6 +222,7 @@ export default function CampaignFormPage() {
     try {
       const fd = new FormData();
       fd.append("name", name.trim());
+      fd.append("description", description.trim());
       fd.append("slug", slug.trim() || slugify(name));
       fd.append("startDate", new Date(startDate).toISOString());
       fd.append("endDate", new Date(endDate).toISOString());
@@ -326,6 +329,18 @@ export default function CampaignFormPage() {
                 className={`${INPUT_CLASS} !rounded-l-none`}
               />
             </div>
+          </div>
+          <div className="sm:col-span-2">
+            <label className={LABEL_CLASS}>Description</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              maxLength={200}
+              placeholder="Hurry up! Limited time offers"
+              className={INPUT_CLASS}
+            />
+            <p className="text-xs text-gray-400 mt-1">Shown under the campaign name on the storefront.</p>
           </div>
           <div>
             <label className={LABEL_CLASS}>Start Date & Time *</label>

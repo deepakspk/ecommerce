@@ -16,6 +16,9 @@ const campaignSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    // Short tagline shown under the campaign name on the storefront,
+    // e.g. "Hurry up! Limited time offers"
+    description: { type: String, trim: true, maxlength: 200, default: "" },
     startDate: { type: Date, required: true },
     endDate: {
       type: Date,

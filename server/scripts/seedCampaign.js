@@ -34,10 +34,12 @@ async function seed() {
   const campaign = await Campaign.create({
     name: NAME,
     slug: SLUG,
+    description: "Hurry up! Limited time offers",
     startDate,
     endDate,
     desktopBannerUrl: UNS("1607083206869-4c7672e72a8a", 1200, 400),
     mobileBannerUrl: UNS("1607083206869-4c7672e72a8a", 600, 800),
+    actionImageUrl: UNS("1549465220-1a8b9238cd48", 200, 200),
     buttonLabel: "View All",
     themeColor: "#dc2626",
     isActive: true,

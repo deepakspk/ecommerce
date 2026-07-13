@@ -242,6 +242,7 @@ const campaignThemeColorValidator = body("themeColor")
 
 const campaignBodyValidators = [
   body("name").trim().notEmpty().withMessage("name is required"),
+  body("description").optional().trim().isLength({ max: 200 }).withMessage("description must be 200 characters or fewer"),
   body("startDate").isISO8601().withMessage("startDate must be a valid date"),
   body("endDate").isISO8601().withMessage("endDate must be a valid date"),
   body("slug").optional().trim(),
@@ -254,6 +255,7 @@ const campaignBodyValidators = [
 
 const campaignUpdateBodyValidators = [
   body("name").optional().trim().notEmpty().withMessage("name cannot be empty"),
+  body("description").optional().trim().isLength({ max: 200 }).withMessage("description must be 200 characters or fewer"),
   body("startDate").optional().isISO8601().withMessage("startDate must be a valid date"),
   body("endDate").optional().isISO8601().withMessage("endDate must be a valid date"),
   body("slug").optional().trim(),

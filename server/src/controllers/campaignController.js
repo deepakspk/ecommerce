@@ -25,6 +25,7 @@ function publicCampaignFields(campaign) {
     _id: campaign._id,
     name: campaign.name,
     slug: campaign.slug,
+    description: campaign.description,
     startDate: campaign.startDate,
     endDate: campaign.endDate,
     status: deriveCampaignStatus(campaign),

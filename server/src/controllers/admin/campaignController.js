@@ -132,6 +132,7 @@ export async function createCampaign(req, res, next) {
     const campaign = await Campaign.create({
       name: req.body.name,
       slug,
+      description: req.body.description?.trim() || "",
       startDate: req.body.startDate,
       endDate: req.body.endDate,
       buttonLabel: req.body.buttonLabel?.trim() || "Shop Now",
@@ -155,6 +156,7 @@ export async function updateCampaign(req, res, next) {
 
     const data = {};
     if (req.body.name !== undefined) data.name = req.body.name;
+    if (req.body.description !== undefined) data.description = req.body.description.trim();
     if (req.body.startDate !== undefined) data.startDate = req.body.startDate;
     if (req.body.endDate !== undefined) data.endDate = req.body.endDate;
     if (req.body.buttonLabel !== undefined) data.buttonLabel = req.body.buttonLabel.trim() || "Shop Now";

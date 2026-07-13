@@ -84,7 +84,7 @@ export default function CampaignPage() {
 
   return (
     <div className={PAGE_CLASS}>
-      <Seo title={campaign.name} description={`${campaign.name} — limited time deals`} />
+      <Seo title={campaign.name} description={campaign.description || `${campaign.name} — limited time deals`} />
 
       {/* Campaign banner — desktop (1200×400) on sm+, mobile (600×800) below */}
       <div className="rounded-2xl overflow-hidden bg-gray-100 mb-6">
@@ -107,7 +107,8 @@ export default function CampaignPage() {
       >
         <div className="min-w-0">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{campaign.name}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          {campaign.description && <p className="text-sm text-gray-600 mt-0.5">{campaign.description}</p>}
+          <p className="text-xs text-gray-400 mt-0.5">
             {formatDateTime(campaign.startDate)} – {formatDateTime(campaign.endDate)}
           </p>
         </div>
@@ -123,7 +124,6 @@ export default function CampaignPage() {
               </p>
               <CountdownTimer
                 target={isUpcoming ? campaign.startDate : campaign.endDate}
-                accentColor={color}
                 onExpire={() => setReloadKey((k) => k + 1)}
               />
             </div>

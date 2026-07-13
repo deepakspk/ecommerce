@@ -440,10 +440,10 @@ export default function ProductDetailPage() {
           <div className="flex items-center gap-3 flex-wrap">
             {hasDiscount ? (
               <>
-                <span className="text-3xl font-bold text-red-600">{formatPrice(finalPrice)}</span>
+                <span className="text-3xl font-bold text-brand-600">{formatPrice(finalPrice)}</span>
                 <span className="text-lg text-gray-400 line-through">{formatPrice(displayPrice)}</span>
                 {discountPercent && (
-                  <span className="bg-red-100 text-red-600 text-sm font-bold px-2.5 py-0.5 rounded-full">
+                  <span className="bg-brand-100 text-brand-700 text-sm font-bold px-2.5 py-0.5 rounded-full">
                     {Math.round(discountPercent)}% OFF
                   </span>
                 )}

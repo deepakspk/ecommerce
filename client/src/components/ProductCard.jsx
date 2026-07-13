@@ -59,7 +59,7 @@ export default function ProductCard({ product }) {
     >
       <div className="relative aspect-square bg-gray-100 overflow-hidden">
         {hasDiscount && (
-          <span className="absolute top-2.5 left-2.5 z-10 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+          <span className="absolute top-2.5 left-2.5 z-10 bg-brand-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
             -{discountPercent}%
           </span>
         )}
@@ -110,7 +110,7 @@ export default function ProductCard({ product }) {
 
         {hasDiscount ? (
           <p className="mb-2 flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-base font-bold text-red-600">{formatPrice(finalPrice)}</span>
+            <span className="text-base font-bold text-brand-600">{formatPrice(finalPrice)}</span>
             <span className="text-xs text-gray-400 line-through">{formatPrice(product.basePrice)}</span>
           </p>
         ) : (
