@@ -8,6 +8,7 @@ import Seo from "../components/Seo";
 import Pagination from "../components/Pagination";
 import EmptyState from "../components/EmptyState";
 import ProductCard from "../components/ProductCard";
+import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import StarRating from "../components/StarRating";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
@@ -438,15 +439,9 @@ export default function ProductsPage() {
           {/* Grid */}
           {loading ? (
             <div className={`grid ${isHome ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4`}>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 animate-pulse">
-                  <div className="aspect-square bg-gray-200 rounded-t-2xl" />
-                  <div className="p-3 space-y-2">
-                    <div className="h-3 bg-gray-200 rounded w-1/2" />
-                    <div className="h-4 bg-gray-200 rounded w-3/4" />
-                    <div className="h-4 bg-gray-200 rounded w-1/3" />
-                  </div>
-                </div>
+              {/* Same count as the loaded page so the layout doesn't shift */}
+              {Array.from({ length: isHome ? 10 : 20 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
               ))}
             </div>
           ) : products.length === 0 ? (

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import * as campaignsApi from "../api/campaigns";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import ProductCard from "./ProductCard";
+import ProductCardSkeleton from "./ProductCardSkeleton";
 import ProductCarousel from "./ProductCarousel";
 import CountdownTimer from "./CountdownTimer";
 
@@ -18,6 +19,41 @@ function ClockIcon({ color }) {
     <svg className="w-7 h-7" fill="none" stroke={color} strokeWidth={1.8} viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
     </svg>
+  );
+}
+
+// Mirrors CampaignSection's layout: icon tile + title/description, countdown
+// boxes + CTA on the right, then a rail of product cards.
+export function CampaignSectionSkeleton() {
+  return (
+    <section className="rounded-2xl p-4 sm:p-6 bg-gray-100/80 animate-pulse">
+      <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gray-200 flex-shrink-0" />
+        <div className="space-y-2">
+          <div className="h-7 w-44 bg-gray-200 rounded" />
+          <div className="h-3.5 w-56 bg-gray-200 rounded" />
+        </div>
+        <div className="flex items-end gap-3 sm:gap-4 ml-auto flex-wrap">
+          <div>
+            <div className="h-2.5 w-16 bg-gray-200 rounded mx-auto mb-1" />
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="w-12 sm:w-14 h-12 bg-gray-200 rounded-lg" />
+              ))}
+            </div>
+          </div>
+          <div className="h-12 w-28 bg-gray-200 rounded-lg" />
+        </div>
+      </div>
+      <div className="border-t border-gray-200/70 my-4" />
+      <div className="flex gap-4 overflow-hidden -mx-1 px-1">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="w-44 sm:w-52 flex-shrink-0">
+            <ProductCardSkeleton />
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -65,8 +101,7 @@ function CampaignSection({ campaign, onExpire }) {
           </div>
           <Link
             to={`/campaigns/${campaign.slug}`}
-            className="h-12 inline-flex items-center gap-1.5 text-white text-sm font-semibold rounded-lg px-4 sm:px-5 shadow-sm hover:opacity-90 transition-opacity flex-shrink-0"
-            style={{ backgroundColor: color }}
+            className="h-12 inline-flex items-center gap-1.5 bg-brand-600 text-white text-sm font-semibold rounded-lg px-4 sm:px-5 shadow-sm hover:bg-brand-700 transition-colors flex-shrink-0"
           >
             {campaign.buttonLabel || "Shop Now"}
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -104,15 +139,18 @@ function CampaignSection({ campaign, onExpire }) {
 // with at least one product, in the admin's drag-sorted order.
 export default function HomeCampaigns() {
   const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let ignore = false;
     campaignsApi.getHomeCampaigns()
       .then(({ campaigns: data }) => { if (!ignore) setCampaigns(data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (!ignore) setLoading(false); });
     return () => { ignore = true; };
   }, []);
 
+  if (loading) return <CampaignSectionSkeleton />;
   if (campaigns.length === 0) return null;
 
   return (

@@ -5,6 +5,7 @@ import * as promotionsApi from "../api/promotions";
 import { getActiveFeatureTypes } from "../api/featureTypes";
 import { cloudinaryUrl } from "../utils/cloudinaryUrl";
 import ProductCard from "./ProductCard";
+import ProductCardSkeleton from "./ProductCardSkeleton";
 import ProductCarousel from "./ProductCarousel";
 
 const RAIL_PRODUCT_LIMIT = 10;
@@ -96,6 +97,31 @@ function PromotionPopup({ promotion, onClose }) {
   );
 }
 
+// Mirrors the loaded layout: a feature rail (icon tile + title + card rail)
+// followed by a wide promotion banner.
+function ShowcaseSkeleton() {
+  return (
+    <div className="space-y-8 animate-pulse">
+      <section className="rounded-2xl p-4 sm:p-6 bg-white border border-gray-100 shadow-sm">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gray-200 flex-shrink-0" />
+          <div className="h-7 w-44 bg-gray-200 rounded" />
+          <div className="ml-auto h-4 w-16 bg-gray-200 rounded" />
+        </div>
+        <div className="border-t border-gray-100 my-4" />
+        <div className="flex gap-4 overflow-hidden -mx-1 px-1">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="w-44 sm:w-52 flex-shrink-0">
+              <ProductCardSkeleton />
+            </div>
+          ))}
+        </div>
+      </section>
+      <div className="rounded-2xl bg-gray-200 aspect-[2/1] sm:aspect-[4/1]" />
+    </div>
+  );
+}
+
 function FeatureSection({ featureType, products }) {
   return (
     <section
@@ -146,6 +172,7 @@ export default function HomeShowcase() {
   const [rails, setRails] = useState([]);
   const [promotions, setPromotions] = useState([]);
   const [popupPromotion, setPopupPromotion] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let ignore = false;
@@ -175,7 +202,7 @@ export default function HomeShowcase() {
       if (withPopup) setPopupPromotion(withPopup);
     }
 
-    load();
+    load().finally(() => { if (!ignore) setLoading(false); });
     return () => { ignore = true; };
   }, []);
 
@@ -184,6 +211,7 @@ export default function HomeShowcase() {
     setPopupPromotion(null);
   }
 
+  if (loading) return <ShowcaseSkeleton />;
   if (rails.length === 0 && promotions.length === 0 && !popupPromotion) return null;
 
   // rail, banner, rail, banner… then any promotions beyond the rail count
