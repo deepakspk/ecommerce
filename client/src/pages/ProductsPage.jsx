@@ -11,8 +11,8 @@ import ProductCard from "../components/ProductCard";
 import StarRating from "../components/StarRating";
 import RecentlyViewedRail from "../components/RecentlyViewedRail";
 import BannerCarousel from "../components/BannerCarousel";
-import HomePromotions from "../components/HomePromotions";
 import HomeCampaigns from "../components/HomeCampaigns";
+import HomeShowcase from "../components/HomeShowcase";
 import CategoryRail from "../components/CategoryRail";
 import { INPUT_CLASS, PAGE_CLASS } from "../utils/ui";
 
@@ -62,7 +62,9 @@ export default function ProductsPage() {
   // Search is also derived from the URL (?search=) so the Navbar's search bar
   // and this page stay in sync — same reasoning as selectCategory below.
   const search = searchParams.get("search") || "";
-  const [selectedFeatureType, setSelectedFeatureType] = useState("");
+  // Feature type is URL-derived too, so the homepage rails' "View All" links
+  // (/products?featureType=best-seller) land on the filtered list directly.
+  const selectedFeatureType = searchParams.get("featureType") || "";
   const [selectedMinRating, setSelectedMinRating] = useState(0);
   // Price inputs are draft state; they only filter once the GO button (or
   // Enter) commits them into minPrice/maxPrice — matching marketplace UX.
@@ -91,6 +93,15 @@ export default function ProductsPage() {
     });
     setPage(1);
     scrollToGrid();
+  }
+
+  function selectFeatureType(slug) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (slug) next.set("featureType", slug);
+      else next.delete("featureType");
+      return next;
+    });
   }
 
   // Uses { replace: true } so live typing doesn't push a new history entry per keystroke.
@@ -190,7 +201,7 @@ export default function ProductsPage() {
   function clearFilters() {
     selectCategory("");
     updateSearch("");
-    setSelectedFeatureType("");
+    selectFeatureType("");
     setSelectedMinRating(0);
     clearPriceRange();
     setPage(1);
@@ -241,7 +252,8 @@ export default function ProductsPage() {
           {/* Running campaigns (Flash Sale etc.) with countdown + product rails */}
           <HomeCampaigns />
 
-          {/* <FeatureRails /> */}
+          {/* Feature-type rails (Best Seller, New Arrival, …) interleaved with promotion banners */}
+          <HomeShowcase />
         </div>
       )}
 
@@ -353,7 +365,7 @@ export default function ProductsPage() {
                   <label className={SECTION_LABEL_CLASS}>Feature</label>
                   <select
                     value={selectedFeatureType}
-                    onChange={(e) => changeFilter(setSelectedFeatureType, e.target.value)}
+                    onChange={(e) => changeFilter(selectFeatureType, e.target.value)}
                     className={`${INPUT_CLASS} w-full`}
                   >
                     <option value="">All features</option>
@@ -464,9 +476,6 @@ export default function ProductsPage() {
           <Pagination page={page} pages={pages} onChange={goToPage} />
         </div>
       </div>
-
-      {/* Promotion ads — homepage only, between the product grid and Recently Viewed */}
-      {isHome && <HomePromotions />}
 
       <RecentlyViewedRail />
     </div>
