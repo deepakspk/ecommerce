@@ -82,6 +82,11 @@ app.get("/api/admin/ping", protect, requireRole("ADMIN"), (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err);
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return res
+      .status(413)
+      .json({ message: `Image too large — max 10 MB per file (field "${err.field}")` });
+  }
   const status = err.status || 500;
   const message =
     status === 500 && process.env.NODE_ENV === "production"

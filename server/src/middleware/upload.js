@@ -11,7 +11,8 @@ const fileFilter = (req, file, cb) => {
 export const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  // 10 MB — Cloudinary's free-tier per-image cap; animated GIFs routinely exceed the old 5 MB.
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 const excelFileFilter = (req, file, cb) => {
