@@ -202,6 +202,11 @@ const couponUpdateBodyValidators = [
 
 const bannerBodyValidators = [body("link").optional().trim()];
 
+const bannerUpload = upload.fields([
+  { name: "image", maxCount: 1 },
+  { name: "mobileImage", maxCount: 1 },
+]);
+
 const promotionDateRangeValidator = body().custom((value) => {
   if (value.visibleFrom && value.visibleUntil && new Date(value.visibleUntil) < new Date(value.visibleFrom)) {
     throw new Error("visibleUntil must be on or after visibleFrom");
@@ -675,11 +680,11 @@ router.put(
 
 // Banners
 router.get("/banners", listBanners);
-router.post("/banners", upload.single("image"), bannerBodyValidators, validate, createBanner);
+router.post("/banners", bannerUpload, bannerBodyValidators, validate, createBanner);
 router.patch("/banners/reorder", bannerReorderValidators, validate, reorderBanners);
 router.put(
   "/banners/:id",
-  upload.single("image"),
+  bannerUpload,
   [mongoIdParam("id"), ...bannerBodyValidators],
   validate,
   updateBanner

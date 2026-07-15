@@ -1,4 +1,6 @@
 import "dotenv/config";
+import path from "path";
+import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -41,6 +43,12 @@ app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(express.json());
 app.use(passport.initialize());
+
+// Public assets (/banners, /categories, /brand, …) shared with the web client —
+// the mobile app resolves these relative image paths against the API origin.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use(express.static(path.join(__dirname, "../../client/public")));
+
 app.use("/api", apiLimiter);
 
 app.get("/api/health", (req, res) => {

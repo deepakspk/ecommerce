@@ -13,13 +13,22 @@ export async function createBanner(req, res) {
   if (count >= MAX_BANNERS) {
     return res.status(400).json({ message: `You can only have up to ${MAX_BANNERS} banners` });
   }
-  if (!req.file) {
+  const imageFile = req.files?.image?.[0];
+  if (!imageFile) {
     return res.status(400).json({ message: "A banner image is required" });
   }
 
-  const result = await uploadToCloudinary(req.file.buffer, "ecommerce-nepal/banners");
+  const result = await uploadToCloudinary(imageFile.buffer, "ecommerce-nepal/banners");
+  let mobileImageUrl = "";
+  const mobileFile = req.files?.mobileImage?.[0];
+  if (mobileFile) {
+    const mobileResult = await uploadToCloudinary(mobileFile.buffer, "ecommerce-nepal/banners");
+    mobileImageUrl = mobileResult.secure_url;
+  }
+
   const banner = await Banner.create({
     imageUrl: result.secure_url,
+    mobileImageUrl,
     link: req.body.link || "",
     sortOrder: count,
   });
@@ -30,9 +39,16 @@ export async function updateBanner(req, res) {
   const data = {};
   if (req.body.link !== undefined) data.link = req.body.link;
   if (req.body.isActive !== undefined) data.isActive = req.body.isActive === "true" || req.body.isActive === true;
-  if (req.file) {
-    const result = await uploadToCloudinary(req.file.buffer, "ecommerce-nepal/banners");
+  if (req.body.removeMobileImage === "true" || req.body.removeMobileImage === true) data.mobileImageUrl = "";
+  const imageFile = req.files?.image?.[0];
+  if (imageFile) {
+    const result = await uploadToCloudinary(imageFile.buffer, "ecommerce-nepal/banners");
     data.imageUrl = result.secure_url;
+  }
+  const mobileFile = req.files?.mobileImage?.[0];
+  if (mobileFile) {
+    const mobileResult = await uploadToCloudinary(mobileFile.buffer, "ecommerce-nepal/banners");
+    data.mobileImageUrl = mobileResult.secure_url;
   }
 
   const banner = await Banner.findByIdAndUpdate(req.params.id, data, { new: true });
